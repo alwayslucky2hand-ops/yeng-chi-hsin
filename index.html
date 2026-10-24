@@ -3722,12 +3722,12 @@
   }
 
   // ============================================================
-  // 🚀 待交寄退回至待撿貨（極速一鍵直退：零彈窗、零 alert、原地旋轉回饋）
+  // 🚀 待交寄退回至待撿貨（超防禦版：雙規格相容 + 即時刷新看板）
   // ============================================================
   async function rollbackDispatchOrder(orderId, btnEl) {
     if (!orderId) return;
 
-    // 1. 取得觸發按鈕並提供「原地極簡動態回饋」（防重複點擊 + 旋轉進度圖示）
+    // 1. 取得按鈕 DOM 給予極簡線條旋轉圖示回饋（防重複點擊）
     const btn = btnEl || (typeof event !== 'undefined' ? event.currentTarget : null) || document.getElementById(`btn-rollback-${orderId}`);
     let originalHtml = '';
     if (btn) {
@@ -3738,38 +3738,74 @@
       btn.innerHTML = '<i class="ph ph-spinner ph-spin" style="font-size:16px;"></i>';
     }
 
-    // 2. 前端非阻塞輕提示，替代惱人的 alert/confirm 彈跳視窗
     if (typeof showToast === 'function') {
       showToast('正在將訂單退回至待撿貨...');
     }
 
     try {
-      // 3. 呼叫 GAS 後端（清除出貨編號，訂單改回收款狀態）
+      // 2. 呼叫 GAS 後端執行回退
       const res = await apiCall('rollbackDispatchToPendingPicking', { orderId: orderId });
 
-      if (res && res.success) {
+      // 3. 超防禦判定：兼顧 { status: "success" } 與 { success: true }
+      const isSuccess = res && (
+        res.success === true ||
+        res.status === 'success' ||
+        res === true ||
+        res?.data?.success === true ||
+        (typeof res === 'object' && res.status && String(res.status).toLowerCase() === 'success')
+      );
+
+      if (isSuccess) {
+        const msg = res?.message || res?.data?.message || '已成功退回至「待撿貨」重新作業';
         if (typeof showToast === 'function') {
-          showToast('已退回至「待撿貨」');
+          showToast(msg);
         }
 
-        // 4. 前端樂觀更新快取狀態，無縫切換看板
+        // 4. 前端快取樂觀切換：將訂單狀態改回「收款」
         if (typeof orderCache !== 'undefined' && Array.isArray(orderCache)) {
-          const target = orderCache.find(o => o.orderId === orderId);
-          if (target) {
-            target.status = '收款';
-          }
+          const target = orderCache.find(o => String(o.orderId) === String(orderId));
+          if (target) target.status = '收款';
+        }
+        if (typeof allOrdersCache !== 'undefined' && Array.isArray(allOrdersCache)) {
+          const target = allOrdersCache.find(o => String(o.orderId) === String(orderId));
+          if (target) target.status = '收款';
         }
 
-        // 5. 立即重新渲染物流看板（待交寄減少、待撿貨即時恢復）
+        // 5. 物流快取同步：移除該訂單已封裝的包裹紀錄
+        if (typeof logisticsCache !== 'undefined' && Array.isArray(logisticsCache)) {
+          logisticsCache = logisticsCache.filter(item => String(item.orderId) !== String(orderId));
+        }
+
+        // 6. 收合該訂單在待交寄中的展開狀態
+        if (typeof expandedDispatchOrders !== 'undefined' && expandedDispatchOrders instanceof Set) {
+          expandedDispatchOrders.delete(orderId);
+        }
+
+        // 7. 多重看板重新渲染保險（卡片瞬間自「待交寄」移出並返回「待撿貨」）
         if (typeof renderLogisticsPendingBoard === 'function') {
           renderLogisticsPendingBoard();
         }
+        if (typeof renderLogisticsSections === 'function') {
+          renderLogisticsSections();
+        }
+        if (typeof renderLogisticsList === 'function') {
+          renderLogisticsList();
+        }
+
+        // 8. 背景靜默重新整理訂單與物流資料，確保與雲端試算表 100% 一致
+        if (typeof loadOrderList === 'function') {
+          loadOrderList(true).then(() => {
+            if (typeof renderLogisticsPendingBoard === 'function') renderLogisticsPendingBoard();
+            if (typeof renderLogisticsSections === 'function') renderLogisticsSections();
+          }).catch(e => console.warn('背景同步訂單微延遲:', e));
+        }
         if (typeof loadLogisticsList === 'function') {
-          loadLogisticsList(true); // 靜默背景同步最新試算表資料
+          loadLogisticsList(true).catch(e => console.warn('背景同步物流微延遲:', e));
         }
       } else {
+        const failMsg = res?.message || res?.data?.message || '後端處理逾時，請稍後重試';
         if (typeof showToast === 'function') {
-          showToast('退回未完成: ' + (res?.message || '後端回傳逾時'));
+          showToast('退回未完成: ' + failMsg);
         }
         if (btn) {
           btn.innerHTML = originalHtml;
@@ -3779,9 +3815,9 @@
         }
       }
     } catch (err) {
-      console.error('退回發生異常:', err);
+      console.error('退回異常:', err);
       if (typeof showToast === 'function') {
-        showToast('退回失敗: ' + (err.message || '網路連線異常'));
+        showToast('退回連線異常，請重新點擊');
       }
       if (btn) {
         btn.innerHTML = originalHtml;
@@ -3792,7 +3828,7 @@
     }
   }
 
-  // 單一包裹退回至待撿貨（若有針對個別 OUT 包裹退回，同樣維持一鍵直退與原位 Spinner）
+  // 單一包裹退回（同步套用雙規格相容與即時重整）
   async function rollbackParcelDispatch(outId, orderId, btnEl) {
     if (!outId) return;
 
@@ -3812,16 +3848,26 @@
 
     try {
       const res = await apiCall('rollbackDispatchToPendingPicking', { orderId: orderId, outId: outId });
-      if (res && res.success) {
+      const isSuccess = res && (
+        res.success === true ||
+        res.status === 'success' ||
+        res === true ||
+        res?.data?.success === true ||
+        (typeof res === 'object' && res.status && String(res.status).toLowerCase() === 'success')
+      );
+
+      if (isSuccess) {
         if (typeof showToast === 'function') {
           showToast('包裹已退回至待撿貨');
         }
+        if (typeof loadOrderList === 'function') loadOrderList(true);
         if (typeof loadLogisticsList === 'function') {
           loadLogisticsList(true);
         }
       } else {
+        const failMsg = res?.message || res?.data?.message || '';
         if (typeof showToast === 'function') {
-          showToast('包裹退回未完成: ' + (res?.message || ''));
+          showToast('包裹退回未完成: ' + failMsg);
         }
         if (btn) {
           btn.innerHTML = originalHtml;
@@ -3833,7 +3879,7 @@
     } catch (err) {
       console.error('包裹退回異常:', err);
       if (typeof showToast === 'function') {
-        showToast('包裹退回失敗');
+        showToast('包裹退回連線異常');
       }
       if (btn) {
         btn.innerHTML = originalHtml;
