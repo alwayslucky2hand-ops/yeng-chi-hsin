@@ -542,6 +542,9 @@
     <button class="tab-btn" onclick="switchTab('tab5', this)" title="物流管理">
       <i class="ph ph-truck" style="font-size: 18px; vertical-align: middle;"></i> 物流
     </button>
+    <button class="tab-btn" onclick="switchTab('tab6', this)" title="營運總覽儀表板">
+      <i class="ph ph-chart-line-up" style="font-size: 18px; vertical-align: middle;"></i> 總覽
+    </button>
   </div>
 
   
@@ -831,14 +834,14 @@
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
                 <label class="form-label" style="margin-bottom: 0;">註冊時間</label>
-                <button type="button" onclick="fillMemTime('memRegTime')" style="background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; padding: 0;" title="填入當下時間"><i class="ph ph-clock" style="vertical-align: middle;"></i> 當下</button>
+                <button type="button" onclick="fillMemTime('memRegTime')" style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 0;" title="填入當下時間"><i class="ph ph-clock" style="font-size: 16px; vertical-align: middle;"></i></button>
               </div>
               <input type="text" id="memRegTime" class="login-input" placeholder="yyyy/mm/dd-hh:mm:ss">
             </div>
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
                 <label class="form-label" style="margin-bottom: 0;">轉VIP時間</label>
-                <button type="button" onclick="fillMemTime('memVipTime')" style="background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; font-weight: 600; padding: 0;" title="填入當下時間"><i class="ph ph-clock" style="vertical-align: middle;"></i> 當下</button>
+                <button type="button" onclick="fillMemTime('memVipTime')" style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 0;" title="填入當下時間"><i class="ph ph-clock" style="font-size: 16px; vertical-align: middle;"></i></button>
               </div>
               <input type="text" id="memVipTime" class="login-input" placeholder="yyyy/mm/dd-hh:mm:ss (一般會員可留白)">
             </div>
@@ -1230,6 +1233,134 @@
     </div>
   </div>
 
+  
+  <div id="tab6" class="tab-content">
+    <div class="settings-section">
+      
+      <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i class="ph ph-chart-line-up" style="font-size: 22px; color: var(--accent);"></i>
+          <span style="font-weight: 800; font-size: 17px;">營運儀表板與客情總覽</span>
+        </div>
+        <button class="icon-btn" onclick="refreshDashboardData()" title="重新計算最新營運數據">
+          <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
+        </button>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:14px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ph ph-calendar" style="font-size:18px; color:var(--text-muted);"></i>
+            <span style="font-size:13px; font-weight:700; color:var(--text);">時間範圍</span>
+            
+            <div style="display:flex; gap:6px; margin-left:6px;">
+              <button type="button" class="icon-btn" onclick="setDashboardDateRange('thisMonth')" title="篩選本月區間" style="padding:5px 9px; font-size:12px; font-weight:700; border-radius:6px;">
+                本月
+              </button>
+              <button type="button" class="icon-btn" onclick="setDashboardDateRange('lastMonth')" title="篩選上月區間" style="padding:5px 9px; font-size:12px; font-weight:700; border-radius:6px;">
+                上月
+              </button>
+              <button type="button" class="icon-btn" onclick="setDashboardDateRange('all')" title="篩選全部歷史" style="padding:5px 9px; font-size:12px; font-weight:700; border-radius:6px;">
+                全部
+              </button>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted);">
+            <span>本月全館累積銷售：</span>
+            <strong id="dashMonthTotalSales" style="font-size:14px; font-family:monospace; color:var(--text);">NT$ 0</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
+            <input type="date" id="dashStartDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDashboardDateFilter()">
+          </div>
+          <span style="color:var(--text-muted); font-size:12px;">至</span>
+          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
+            <input type="date" id="dashEndDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDashboardDateFilter()">
+          </div>
+          <button type="button" class="icon-btn" onclick="applyDashboardDateFilter()" title="執行篩選" style="padding:6px 12px; background:var(--accent); color:#fff; border-color:var(--accent);">
+            <i class="ph ph-funnel" style="font-size:16px;"></i>
+          </button>
+        </div>
+      </div>
+
+      
+      <div style="display:flex; background:#F1F5F9; border-radius:8px; padding:3px; gap:4px; margin-bottom:14px;">
+        <button type="button" id="btnSegALL" onclick="switchCustomerSegment('ALL')" class="icon-btn" style="flex:1; border:none; background:#FFFFFF; color:var(--text); font-size:12px; font-weight:700; padding:8px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.06); justify-content:center;" title="全部客群">
+          <i class="ph ph-globe" style="font-size:16px;"></i>
+        </button>
+        <button type="button" id="btnSegVIP" onclick="switchCustomerSegment('VIP')" class="icon-btn" style="flex:1; border:none; background:transparent; color:var(--text-muted); font-size:12px; font-weight:600; padding:8px 0; border-radius:6px; justify-content:center;" title="VIP 貴賓">
+          <i class="ph ph-crown" style="font-size:16px;"></i>
+        </button>
+        <button type="button" id="btnSegNORMAL" onclick="switchCustomerSegment('NORMAL')" class="icon-btn" style="flex:1; border:none; background:transparent; color:var(--text-muted); font-size:12px; font-weight:600; padding:8px 0; border-radius:6px; justify-content:center;" title="一般顧客">
+          <i class="ph ph-user" style="font-size:16px;"></i>
+        </button>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="dashActiveSegmentLabel" style="font-size:14px; font-weight:800; color:var(--text);">全部顧客營運數據</span>
+            <span id="badgeActiveOrderCount" style="font-size:11px; background:#F8FAFC; border:1px solid #CBD5E1; color:var(--text-muted); padding:1px 6px; border-radius:10px; font-family:monospace;">0 筆</span>
+          </div>
+        </div>
+
+        
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:14px;">
+          <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; padding:12px 14px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">區間累積銷售額</div>
+            <div id="statActiveRevenue" style="font-size:20px; font-weight:800; color:var(--text); font-family:monospace;">NT$ 0</div>
+          </div>
+          <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; padding:12px 14px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">區間訂購數 (扣除取消)</div>
+            <div id="statActiveOrderNum" style="font-size:20px; font-weight:800; color:var(--text); font-family:monospace;">0 筆</div>
+          </div>
+          <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; padding:12px 14px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">平均客單價 (AOV)</div>
+            <div id="statActiveAov" style="font-size:20px; font-weight:800; color:var(--text); font-family:monospace;">NT$ 0</div>
+          </div>
+        </div>
+
+        
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <i class="ph ph-funnel-simple"></i> 訂單狀態分佈（點擊點亮並過篩下方清單）：
+        </div>
+        <div id="dashActiveStatusGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:8px;"></div>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1px solid var(--border); border-radius:10px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ph ph-receipt" style="font-size:20px; color:var(--accent);"></i>
+            <span style="font-size:15px; font-weight:800; color:var(--text);">過篩消費訂單追蹤清單</span>
+            <span id="dashActiveFilterBadge" style="font-size:11px; background:#F1F5F9; border:1px solid #CBD5E1; color:#475569; padding:2px 8px; border-radius:4px; font-weight:600;">全部狀態</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted);">
+            符合條件筆數：<strong id="dashFilteredCount" style="color:var(--text);">0</strong> 筆
+          </div>
+        </div>
+
+        
+        <div class="filter-bar" style="margin-bottom:14px;">
+          <div style="position:relative; width:100%;">
+            <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:18px;"></i>
+            <input type="text" id="dashKeywordInput" class="filter-input" style="width:100%; padding-left:36px; border-radius:20px;" placeholder="搜尋訂單編號、顧客姓名、電話、商品品名..." oninput="renderDashboardOrderList()">
+          </div>
+        </div>
+
+        
+        <div id="dashOrderListContainer" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">資料載入中...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <div id="toast" class="toast">訊息通知</div>
@@ -1239,6 +1370,42 @@
   <div class="spinner-ring"></div>
   <div id="progressText" class="progress-text">0%</div>
   <div id="progressSubtext" class="progress-subtext">資料建檔與圖片上傳中...</div>
+</div>
+
+
+<div id="scanCropModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.92); z-index:10001; flex-direction:column; justify-content:space-between; backdrop-filter:blur(6px); user-select:none;">
+  <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); color:#fff;">
+    <div style="font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
+      <i class="ph ph-crop" style="font-size:20px; color:var(--accent);"></i>
+      <span>掃描邊界確認與截圖</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button type="button" class="icon-btn" onclick="rotateCropImage()" title="旋轉90度" style="color:#fff; border-color:rgba(255,255,255,0.3); padding:6px 10px;">
+        <i class="ph ph-arrow-clockwise" style="font-size:18px;"></i>
+      </button>
+      <button type="button" class="icon-btn" onclick="closeScanCropModal()" title="取消" style="color:#fff; border-color:rgba(255,255,255,0.3); padding:6px 10px;">
+        <i class="ph ph-x" style="font-size:18px;"></i>
+      </button>
+    </div>
+  </div>
+
+  <div style="flex:1; position:relative; overflow:hidden; display:flex; justify-content:center; align-items:center; padding:12px;" id="cropWorkspaceContainer">
+    <div style="position:relative; max-width:100%; max-height:100%; display:inline-block;" id="cropCanvasWrapper">
+      <canvas id="cropSourceCanvas" style="max-width:100%; max-height:70vh; display:block; border-radius:4px; box-shadow:0 8px 30px rgba(0,0,0,0.5);"></canvas>
+      <div id="cropOverlayBox" style="position:absolute; inset:0; border:2px dashed #38bdf8; background:rgba(56,189,248,0.12); box-shadow:0 0 0 9999px rgba(0,0,0,0.45); cursor:move; touch-action:none;">
+        <div style="position:absolute; top:6px; left:8px; font-size:11px; background:#0284c7; color:#fff; padding:2px 6px; border-radius:3px; font-weight:700;">可拖曳調整掃描框</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.95); gap:12px;">
+    <button type="button" class="icon-btn" onclick="resetCropBoxFull()" title="還原全幅" style="color:#cbd5e1; border-color:rgba(255,255,255,0.2); padding:10px 14px;">
+      <i class="ph ph-arrows-out" style="font-size:18px;"></i>
+    </button>
+    <button type="button" class="action-btn-primary" onclick="confirmScanCropAndMatch()" title="確認掃描並執行比對" style="width:44px; height:44px; margin-top:0; padding:0; background:var(--accent); border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+      <i class="ph ph-check" style="font-size:20px;"></i>
+    </button>
+  </div>
 </div>
 
 
@@ -1319,8 +1486,334 @@
         renderLogisticsPendingBoard();
         renderLogisticsList();
       }
+    } else if (tabId === 'tab6') {
+      if (!isOrderLoaded) {
+        loadOrderList(true).then(() => {
+          initDashboardDatePickers();
+          computeAndRenderDashboard();
+        });
+      } else {
+        initDashboardDatePickers();
+        computeAndRenderDashboard();
+      }
     }
   }
+
+  
+  
+  
+  
+  
+  
+  let dashSelectedStatus = '';       
+  let dashActiveSegment = 'ALL';     
+
+  function initDashboardDatePickers() {
+    const startInput = document.getElementById('dashStartDate');
+    const endInput = document.getElementById('dashEndDate');
+    if (!startInput || !endInput) return;
+
+    if (!startInput.value || !endInput.value) {
+      setDashboardDateRange('thisMonth', false);
+    }
+  }
+
+  function setDashboardDateRange(type, triggerRefresh = true) {
+    const startInput = document.getElementById('dashStartDate');
+    const endInput = document.getElementById('dashEndDate');
+    if (!startInput || !endInput) return;
+
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatYMD = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    if (type === 'thisMonth') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      startInput.value = formatYMD(firstDay);
+      endInput.value = formatYMD(now);
+    } else if (type === 'lastMonth') {
+      const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      startInput.value = formatYMD(firstDayLastMonth);
+      endInput.value = formatYMD(lastDayLastMonth);
+    } else if (type === 'all') {
+      startInput.value = '2020-01-01';
+      endInput.value = formatYMD(now);
+    }
+
+    if (triggerRefresh) {
+      applyDashboardDateFilter();
+    }
+  }
+
+  function applyDashboardDateFilter() {
+    computeAndRenderDashboard();
+    showToast('數據已依日期區間重新計算');
+  }
+
+  function refreshDashboardData() {
+    loadOrderList(true).then(() => {
+      computeAndRenderDashboard();
+      showToast('最新訂單與儀表板已同步');
+    });
+  }
+
+  function parseOrderDateString(dateStr) {
+    if (!dateStr) return null;
+    try {
+      const clean = String(dateStr).trim().split(' ')[0].replace(/\//g, '-');
+      const parts = clean.split('-');
+      if (parts.length >= 3) {
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  
+  function switchCustomerSegment(segmentKey) {
+    dashActiveSegment = segmentKey;
+    dashSelectedStatus = ''; 
+
+    
+    ['ALL', 'VIP', 'NORMAL'].forEach(k => {
+      const btn = document.getElementById(`btnSeg${k}`);
+      if (!btn) return;
+      if (k === segmentKey) {
+        btn.style.background = '#FFFFFF';
+        btn.style.color = 'var(--text)';
+        btn.style.fontWeight = '700';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.fontWeight = '500';
+        btn.style.boxShadow = 'none';
+      }
+    });
+
+    computeAndRenderDashboard();
+  }
+
+  
+  const OFFICIAL_DASHBOARD_STATUSES = [
+    { key: '', name: '全部', code: 'ALL', color: '#0F172A', bg: '#F8FAFC', border: '#0F172A' },
+    { key: '選購', name: '選購', code: '01', color: '#64748B', bg: '#F1F5F9', border: '#94A3B8' },
+    { key: '下訂', name: '下訂', code: '02', color: '#D97706', bg: '#FEF3C7', border: '#F59E0B' },
+    { key: '收款', name: '收款', code: '03', color: '#2563EB', bg: '#DBEAFE', border: '#3B82F6' },
+    { key: '出貨', name: '出貨', code: '04', color: '#EA580C', bg: '#FFEDD5', border: '#F97316' },
+    { key: '配送', name: '配送', code: '05', color: '#0D9488', bg: '#CCFBF1', border: '#14B8A6' },
+    { key: '到貨', name: '到貨', code: '06', color: '#65A30D', bg: '#ECFCCB', border: '#84CC16' },
+    { key: '收貨', name: '收貨', code: '07', color: '#16A34A', bg: '#DCFCE7', border: '#22C55E' },
+    { key: '退貨', name: '退貨', code: '08', color: '#E11D48', bg: '#FFE4E6', border: '#F43F5E' },
+    { key: '取消', name: '取消', code: '09', color: '#EF4444', bg: '#FEF2F2', border: '#F87171' }
+  ];
+
+  function computeAndRenderDashboard() {
+    if (!orderCache || orderCache.length === 0) {
+      const listContainer = document.getElementById('dashOrderListContainer');
+      if (listContainer) listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">尚無訂單資料</div>';
+      return;
+    }
+
+    const startInput = document.getElementById('dashStartDate');
+    const endInput = document.getElementById('dashEndDate');
+    const startDate = startInput && startInput.value ? new Date(startInput.value + 'T00:00:00') : null;
+    const endDate = endInput && endInput.value ? new Date(endInput.value + 'T23:59:59') : null;
+
+    
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    let monthTotalSales = 0;
+
+    orderCache.forEach(o => {
+      if (String(o.status || '').trim() === '取消') return;
+      const od = parseOrderDateString(o.orderTime);
+      if (od && od.getFullYear() === currentYear && od.getMonth() === currentMonth) {
+        monthTotalSales += Number(o.totalAmount || 0);
+      }
+    });
+    const monthSalesEl = document.getElementById('dashMonthTotalSales');
+    if (monthSalesEl) monthSalesEl.innerText = `NT$ ${monthTotalSales.toLocaleString()}`;
+
+    
+    const inRangeOrders = orderCache.filter(o => {
+      const od = parseOrderDateString(o.orderTime);
+      if (!od) return true;
+      if (startDate && od < startDate) return false;
+      if (endDate && od > endDate) return false;
+      return true;
+    });
+
+    
+    let activeOrders = inRangeOrders;
+    let segmentLabel = '全部顧客營運數據';
+    if (dashActiveSegment === 'VIP') {
+      activeOrders = inRangeOrders.filter(o => String(o.memberType || '').includes('VIP'));
+      segmentLabel = 'VIP 貴賓專屬數據';
+    } else if (dashActiveSegment === 'NORMAL') {
+      activeOrders = inRangeOrders.filter(o => !String(o.memberType || '').includes('VIP'));
+      segmentLabel = '一般顧客營運數據';
+    }
+
+    const segLabelEl = document.getElementById('dashActiveSegmentLabel');
+    if (segLabelEl) segLabelEl.innerText = segmentLabel;
+
+    
+    const validOrders = activeOrders.filter(o => String(o.status || '').trim() !== '取消');
+    const totalRevenue = validOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+    const orderCount = validOrders.length;
+    const aov = orderCount > 0 ? Math.round(totalRevenue / orderCount) : 0;
+
+    const revEl = document.getElementById('statActiveRevenue');
+    const numEl = document.getElementById('statActiveOrderNum');
+    const aovEl = document.getElementById('statActiveAov');
+    const badgeEl = document.getElementById('badgeActiveOrderCount');
+
+    if (revEl) revEl.innerText = `NT$ ${totalRevenue.toLocaleString()}`;
+    if (numEl) numEl.innerText = `${orderCount} 筆`;
+    if (aovEl) aovEl.innerText = `NT$ ${aov.toLocaleString()}`;
+    if (badgeEl) badgeEl.innerText = `${activeOrders.length} 筆`;
+
+    
+    const statusGridEl = document.getElementById('dashActiveStatusGrid');
+    if (statusGridEl) {
+      statusGridEl.innerHTML = OFFICIAL_DASHBOARD_STATUSES.map(st => {
+        const isAll = (st.key === '');
+        const matchedOrders = isAll ? activeOrders : activeOrders.filter(o => String(o.status || '').trim() === st.key);
+        const count = matchedOrders.length;
+        const stRevenue = matchedOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+
+        const isSelected = (dashSelectedStatus === st.key);
+
+        
+        const cardStyle = isSelected
+          ? `border: 1.5px solid ${st.color}; background: ${st.bg}; box-shadow: 0 2px 10px rgba(0,0,0,0.08);`
+          : `border: 1px solid #E2E8F0; background: #FFFFFF;`;
+
+        const badgeStyle = isSelected
+          ? `color: #FFFFFF !important; background: ${st.color} !important; border: 1px solid ${st.color} !important; box-shadow: 0 2px 5px rgba(0,0,0,0.12);`
+          : `color: #64748B; background: #F8FAFC; border: 1px solid #CBD5E1;`;
+
+        const valueColor = isSelected ? st.color : (count > 0 ? 'var(--text)' : 'var(--text-muted)');
+
+        return `
+          <div onclick="selectDashboardStatusFilter('${st.key}')" style="${cardStyle} border-radius:6px; padding:8px 10px; cursor:pointer; user-select:none; transition:all 0.15s ease; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11px; font-weight:700; ${badgeStyle} padding:2px 6px; border-radius:4px; font-family:monospace;">
+                ${st.code} ${st.name}
+              </span>
+              <span style="font-size:12px; font-weight:800; font-family:monospace; color:${valueColor};">
+                ${count}
+              </span>
+            </div>
+            <div style="display:flex; justify-content:flex-end; align-items:baseline; margin-top:2px;">
+              <span style="font-size:12px; font-weight:800; color:${valueColor}; font-family:monospace;">
+                $${stRevenue.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    
+    renderDashboardOrderList(activeOrders);
+  }
+
+  function selectDashboardStatusFilter(statusName) {
+    if (dashSelectedStatus === statusName) {
+      dashSelectedStatus = '';
+    } else {
+      dashSelectedStatus = statusName;
+    }
+    computeAndRenderDashboard();
+  }
+
+  function renderDashboardOrderList(baseOrders = null) {
+    const listContainer = document.getElementById('dashOrderListContainer');
+    const badgeEl = document.getElementById('dashActiveFilterBadge');
+    const countEl = document.getElementById('dashFilteredCount');
+    const kwInput = document.getElementById('dashKeywordInput');
+    const kw = kwInput ? kwInput.value.toLowerCase().trim() : '';
+
+    if (!baseOrders) {
+      const startInput = document.getElementById('dashStartDate');
+      const endInput = document.getElementById('dashEndDate');
+      const startDate = startInput && startInput.value ? new Date(startInput.value + 'T00:00:00') : null;
+      const endDate = endInput && endInput.value ? new Date(endInput.value + 'T23:59:59') : null;
+      baseOrders = orderCache.filter(o => {
+        const od = parseOrderDateString(o.orderTime);
+        if (!od) return true;
+        if (startDate && od < startDate) return false;
+        if (endDate && od > endDate) return false;
+        return true;
+      });
+      if (dashActiveSegment === 'VIP') {
+        baseOrders = baseOrders.filter(o => String(o.memberType || '').includes('VIP'));
+      } else if (dashActiveSegment === 'NORMAL') {
+        baseOrders = baseOrders.filter(o => !String(o.memberType || '').includes('VIP'));
+      }
+    }
+
+    let filterText = dashSelectedStatus ? `單況: ${dashSelectedStatus}` : '全部單況';
+    if (badgeEl) badgeEl.innerText = filterText;
+
+    const filtered = baseOrders.filter(o => {
+      if (dashSelectedStatus && String(o.status || '').trim() !== dashSelectedStatus) return false;
+      if (kw) {
+        const itemsText = (o.items || []).map(it => `${it.productName} ${it.productId}`).join(' ');
+        const searchBlob = `${o.orderId} ${o.memberName} ${o.receiverName} ${o.receiverPhone} ${itemsText}`.toLowerCase();
+        if (!searchBlob.includes(kw)) return false;
+      }
+      return true;
+    });
+
+    if (countEl) countEl.innerText = filtered.length;
+    if (!listContainer) return;
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">無符合條件的訂單紀錄</div>';
+      return;
+    }
+
+    listContainer.innerHTML = filtered.map(o => {
+      const isVip = String(o.memberType || '').includes('VIP');
+      const itemsCount = (o.items || []).length;
+      const itemsSummary = (o.items || []).map(it => `${it.productName} x${it.buyQty || 1}`).join('、');
+
+      return `
+        <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; transition:border-color 0.15s ease;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='#E2E8F0'">
+          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:220px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="order-status-badge" data-status="${o.status || '選購'}">${o.status || '選購'}</span>
+              <span class="id-chip" style="font-weight:700;">${o.orderId}</span>
+              <span style="font-size:13px; font-weight:700; color:var(--text);">${o.receiverName || o.memberName || '顧客'}</span>
+              <span style="font-size:11px; padding:1px 6px; border-radius:4px; font-weight:600; ${isVip ? 'background:#FEF3C7; color:#D97706; border:1px solid #FDE68A;' : 'background:#F1F5F9; color:#64748B; border:1px solid #CBD5E1;'}">
+                ${isVip ? 'VIP' : '一般'}
+              </span>
+              <span style="font-size:11px; color:var(--text-muted);">${o.orderTime || ''}</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+              品項 (${itemsCount}款)：<span style="color:var(--text);">${itemsSummary}</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="text-align:right;">
+              <div style="font-size:10px; color:var(--text-muted);">總額</div>
+              <div style="font-size:15px; font-weight:800; color:var(--text); font-family:monospace;">NT$ ${Number(o.totalAmount || 0).toLocaleString()}</div>
+            </div>
+            <!-- 純質感線條 Icon 按鈕，無多餘中文字 -->
+            <button type="button" class="icon-btn" onclick="switchTab('tab4', document.querySelectorAll('.tab-btn')[3]); toggleOrderEdit('${o.orderId}');" title="查看訂單明細" style="padding:6px 10px; color:var(--accent); border-color:var(--accent);">
+              <i class="ph ph-arrow-square-out" style="font-size:16px;"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
 
   function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -1596,28 +2089,58 @@
   }
 
   async function apiCall(action, payload = {}) {
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      return new Promise((resolve, reject) => {
-        google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)
-          [action](payload);
-      });
-    } else {
-      if (!GAS_WEB_URL || GAS_WEB_URL.includes("請將你部署後的")) {
-        throw new Error("請先在前端程式碼頂部填入 GAS_WEB_URL！");
-      }
-      const response = await fetch(GAS_WEB_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: action, payload: payload })
-      });
-      const text = await response.text();
+    
+    if (typeof google !== 'undefined' && google.script && google.script.run && typeof google.script.run[action] === 'function') {
       try {
-        return JSON.parse(text);
-      } catch (parseErr) {
-        throw new Error("後端未回傳合法 JSON（請確認 Code.gs 已包含 doPost 且重新部署新版本）");
+        const result = await new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            [action](payload);
+        });
+        if (result && result.status === 'error') {
+          
+          throw new Error(result.data?.message || '後端執行失敗');
+        }
+        return result;
+      } catch (gasErr) {
+        
+        if (gasErr && gasErr.message && (gasErr.message.includes('API') || gasErr.message.includes('辨識失敗') || gasErr.message.includes('金鑰'))) {
+          throw gasErr;
+        }
+        console.warn(`[apiCall] google.script.run ${action} 網路連線中斷，啟動 fetch 備援降級:`, gasErr);
+        return await executeFetchFallback(action, payload, gasErr);
       }
+    } else {
+      return await executeFetchFallback(action, payload);
+    }
+  }
+
+  async function executeFetchFallback(action, payload, originalErr = null) {
+    let targetUrl = (typeof GAS_WEB_URL !== 'undefined') ? GAS_WEB_URL : '';
+    if (typeof window !== 'undefined' && window.location.href.includes('/exec')) {
+      targetUrl = window.location.href.split('?')[0];
+    }
+
+    if (!targetUrl || targetUrl.includes("請將你部署後的")) {
+      throw originalErr || new Error("無法取得有效的 GAS Web URL");
+    }
+
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, payload: payload })
+    });
+
+    const text = await response.text();
+    try {
+      const json = JSON.parse(text);
+      if (json && json.status === 'error') {
+        throw new Error(json.data?.message || '後端回傳錯誤');
+      }
+      return json;
+    } catch (parseErr) {
+      throw new Error(text || "後端未回傳合法 JSON");
     }
   }
 
@@ -1873,8 +2396,8 @@
   function openNewForm(type) {
     closeForm(type);
     clearForm(type);
-    const formId = type === 'inv' ? 'addFormContainer' : (type === 'mall' ? 'mallAddFormContainer' : 'memAddFormContainer');
-    const slotId = type === 'inv' ? 'invTopFormSlot' : (type === 'mall' ? 'mallTopFormSlot' : 'memTopFormSlot');
+    const formId = type === 'inv' ? 'addFormContainer' : (type === 'mall' ? 'mallAddFormContainer' : (type === 'mem' ? 'memAddFormContainer' : (type === 'order' ? 'orderAddFormContainer' : 'logisticsAddFormContainer')));
+    const slotId = type === 'inv' ? 'invTopFormSlot' : (type === 'mall' ? 'mallTopFormSlot' : (type === 'mem' ? 'memTopFormSlot' : (type === 'order' ? 'orderTopFormSlot' : 'logisticsTopFormSlot')));
     const form = document.getElementById(formId);
     const slot = document.getElementById(slotId);
     if (type === 'mem') {
@@ -3642,7 +4165,7 @@
                     <button type="button" class="icon-btn" onclick="rollbackDispatchOrder('${o.orderId}', '${outId}')" title="退回待撿貨狀態重新作業" style="color:var(--text-muted); border-color:#CBD5E1; padding:6px 10px;">
                       <i class="ph ph-arrow-u-up-left" style="font-size:16px;"></i>
                     </button>
-                    <button type="button" class="icon-btn" onclick="openLogisticsDispatchForm('${o.orderId}', '${outId}')" title="掃描寄貨 / 登錄單號" style="background:var(--accent); color:#FFFFFF; border-color:var(--accent); padding:6px 10px;">
+                    <button type="button" class="icon-btn" id="btn-scan-receipt-${outId}" onclick="startDispatchReceiptScan('${o.orderId}', '${outId}')" title="相機掃描寄件單/小白單並自動核驗匹配" style="background:var(--accent); color:#FFFFFF; border-color:var(--accent); padding:6px 10px;">
                       <i class="ph ph-camera" style="font-size:16px;"></i>
                     </button>
                   </div>
@@ -4074,17 +4597,14 @@
                 ${livePhotoGalleryHtml}
               </div>
 
-              <!-- 3. 底層：純線條圖示操作按鈕群 (按鈕原地即時跑 % 數) -->
+              <!-- 3. 底層：純線條圖示操作按鈕群 (已移除向上箭頭，相機按鈕點擊可拍照或導入) -->
               <div class="picking-item-right">
                 <span class="desktop-qty-badge" style="font-size:13px; font-family:monospace; font-weight:800; color:${itemDone ? 'var(--success)' : 'var(--text)'}; margin-right:4px;">
                   ${it.pickedQty} / ${it.targetQty}
                 </span>
 
-                <button type="button" class="icon-btn" onclick="startBottleScan('${pOrder.orderId}', ${idx})" title="拍瓶身照片" style="padding:7px 11px; color:var(--accent); border-color:var(--accent);">
+                <button type="button" class="icon-btn" onclick="startBottleScan('${pOrder.orderId}', ${idx})" title="相機掃描或導入照片" style="padding:7px 11px; color:var(--accent); border-color:var(--accent);">
                   <i class="ph ph-camera" style="font-size:18px;"></i>
-                </button>
-                <button type="button" class="icon-btn" onclick="triggerFileUploadForItem('${pOrder.orderId}', ${idx})" title="上傳照片" style="padding:7px 11px;">
-                  <i class="ph ph-upload-simple" style="font-size:18px;"></i>
                 </button>
 
                 <!-- 極簡美學【勾選打包按鈕】 -->
@@ -4156,12 +4676,13 @@
     }).join('');
   }
 
-  // 勾選切換
-  async function toggleItemPackingCheck(orderId, itemIndex) {
+  // 勾選切換（100% 樂觀 UI：0 秒瞬間打勾變色，後端非同步靜默同步）
+  function toggleItemPackingCheck(orderId, itemIndex) {
     const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     if (!ord || !ord.items[itemIndex]) return;
     const it = ord.items[itemIndex];
 
+    // 1. 立即變更狀態
     it.isChecked = !it.isChecked;
 
     if (it.isChecked) {
@@ -4171,25 +4692,27 @@
       if (it.isMatched === null) it.isMatched = true;
       if (it.isNormal === null) it.isNormal = true;
       it.guideTip = '已確認核驗並勾選準備打包出貨。';
-
-      try {
-        const key = `${orderId}_${it.productId}`;
-        await apiCall('recordLogisticsPickingVerify', {
-          orderId: orderId,
-          productId: it.productId,
-          mallPrdId: it.mallPrdId,
-          isMatched: it.isMatched,
-          isNormal: it.isNormal,
-          verifyNote: '手動確認核驗通過並勾選打包',
-          imagesBase64: pickingItemImagesMap[key] || [],
-          handler: '倉庫檢驗同仁'
-        });
-      } catch(e) {}
     } else {
       it.guideTip = '待打勾狀態，可隨時點擊勾選準備打包。';
     }
 
+    // 2. 0ms 瞬間重繪畫面（手感完全零延遲！）
     renderPickingStationUI();
+
+    // 3. 背景非同步向試算表記錄，不阻斷畫面
+    if (it.isChecked) {
+      const key = `${orderId}_${it.productId}`;
+      apiCall('recordLogisticsPickingVerify', {
+        orderId: orderId,
+        productId: it.productId,
+        mallPrdId: it.mallPrdId,
+        isMatched: it.isMatched,
+        isNormal: it.isNormal,
+        verifyNote: '手動確認核驗通過並勾選打包',
+        imagesBase64: pickingItemImagesMap[key] || [],
+        handler: '倉庫檢驗同仁'
+      }).catch(e => console.warn('背景同步撿貨核驗微延遲:', e));
+    }
   }
 
   function togglePickingExpand(orderId) {
@@ -4214,13 +4737,337 @@
     }
   }
 
+  // 全域掃描截圖狀態機
+  let cropState = {
+    img: null,
+    rotation: 0,
+    targetType: null, // 'bottle' 或 'dispatchReceipt'
+    orderId: null,
+    itemIdx: null,
+    outId: null,
+    box: { x: 0.05, y: 0.05, w: 0.9, h: 0.9 }
+  };
+
+  // 免裁切！點擊相機拍照或選擇照片後，自動壓縮並直接啟動 AI 辨識
   function startBottleScan(orderId, itemIndex) {
     activeScanOrderId = orderId;
     activeScanItemIdx = itemIndex;
-    const camInput = document.getElementById('pickingBottleCameraInput');
-    if (camInput) {
-      camInput.onchange = function() { handleBottlePhotoSelected(this); };
-      camInput.click();
+
+    let input = document.getElementById('pickingBottleCameraInput');
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'file';
+      input.id = 'pickingBottleCameraInput';
+      input.accept = 'image/*';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+    }
+    input.removeAttribute('capture');
+    input.onchange = function() { handlePhotoDirectAutoAnalyze(this, orderId, itemIndex); };
+    input.click();
+  }
+
+  function handlePhotoDirectAutoAnalyze(input, orderId, itemIndex) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
+    if (!ord || !ord.items[itemIndex]) return;
+    const targetItem = ord.items[itemIndex];
+    const itemKey = `${orderId}_${targetItem.productId}`;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        // 背景自動等比縮放：最大邊長 1000px，既能保留高精度文字，又不會導致 GAS 通訊超載
+        const maxDim = 1000;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+        if (!pickingItemImagesMap[itemKey]) pickingItemImagesMap[itemKey] = [];
+        pickingItemImagesMap[itemKey].push(compressedBase64);
+
+        targetItem.guideTip = '照片已就位！正在自動比對商品特徵與外觀完好度...';
+        renderPickingStationUI();
+
+        // 核心體驗：零裁切、零等待！照片就位立刻自動呼叫 AI 辨識
+        runAiAnalyzeForItem(orderId, itemIndex);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  function startDispatchReceiptScan(orderId, outId) {
+    cropState.targetType = 'dispatchReceipt';
+    cropState.orderId = orderId;
+    cropState.outId = outId;
+
+    let input = document.getElementById('dispatchReceiptCameraInput');
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'file';
+      input.id = 'dispatchReceiptCameraInput';
+      input.accept = 'image/*';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+    }
+    input.removeAttribute('capture'); // 同樣支援手機原生彈出拍照或相簿
+    input.onchange = function() { handlePhotoToScanCropModal(this); };
+    input.click();
+  }
+
+  // 接收拍照/選圖並開啟 Google Drive 級邊界確認截圖器
+  function handlePhotoToScanCropModal(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        cropState.img = img;
+        cropState.rotation = 0;
+        cropState.box = { x: 0.05, y: 0.05, w: 0.9, h: 0.9 };
+        openScanCropModal();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  function openScanCropModal() {
+    const modal = document.getElementById('scanCropModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    drawCropWorkspace();
+    setupCropInteractions();
+  }
+
+  function closeScanCropModal() {
+    const modal = document.getElementById('scanCropModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function rotateCropImage() {
+    cropState.rotation = (cropState.rotation + 90) % 360;
+    drawCropWorkspace();
+  }
+
+  function resetCropBoxFull() {
+    cropState.box = { x: 0.02, y: 0.02, w: 0.96, h: 0.96 };
+    syncCropOverlayBox();
+  }
+
+  function drawCropWorkspace() {
+    const canvas = document.getElementById('cropSourceCanvas');
+    if (!canvas || !cropState.img) return;
+    const ctx = canvas.getContext('2d');
+    const isSideways = cropState.rotation === 90 || cropState.rotation === 270;
+    const w = isSideways ? cropState.img.height : cropState.img.width;
+    const h = isSideways ? cropState.img.width : cropState.img.height;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate((cropState.rotation * Math.PI) / 180);
+    ctx.drawImage(cropState.img, -cropState.img.width / 2, -cropState.img.height / 2);
+    ctx.restore();
+
+    syncCropOverlayBox();
+  }
+
+  function syncCropOverlayBox() {
+    const overlay = document.getElementById('cropOverlayBox');
+    const canvas = document.getElementById('cropSourceCanvas');
+    if (!overlay || !canvas) return;
+    overlay.style.left = (cropState.box.x * 100) + '%';
+    overlay.style.top = (cropState.box.y * 100) + '%';
+    overlay.style.width = (cropState.box.w * 100) + '%';
+    overlay.style.height = (cropState.box.h * 100) + '%';
+  }
+
+  function setupCropInteractions() {
+    const overlay = document.getElementById('cropOverlayBox');
+    const wrapper = document.getElementById('cropCanvasWrapper');
+    if (!overlay || !wrapper) return;
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialBox = { ...cropState.box };
+
+    const onStart = (e) => {
+      isDragging = true;
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX;
+      startY = pt.clientY;
+      initialBox = { ...cropState.box };
+      e.preventDefault();
+    };
+
+    const onMove = (e) => {
+      if (!isDragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const rect = wrapper.getBoundingClientRect();
+      const dx = (pt.clientX - startX) / rect.width;
+      const dy = (pt.clientY - startY) / rect.height;
+
+      cropState.box.x = Math.max(0, Math.min(1 - cropState.box.w, initialBox.x + dx));
+      cropState.box.y = Math.max(0, Math.min(1 - cropState.box.h, initialBox.y + dy));
+      syncCropOverlayBox();
+      e.preventDefault();
+    };
+
+    const onEnd = () => { isDragging = false; };
+
+    overlay.onmousedown = onStart;
+    window.onmousemove = onMove;
+    window.onmouseup = onEnd;
+
+    overlay.ontouchstart = onStart;
+    window.ontouchmove = onMove;
+    window.ontouchend = onEnd;
+  }
+
+  async function confirmScanCropAndMatch() {
+    const srcCanvas = document.getElementById('cropSourceCanvas');
+    if (!srcCanvas) return;
+
+    const cropX = Math.round(cropState.box.x * srcCanvas.width);
+    const cropY = Math.round(cropState.box.y * srcCanvas.height);
+    const cropW = Math.round(cropState.box.w * srcCanvas.width);
+    const cropH = Math.round(cropState.box.h * srcCanvas.height);
+
+    // 智能等比縮小：限制最大長邊為 1000px，既能保留高精度文字細節，又可縮減 80% 資料傳輸量防逾時
+    let targetW = Math.max(10, cropW);
+    let targetH = Math.max(10, cropH);
+    const maxDim = 1000;
+    if (targetW > maxDim || targetH > maxDim) {
+      if (targetW > targetH) {
+        targetH = Math.round((targetH * maxDim) / targetW);
+        targetW = maxDim;
+      } else {
+        targetW = Math.round((targetW * maxDim) / targetH);
+        targetH = maxDim;
+      }
+    }
+
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = targetW;
+    outCanvas.height = targetH;
+    const outCtx = outCanvas.getContext('2d');
+    outCtx.drawImage(srcCanvas, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
+
+    const croppedBase64 = outCanvas.toDataURL('image/jpeg', 0.85);
+    closeScanCropModal();
+
+    if (cropState.targetType === 'bottle') {
+      const ord = pickingOrdersQueue.find(x => x.orderId === cropState.orderId);
+      if (!ord || !ord.items[cropState.itemIdx]) return;
+      const targetItem = ord.items[cropState.itemIdx];
+      const itemKey = `${cropState.orderId}_${targetItem.productId}`;
+
+      if (!pickingItemImagesMap[itemKey]) pickingItemImagesMap[itemKey] = [];
+      pickingItemImagesMap[itemKey].push(croppedBase64);
+
+      targetItem.guideTip = '已完成邊界截圖！正在進行 AI 特徵辨識與外觀檢驗...';
+      renderPickingStationUI();
+      runAiAnalyzeForItem(cropState.orderId, cropState.itemIdx);
+    } else if (cropState.targetType === 'dispatchReceipt') {
+      runDispatchReceiptMatch(cropState.orderId, cropState.outId, croppedBase64);
+    }
+  }
+
+  // 待交寄配送單 AI 即時核驗與匹配引擎
+  async function runDispatchReceiptMatch(orderId, outId, receiptBase64) {
+    const order = orderCache.find(x => x.orderId === orderId);
+    if (!order) return;
+
+    const btnScan = document.getElementById(`btn-scan-receipt-${outId}`);
+    if (btnScan) {
+      btnScan.disabled = true;
+      btnScan.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:16px;"></i>';
+    }
+
+    showToast('小白單/託運單已截圖！AI 正在比對訂單配送資訊...');
+
+    try {
+      const res = await apiCall('analyzeLogisticsReceiptWithGemini', {
+        imageBase64: receiptBase64,
+        targetOrder: {
+          orderId: order.orderId,
+          receiverName: order.receiverName || order.memberName,
+          receiverPhone: order.receiverPhone || '',
+          receiverAddress: order.receiverAddress || ''
+        }
+      });
+
+      if (res && res.status === 'success' && res.data) {
+        const d = res.data;
+        const isMatched = d.isMatched !== false;
+        const trackingSummary = d.summary || `${d.carrier || '7-11交貨便'} (單號: ${d.trackingNo || '已掃描'})`;
+
+        if (isMatched) {
+          showToast(`✅ 單據比對相符！單號：${d.trackingNo || ''}，正在自動完成交寄...`);
+          // 自動填入物流資訊並完成交寄
+          const dispatchPayload = {
+            orderId: orderId,
+            outId: outId,
+            handler: '倉庫交寄同仁',
+            dispatchRecord: `${trackingSummary} [AI核驗通過: 收件人吻合]`,
+            imagesBase64: [receiptBase64]
+          };
+
+          const dispatchRes = await apiCall('completeLogisticsDispatch', dispatchPayload);
+          if (dispatchRes && dispatchRes.status === 'success') {
+            showToast(`🎉 包裹 ${outId} 核驗成功，狀態已轉為「配送」！`);
+            loadLogisticsList(true);
+            loadOrderList(true);
+          }
+        } else {
+          showToast(`⚠️ 單據核驗未吻合：${d.matchReason || '單據資料與收件人不符，請複檢！'}`);
+          // 依然開啟手動檢查表單供同仁確認
+          openLogisticsDispatchForm(orderId, outId);
+          const dispatchFld = document.getElementById('logDispatchRecord');
+          if (dispatchFld) dispatchFld.value = trackingSummary;
+          if (logisticsImageStateArray.length < 10) {
+            logisticsImageStateArray.push(receiptBase64);
+            renderLogisticsImages();
+          }
+        }
+      } else {
+        showToast('單據無法清晰辨識，請手動確認單號');
+        openLogisticsDispatchForm(orderId, outId);
+      }
+    } catch (err) {
+      showToast('單據核驗連線異常，請手動登錄');
+      openLogisticsDispatchForm(orderId, outId);
+    } finally {
+      if (btnScan) {
+        btnScan.disabled = false;
+        btnScan.innerHTML = '<i class="ph ph-camera" style="font-size:16px;"></i>';
+      }
     }
   }
 
@@ -4262,7 +5109,7 @@
     showToast('照片已就位！請點擊 AI 辨識圖示進行核驗');
   }
 
-  // 執行 AI 辨識 (按鈕本體即時跑 % 數，完全零全螢幕轉圈遮罩)
+  // 執行 AI 辨識（樂觀 UI 旗艦版：100% 跑滿即刻 0ms 瞬切狀態，試算表非同步背景靜默寫入）
   async function runAiAnalyzeForItem(orderId, itemIndex) {
     const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     if (!ord || !ord.items[itemIndex]) return;
@@ -4277,7 +5124,6 @@
 
     const latestImgBase64 = imgs[imgs.length - 1];
 
-    // 取得原位按鈕與進度 DOM 元素
     const btnAi = document.getElementById(`btn-ai-${orderId}-${itemIndex}`);
     const progressBox = document.getElementById(`ai-progress-box-${orderId}-${itemIndex}`);
     const statusText = document.getElementById(`ai-status-text-${orderId}-${itemIndex}`);
@@ -4287,17 +5133,16 @@
 
     if (btnAi) {
       btnAi.disabled = true;
-      btnAi.innerHTML = '<span style="font-size:11px; font-family:monospace; font-weight:800; color:var(--accent);">15%</span>';
+      btnAi.innerHTML = '<span style="font-size:11px; font-family:monospace; font-weight:800; color:var(--accent);">20%</span>';
     }
     if (progressBox) progressBox.style.display = 'block';
     if (guideTipEl) guideTipEl.style.display = 'none';
 
-    // 核心微交互：按鈕原地跑 % 數 (15% -> 40% -> 70% -> 90%)
-    let currentPct = 15;
+    let currentPct = 20;
     const progressSteps = [
-      { pct: 35, text: '影像特徵擷取中...' },
-      { pct: 60, text: '標籤品名規格比對中...' },
-      { pct: 85, text: '商品外觀狀態檢驗中...' }
+      { pct: 45, text: '影像特徵擷取中...' },
+      { pct: 70, text: '標籤品名規格比對中...' },
+      { pct: 90, text: '外觀狀態檢驗中...' }
     ];
     let stepIdx = 0;
 
@@ -4310,7 +5155,7 @@
         if (barFill) barFill.style.width = `${currentPct}%`;
         stepIdx++;
       }
-    }, 500);
+    }, 300);
 
     try {
       const payload = {
@@ -4329,14 +5174,18 @@
       const res = await apiCall('matchBottleOrLabelWithGemini', payload);
       clearInterval(progressTimer);
 
-      if (btnAi) btnAi.innerHTML = '<span style="font-size:11px; font-family:monospace; font-weight:800; color:var(--accent);">100%</span>';
-      if (percentText) percentText.innerText = '100%';
-      if (statusText) statusText.innerText = 'AI 解析完成';
-      if (barFill) { barFill.style.width = '100%'; barFill.style.background = 'var(--success)'; }
-
       const matched = (res && res.status === 'success' && res.data && res.data.matched);
       const normal = (res && res.status === 'success' && res.data && res.data.isNormal !== false);
 
+      // 1. 進度條衝上 100%（成功變綠、未吻合變紅）
+      if (percentText) percentText.innerText = '100%';
+      if (statusText) statusText.innerText = (matched && normal) ? '比對吻合，外觀正常' : '比對未吻合';
+      if (barFill) {
+        barFill.style.width = '100%';
+        barFill.style.background = (matched && normal) ? 'var(--success)' : 'var(--danger)';
+      }
+
+      // 2. 立即賦值資料狀態
       targetItem.isMatched = matched;
       targetItem.isNormal = normal;
 
@@ -4345,17 +5194,21 @@
         if (targetItem.pickedQty < targetItem.targetQty) {
           targetItem.pickedQty += 1;
         }
-        targetItem.guideTip = `AI 解析完成：品項規格完全吻合，外觀完好無損！已確認核驗 (${targetItem.pickedQty}/${targetItem.targetQty})。`;
+        targetItem.guideTip = `AI 解析相符：${res.data.identifiedText || ''} 規格吻合，外觀完好！已確認核驗 (${targetItem.pickedQty}/${targetItem.targetQty})。`;
         showToast('AI 解析相符：匹配正確，外觀完好！');
       } else if (matched && !normal) {
-        targetItem.guideTip = `AI 檢驗警示：品項吻合，但發現外觀瑕疵（${res.data.anomalyReason || '微損'}），請複檢。`;
+        targetItem.guideTip = `AI 檢驗警示：品項吻合，但外觀有瑕疵（${res.data.anomalyReason || '異常'}），請複檢。`;
         showToast('外觀瑕疵警示：請複檢商品實物');
       } else {
-        targetItem.guideTip = `AI 辨識未吻合：特徵不符（${res.data ? (res.data.reason || '特徵不符') : '無法判讀'}），請重新拍照對焦或手動確認。`;
-        showToast('特徵未吻合，已收納現場照片存證');
+        targetItem.guideTip = `AI 辨識未吻合：${res.data ? (res.data.reason || '商品不匹配') : '無法判讀'}，請更換商品再試或手動打勾。`;
+        showToast('特徵未吻合，請更換商品再試');
       }
 
-      await apiCall('recordLogisticsPickingVerify', {
+      // 3. 💥【樂觀 UI 決定性關鍵】：0 秒瞬間重繪工作台畫面！標籤紅綠燈秒切！
+      renderPickingStationUI();
+
+      // 4. 【背景靜默非同步寫入】：試算表寫入作業移到背景執行，絕不阻塞前端畫面
+      apiCall('recordLogisticsPickingVerify', {
         orderId: orderId,
         productId: targetItem.productId,
         mallPrdId: targetItem.mallPrdId,
@@ -4364,16 +5217,15 @@
         verifyNote: targetItem.guideTip,
         imagesBase64: imgs,
         handler: '倉庫檢驗同仁'
-      });
+      }).catch(e => console.warn('背景非同步寫入試算表微延遲:', e));
+
     } catch (err) {
       clearInterval(progressTimer);
-      targetItem.guideTip = '辨識連線逾時，照片已存檔，請再次嘗試或手動確認。';
-      showToast('辨識連線逾時，現場照片已存證');
-    } finally {
-      setTimeout(() => {
-        if (btnAi) btnAi.disabled = false;
-        renderPickingStationUI();
-      }, 500);
+      const errMsg = err?.message || err?.toString() || '連線錯誤';
+      console.error("AI 辨識詳細錯誤:", err);
+      targetItem.guideTip = `辨識未完成：${errMsg}（照片已存證，可手動打勾）`;
+      showToast(`辨識未完成：${errMsg}`);
+      renderPickingStationUI();
     }
   }
 
@@ -4415,7 +5267,6 @@
       }))
     };
 
-    // 核心美學：打包按鈕本體原地直接跑 % 數！絕不彈出全螢幕遮罩大轉圈！
     const btnPack = document.getElementById(`btn-pack-${orderId}`);
     if (btnPack) {
       btnPack.disabled = true;
@@ -4456,15 +5307,16 @@
         loadLogisticsList(true);
         loadOrderList(true);
       } else {
-        throw new Error(res && res.data ? res.data.message : '打包失敗');
+        throw new Error(res && res.data ? res.data.message : '打包處理失敗');
       }
     } catch (e) {
       clearInterval(packTimer);
+      console.error('打包詳細錯誤:', e);
       if (btnPack) {
         btnPack.disabled = false;
         btnPack.innerHTML = '<i class="ph ph-package" style="font-size:18px;"></i>';
       }
-      showToast('打包連線失敗，請檢查網路');
+      showToast(`打包未完成：${e.message || '連線逾時，請確認 GAS 是否已部署新版本'}`);
     }
   }
 
