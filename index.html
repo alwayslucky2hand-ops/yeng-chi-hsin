@@ -117,7 +117,56 @@
     .action-btn-primary:disabled { opacity: 0.6; cursor: wait; }
 
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transition: all 0.3s ease; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+   
+  .field-suggest-dropdown {
+    position: absolute;
+    z-index: 9999;
+    background: #FFFFFF;
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(44, 82, 130, 0.18);
+    overflow: hidden;
+    display: none;
+    animation: fadeIn 0.15s ease;
+  }
+  .field-suggest-header {
+    background: #F8FAFC;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .field-suggest-list {
+    max-height: 180px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .field-suggest-item {
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    border-bottom: 1px solid #F1F5F9;
+    line-height: 1.5;
+    transition: all 0.15s ease;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .field-suggest-item:last-child {
+    border-bottom: none;
+  }
+  .field-suggest-item:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -2018,6 +2067,147 @@
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
+
+  
+  
+  
+  const SUGGESTION_MAP = {
+    
+    'invName': { field: 'productName', source: 'inv' },
+    'invCategory': { field: 'category', source: 'inv' },
+    'invType': { field: 'type', source: 'inv' },
+    'invColor': { field: 'color', source: 'inv' },
+    'invSpec': { field: 'spec', source: 'inv' },
+    'invIngredients': { field: 'ingredients', source: 'inv' },
+    'invStatus': { field: 'status', source: 'inv' },
+    'invRecorder': { field: 'recorder', source: 'inv' },
+
+    
+    'mallProductName': { field: 'productName', source: 'both' },
+    'mallCategory': { field: 'category', source: 'both' },
+    'mallType': { field: 'type', source: 'both' },
+    'mallColor': { field: 'color', source: 'both' },
+    'mallSpec': { field: 'spec', source: 'both' },
+    'mallIngredients': { field: 'ingredients', source: 'both' },
+    'mallDesc': { field: 'description', source: 'mall' }
+  };
+
+  function showFieldSuggestions(inputEl) {
+    if (!inputEl || !inputEl.id) return;
+    const config = SUGGESTION_MAP[inputEl.id];
+    if (!config) return;
+
+    const set = new Set();
+    const addFromList = (list, key) => {
+      (list || []).forEach(item => {
+        const v = item[key];
+        if (v !== undefined && v !== null) {
+          const str = String(v).trim();
+          if (str !== '' && str !== '-' && !str.startsWith('http')) {
+            set.add(str);
+          }
+        }
+      });
+    };
+
+    if (config.source === 'inv' || config.source === 'both') {
+      addFromList(inventoryCache, config.field);
+    }
+    if (config.source === 'mall' || config.source === 'both') {
+      addFromList(mallCache, config.field);
+    }
+
+    const allVals = Array.from(set);
+    if (allVals.length === 0) {
+      hideFieldSuggestions();
+      return;
+    }
+
+    const curVal = (inputEl.value || '').toLowerCase().trim();
+    const filtered = curVal
+      ? allVals.filter(v => v.toLowerCase().includes(curVal))
+      : allVals;
+
+    if (filtered.length === 0) {
+      hideFieldSuggestions();
+      return;
+    }
+
+    let dropdown = document.getElementById('fieldSuggestDropdown');
+    if (!dropdown) {
+      dropdown = document.createElement('div');
+      dropdown.id = 'fieldSuggestDropdown';
+      dropdown.className = 'field-suggest-dropdown';
+      document.body.appendChild(dropdown);
+    }
+
+    const parent = inputEl.parentElement;
+    if (parent) {
+      parent.style.position = 'relative';
+      if (dropdown.parentElement !== parent) {
+        parent.appendChild(dropdown);
+      }
+    }
+
+    dropdown.style.top = (inputEl.offsetTop + inputEl.offsetHeight + 4) + 'px';
+    dropdown.style.left = inputEl.offsetLeft + 'px';
+    dropdown.style.width = inputEl.offsetWidth + 'px';
+    dropdown.style.display = 'block';
+
+    const itemsHtml = filtered.map(val => {
+      const safeEscaped = JSON.stringify(val);
+      const safeDisplay = val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<div class="field-suggest-item" onmousedown='selectFieldSuggestion("${inputEl.id}", ${safeEscaped})'>${safeDisplay}</div>`;
+    }).join('');
+
+    dropdown.innerHTML = `
+      <div class="field-suggest-header">
+        <span><i class="ph ph-clock-counter-clockwise"></i> 歷史輸入紀錄 (共 ${filtered.length} 項)</span>
+        <span style="cursor:pointer;" onmousedown="hideFieldSuggestions()"><i class="ph ph-x"></i></span>
+      </div>
+      <div class="field-suggest-list">${itemsHtml}</div>
+    `;
+  }
+
+  window.selectFieldSuggestion = function(inputId, val) {
+    const inputEl = document.getElementById(inputId);
+    if (inputEl) {
+      inputEl.value = val;
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+      inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+      if (inputId === 'mallPrice' && typeof calcVipPrice === 'function') {
+        calcVipPrice();
+      }
+    }
+    hideFieldSuggestions();
+  };
+
+  function hideFieldSuggestions() {
+    const dropdown = document.getElementById('fieldSuggestDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  // 監聽全域焦點、點擊與輸入事件，實現點一下即展開與智慧過濾
+  document.addEventListener('focusin', function(e) {
+    if (e.target && SUGGESTION_MAP[e.target.id]) {
+      showFieldSuggestions(e.target);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('fieldSuggestDropdown');
+    if (e.target && SUGGESTION_MAP[e.target.id]) {
+      showFieldSuggestions(e.target);
+    } else if (dropdown && dropdown.style.display !== 'none' && !dropdown.contains(e.target)) {
+      hideFieldSuggestions();
+    }
+  });
+
+  document.addEventListener('input', function(e) {
+    if (e.target && SUGGESTION_MAP[e.target.id]) {
+      showFieldSuggestions(e.target);
+    }
+  });
 
   function toggleGenericSubSection(secId) {
     const el = document.getElementById(secId);
