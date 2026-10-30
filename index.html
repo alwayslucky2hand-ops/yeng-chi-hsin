@@ -787,10 +787,31 @@
 
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">1. 選擇庫存商品 (系統自動帶入分類與編號)</label>
+              <label class="form-label">1. 選擇庫存商品 (可選既有進貨商品自動帶入，或選自由手填)</label>
               <select id="mallSelectProduct" class="login-input" onchange="autoFillMallData()">
-                <option value="">正在載入實體庫存清單...</option>
+                <option value="">-- 自由手填 (尚未進貨/預先上架) --</option>
               </select>
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">商品名稱 (必填)</label>
+              <input type="text" id="mallProductName" class="login-input" placeholder="請輸入完整繁體中文品名 (例如: 黑鑽蜆錠)">
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">商品類別</label>
+              <input type="text" id="mallCategory" class="login-input" placeholder="例如: 營養保健、臉部保養、身體洗沐">
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">進貨商品編號 [IN] (選填，未進貨請保留「待進貨」)</label>
+              <input type="text" id="mallInProductId" class="login-input" value="待進貨" placeholder="未進貨請保留「待進貨」；後續進貨將自動對位帶入">
             </div>
           </div>
 
@@ -2615,8 +2636,20 @@
     document.getElementById('editMallRowId').value = rowId;
     const item = mallCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
-      document.getElementById('mallSelectProduct').value = item.productId || '';
-      autoFillMallData();
+      
+      if (document.getElementById('mallProductName')) document.getElementById('mallProductName').value = item.productName || '';
+      if (document.getElementById('mallCategory')) document.getElementById('mallCategory').value = item.category || '';
+      if (document.getElementById('mallInProductId')) document.getElementById('mallInProductId').value = item.productId || '待進貨';
+
+      
+      const sel = document.getElementById('mallSelectProduct');
+      if (sel) {
+        if (item.productId && item.productId !== '待進貨' && Array.from(sel.options).some(o => o.value === item.productId)) {
+          sel.value = item.productId;
+        } else {
+          sel.value = '';
+        }
+      }
       const mallIdSelect = document.getElementById('mallPrdId');
       if (mallIdSelect && item.mallPrdId && !Array.from(mallIdSelect.options).some(opt => opt.value === item.mallPrdId)) {
         const newOpt = document.createElement('option');
@@ -2682,6 +2715,10 @@
     const slotId = type === 'inv' ? 'invTopFormSlot' : (type === 'mall' ? 'mallTopFormSlot' : (type === 'mem' ? 'memTopFormSlot' : (type === 'order' ? 'orderTopFormSlot' : 'logisticsTopFormSlot')));
     const form = document.getElementById(formId);
     const slot = document.getElementById(slotId);
+    
+    if (type === 'inv') {
+      generateAutoId();
+    }
     if (type === 'mem') {
       generateMemId();
       fillMemTime('memRegTime');
@@ -2757,6 +2794,8 @@
     const item = inventoryCache.find(x => Number(x._rowId) === Number(rowId));
     if (!item) return;
     openNewForm('inv');
+    
+    generateAutoId();
     document.getElementById('invName').value = item.productName || '';
     document.getElementById('invCategory').value = item.category || '';
     document.getElementById('invType').value = item.type || '';
@@ -2845,7 +2884,10 @@
     const pad = (n) => String(n).padStart(2, '0');
     const d = new Date();
     const safeTime = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-    document.getElementById('invId').value = "IN-" + safeTime;
+    const newInId = "IN-" + safeTime;
+    const invEl = document.getElementById('invId');
+    if (invEl) invEl.value = newInId;
+    return newInId;
   }
 
   
@@ -2888,8 +2930,11 @@
       const res = await apiCall('analyzeImageWithGemini', { imageBase64: currentInvImageBase64 });
       if (res && res.status === 'success' && res.data) {
         const d = res.data;
-        if (d.productId) document.getElementById('invId').value = d.productId;
-        if (!document.getElementById('invId').value) generateAutoId();
+        
+        const curInvId = document.getElementById('invId').value;
+        if (!curInvId || !curInvId.startsWith('IN-')) {
+          generateAutoId();
+        }
         if (d.productName) document.getElementById('invName').value = d.productName;
         if (d.category) document.getElementById('invCategory').value = d.category;
         if (d.type) document.getElementById('invType').value = d.type;
@@ -3211,15 +3256,44 @@
   // ==========================================
   // 商城表單相關互動與儲存功能
   // ==========================================
+  // 自動帶入進貨庫存資訊（支援自由手填切換與事後選取一鍵帶入）
   function autoFillMallData() {
     const pid = document.getElementById('mallSelectProduct').value;
-    if (!pid) return;
+    const inIdEl = document.getElementById('mallInProductId');
+    if (!pid) {
+      // 切換回自由手填模式
+      if (inIdEl && (!inIdEl.value || inIdEl.value.startsWith('IN-'))) {
+        inIdEl.value = '待進貨';
+      }
+      return;
+    }
+
     const item = inventoryCache.find(x => x.productId === pid);
     if (item) {
-      document.getElementById('mallType').value = item.type || '';
-      document.getElementById('mallColor').value = item.color || '';
-      document.getElementById('mallSpec').value = item.spec || '';
-      document.getElementById('mallIngredients').value = item.ingredients || '';
+      if (document.getElementById('mallProductName')) document.getElementById('mallProductName').value = item.productName || '';
+      if (document.getElementById('mallCategory')) document.getElementById('mallCategory').value = item.category || '';
+      if (inIdEl) inIdEl.value = item.productId || '待進貨';
+      if (document.getElementById('mallType')) document.getElementById('mallType').value = item.type || '';
+      if (document.getElementById('mallColor')) document.getElementById('mallColor').value = item.color || '';
+      if (document.getElementById('mallSpec')) document.getElementById('mallSpec').value = item.spec || '';
+      if (document.getElementById('mallIngredients')) document.getElementById('mallIngredients').value = item.ingredients || '';
+
+      // 若已有實體庫存且架上量未填，自動預設填入目前可用存量
+      const shelfQtyEl = document.getElementById('mallShelfQty');
+      if (shelfQtyEl && (!shelfQtyEl.value || shelfQtyEl.value === '0')) {
+        shelfQtyEl.value = item.availableStock || 0;
+      }
+
+      // 自動帶入進貨時的商品照片
+      if (item.imageUrl && (!mallImageStateArray || mallImageStateArray.length === 0)) {
+        const urls = item.imageUrl.split('\n').filter(u => u.trim() !== '');
+        mallImageStateArray = urls.map(url => {
+          let match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+          return (match && match[1]) ? 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w800' : url;
+        });
+        renderMallImages();
+      }
+      showToast(`已成功將進貨品 [${item.productId}] ${item.productName} 資訊帶入！`);
     }
   }
 
@@ -3275,36 +3349,41 @@
     const rowId = document.getElementById('editMallRowId').value;
     const sel = document.getElementById('mallSelectProduct');
     const invItem = inventoryCache.find(x => x.productId === sel.value);
-    const categoryMatch = sel.options[sel.selectedIndex]?.text.match(/\[(.*?)\]/);
-    const nameMatch = sel.options[sel.selectedIndex]?.text.split('] ')[1]?.split(' (')[0];
+
+    // 優先讀取獨立欄位，兼顧自填與下拉帶入
+    const productName = (document.getElementById('mallProductName')?.value || '').trim() || (invItem && invItem.productName) || '';
+    const category = (document.getElementById('mallCategory')?.value || '').trim() || (invItem && invItem.category) || '未分類';
+    const inProductId = (document.getElementById('mallInProductId')?.value || '').trim() || sel.value || '待進貨';
+
     const imagesSnapshot = [...mallImageStateArray];
 
     const payload = {
       _rowId: rowId,
-      productId: sel.value,
-      productName: (invItem && invItem.productName) ? invItem.productName : (nameMatch || ""),
-      category: (invItem && invItem.category) ? invItem.category : (categoryMatch ? categoryMatch[1] : ""),
-      mallPrdId: document.getElementById('mallPrdId').value,
-      type: document.getElementById('mallType').value,
-      color: document.getElementById('mallColor').value,
-      spec: document.getElementById('mallSpec').value,
-      ingredients: document.getElementById('mallIngredients').value,
-      shelfQty: document.getElementById('mallShelfQty').value,
+      productId: inProductId,
+      productName: productName,
+      category: category,
+      mallPrdId: document.getElementById('mallPrdId').value.trim(),
+      type: document.getElementById('mallType').value.trim(),
+      color: document.getElementById('mallColor').value.trim(),
+      spec: document.getElementById('mallSpec').value.trim(),
+      ingredients: document.getElementById('mallIngredients').value.trim(),
+      shelfQty: document.getElementById('mallShelfQty').value || 0,
       visibility: document.getElementById('mallVisibility').value,
       price: document.getElementById('mallPrice').value,
       startDate: document.getElementById('mallStartDate') ? document.getElementById('mallStartDate').value : '',
       endDate: document.getElementById('mallEndDate') ? document.getElementById('mallEndDate').value : '',
       status: document.getElementById('mallStatus').value || '上架中',
-      description: document.getElementById('mallDesc').value,
+      description: document.getElementById('mallDesc').value.trim(),
       imagesBase64: imagesSnapshot
     };
 
-    if (!payload.productId || !payload.mallPrdId || !payload.price) {
-      showToast("請選擇庫存商品、所屬架號與定價！");
+    // 關鍵解鎖：不再強制需要 productId，只要有商品名稱、架號與定價即可上架
+    if (!payload.productName || !payload.mallPrdId || !payload.price) {
+      showToast("商品名稱、所屬架號與定價為必填！");
       return;
     }
 
-    // 樂觀 UI：備份舊快取，立即更新本地快取並關閉表單重繪畫面，無須等待重新載入
+    // 樂觀 UI：備份舊快取並立即更新前端
     const backupCache = JSON.parse(JSON.stringify(mallCache));
     const vipPriceCalc = Math.round(Number(payload.price) * 0.85);
     const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
@@ -3315,9 +3394,9 @@
       if (idx !== -1) {
         mallCache[idx] = {
           ...mallCache[idx],
-          category: payload.category || mallCache[idx].category,
-          productId: payload.productId || mallCache[idx].productId,
-          productName: payload.productName || mallCache[idx].productName,
+          category: payload.category,
+          productId: payload.productId,
+          productName: payload.productName,
           type: payload.type,
           color: payload.color,
           spec: payload.spec,
@@ -3367,7 +3446,7 @@
     closeForm('mall');
     syncMallShelfSelectUI();
     renderMallList();
-    showToast(rowId ? "商城商品已更新（背景同步試算表中...）" : "商品已上架（背景同步試算表中...）");
+    showToast(rowId ? "商城商品已更新（背景同步中...）" : "商品已預先上架（背景同步中...）");
 
     btn.disabled = true;
     try {
@@ -3375,7 +3454,6 @@
       const res = await apiCall(action, payload);
       if (res && res.status === 'success') {
         const resData = res.data || {};
-        // 將後端回傳的真實試算表列號 _rowId 與雲端圖片網址綁回本地快取
         const targetIdx = mallCache.findIndex(x => Number(x._rowId) === Number(tempRowId));
         if (targetIdx !== -1) {
           if (resData._rowId) mallCache[targetIdx]._rowId = Number(resData._rowId);
@@ -3383,7 +3461,7 @@
           if (resData.vipPrice !== undefined) mallCache[targetIdx].vipPrice = resData.vipPrice;
           if (resData.mallLog) mallCache[targetIdx].mallLog = resData.mallLog;
         }
-        showToast(resData.message || "試算表同步完成！");
+        showToast(resData.message || "試算表上架同步完成！");
       } else {
         mallCache = backupCache;
         syncMallShelfSelectUI();
@@ -3403,6 +3481,8 @@
   // ==========================================
   // 分頁 3：會員管理列表載入、渲染、手風琴編輯與樂觀 UI 增刪改
   // ==========================================
+
+
   function getFormattedNowTime(compact = false) {
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
