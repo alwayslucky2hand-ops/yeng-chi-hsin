@@ -3297,17 +3297,23 @@
     }
   }
 
+  // 2. 上架編號：全面強制鎖定 SEL-yyyymmddhhmmss (14碼精確時間戳，杜絕 SHF- 舊版覆蓋)
   function generateMallId() {
-    const ts = new Date().getTime().toString().slice(-6);
-    const newId = "SHF-" + ts;
+    const pad = (n) => String(n).padStart(2, '0');
+    const d = new Date();
+    const safeTime = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    const newId = "SEL-" + safeTime;
     const select = document.getElementById('mallPrdId');
-    if (!Array.from(select.options).some(opt => opt.value === newId)) {
-      const opt = document.createElement('option');
-      opt.value = newId;
-      opt.text = newId + " (新架號)";
-      select.add(opt);
+    if (select) {
+      if (!Array.from(select.options).some(opt => opt.value === newId)) {
+        const opt = document.createElement('option');
+        opt.value = newId;
+        opt.text = newId + " (新架號)";
+        select.add(opt);
+      }
+      select.value = newId;
     }
-    select.value = newId;
+    return newId;
   }
 
   function calcVipPrice() {
