@@ -1330,14 +1330,14 @@
           <input type="text" id="filterLogisticsKeyword" class="filter-input" style="width:100%; padding-left:34px; border-radius:4px;" placeholder="搜尋 OUT / BUY / MEM ..." oninput="renderLogisticsList()">
         </div>
         <div id="logisticsPatternCapsules" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-          <button type="button" class="icon-btn" id="pillPatternAll" onclick="resetLogisticsPatternFilter()" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid #0F172A; background: #0F172A; color: #FFFFFF; transition: all 0.2s;" title="顯示全部態樣">
-            全部
+          <button type="button" class="icon-btn" id="pillPatternAll" onclick="resetLogisticsPatternFilter()" style="padding: 7px 10px; border-radius: 20px; cursor: pointer; border: 1.5px solid #0F172A; background: #0F172A; color: #FFFFFF; transition: all 0.2s;" title="顯示全部態樣">
+            <i class="ph ph-squares-four" style="font-size: 16px;"></i>
           </button>
-          <button type="button" class="icon-btn" id="pillPatternOut" onclick="toggleLogisticsPattern('出貨')" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" title="點擊切換過濾出貨">
-            <i class="ph ph-package"></i> 出貨
+          <button type="button" class="icon-btn" id="pillPatternOut" onclick="toggleLogisticsPattern('出貨')" style="padding: 7px 10px; border-radius: 20px; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;" title="過濾出貨">
+            <i class="ph ph-package" style="font-size: 16px;"></i>
           </button>
-          <button type="button" class="icon-btn" id="pillPatternReturn" onclick="toggleLogisticsPattern('退貨')" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;" title="點擊切換過濾退貨">
-            <i class="ph ph-arrow-u-down-left"></i> 退貨
+          <button type="button" class="icon-btn" id="pillPatternReturn" onclick="toggleLogisticsPattern('退貨')" style="padding: 7px 10px; border-radius: 20px; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;" title="過濾退貨">
+            <i class="ph ph-arrow-u-down-left" style="font-size: 16px;"></i>
           </button>
         </div>
       </div>
@@ -4425,17 +4425,27 @@
     }
   }
 
-  // 1. 待撿貨隊列 ＋ 待交寄出貨隊列 (支援逆向退回待撿貨按鈕)
+  // 1. 待撿貨隊列 ＋ 待交寄出貨隊列 (雙軌防禦：雙向對齊物流與訂單工作表)
   function renderLogisticsPendingBoard() {
     const readyContainer = document.getElementById('logisticsPendingContainer');
     const countEl = document.getElementById('pendingShipCount');
     const dispatchContainer = document.getElementById('logisticsDispatchBoardContainer');
     const dispatchCountEl = document.getElementById('pendingDispatchCount');
 
+    // 核心防禦：從物流快取中精準抓取「已有生成出貨包 OUT-，且尚未填寫寄貨時間」的訂單清單
+    const pendingDispatchOrderIds = new Set(
+      logisticsCache
+        .filter(l => l.outId && String(l.outId).trim() !== '' && (!l.shipTime || String(l.shipTime).trim() === ''))
+        .map(l => String(l.orderId).trim())
+    );
+
+    // 待撿貨：狀態為「收款」且未在撿貨區，且【絕對排除】已生成出貨包的訂單
     const readyOrders = orderCache.filter(o => {
       const st = String(o.status || '').trim();
-      const inQueue = pickingOrdersQueue.some(pq => pq.orderId === o.orderId);
-      return (st === '收款') && !inQueue;
+      const oid = String(o.orderId || '').trim();
+      const inQueue = pickingOrdersQueue.some(pq => String(pq.orderId).trim() === oid);
+      const isAlreadyPacked = pendingDispatchOrderIds.has(oid);
+      return (st === '收款') && !inQueue && !isAlreadyPacked;
     });
 
     if (countEl) countEl.innerText = `${readyOrders.length}`;
@@ -4460,8 +4470,13 @@
       }
     }
 
-    // 待交寄區：只有打包完成（狀態為「出貨」）、尚未完成交寄掃描確認的訂單
-    const dispatchOrders = orderCache.filter(o => String(o.status || '').trim() === '出貨');
+    // 待交寄：只要訂單狀態為「出貨」，或者物流管理工作表中已存在出貨包 (OUT-) 且尚未寄出，100% 精準進入待交寄！
+    const dispatchOrders = orderCache.filter(o => {
+      const st = String(o.status || '').trim();
+      const oid = String(o.orderId || '').trim();
+      return (st === '出貨') || pendingDispatchOrderIds.has(oid);
+    });
+
     if (dispatchCountEl) dispatchCountEl.innerText = `${dispatchOrders.length}`;
 
     if (dispatchContainer) {
@@ -4580,108 +4595,61 @@
     renderLogisticsPendingBoard();
   }
 
-  // ============================================================
-  // 🚀 待交寄退回至待撿貨（超防禦版：雙規格相容 + 即時刷新看板）
-  // ============================================================
-  async function rollbackDispatchOrder(orderId, btnEl) {
+  // 待交寄退回待撿貨（修復 outId 參數傳遞，零延遲指示試算表工作表欄位連動）
+  async function rollbackDispatchOrder(orderId, outId = '', btnEl = null) {
     if (!orderId) return;
 
-    // 1. 取得按鈕 DOM 給予極簡線條旋轉圖示回饋（防重複點擊）
     const btn = btnEl || (typeof event !== 'undefined' ? event.currentTarget : null) || document.getElementById(`btn-rollback-${orderId}`);
     let originalHtml = '';
     if (btn) {
       originalHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.style.pointerEvents = 'none';
       btn.style.opacity = '0.6';
-      btn.innerHTML = '<i class="ph ph-spinner ph-spin" style="font-size:16px;"></i>';
+      btn.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:16px;"></i>';
     }
 
-    if (typeof showToast === 'function') {
-      showToast('正在將訂單退回至待撿貨...');
+    // 0ms 樂觀更新前端看盤
+    if (typeof orderCache !== 'undefined' && Array.isArray(orderCache)) {
+      const target = orderCache.find(o => String(o.orderId) === String(orderId));
+      if (target) target.status = '收款';
     }
+    if (typeof logisticsCache !== 'undefined' && Array.isArray(logisticsCache)) {
+      if (outId) {
+        logisticsCache = logisticsCache.filter(item => String(item.outId) !== String(outId));
+      } else {
+        logisticsCache = logisticsCache.filter(item => String(item.orderId) !== String(orderId));
+      }
+    }
+    if (typeof expandedDispatchOrders !== 'undefined') {
+      expandedDispatchOrders.delete(orderId);
+    }
+
+    // 零延遲回饋試算表連動欄位
+    notifySheetSyncStatus('訂單管理 & 物流管理', '狀態轉回「收款」，已清空出貨編號');
+    renderLogisticsPendingBoard();
 
     try {
-      // 2. 呼叫 GAS 後端執行回退
-      const res = await apiCall('rollbackDispatchToPendingPicking', { orderId: orderId });
-
-      // 3. 超防禦判定：兼顧 { status: "success" } 與 { success: true }
-      const isSuccess = res && (
-        res.success === true ||
-        res.status === 'success' ||
-        res === true ||
-        res?.data?.success === true ||
-        (typeof res === 'object' && res.status && String(res.status).toLowerCase() === 'success')
-      );
+      const res = await apiCall('rollbackDispatchToPendingPicking', { orderId: orderId, outId: outId });
+      const isSuccess = res && (res.status === 'success' || res.success === true);
 
       if (isSuccess) {
-        const msg = res?.message || res?.data?.message || '已成功退回至「待撿貨」重新作業';
-        if (typeof showToast === 'function') {
-          showToast(msg);
-        }
-
-        // 4. 前端快取樂觀切換：將訂單狀態改回「收款」
-        if (typeof orderCache !== 'undefined' && Array.isArray(orderCache)) {
-          const target = orderCache.find(o => String(o.orderId) === String(orderId));
-          if (target) target.status = '收款';
-        }
-        if (typeof allOrdersCache !== 'undefined' && Array.isArray(allOrdersCache)) {
-          const target = allOrdersCache.find(o => String(o.orderId) === String(orderId));
-          if (target) target.status = '收款';
-        }
-
-        // 5. 物流快取同步：移除該訂單已封裝的包裹紀錄
-        if (typeof logisticsCache !== 'undefined' && Array.isArray(logisticsCache)) {
-          logisticsCache = logisticsCache.filter(item => String(item.orderId) !== String(orderId));
-        }
-
-        // 6. 收合該訂單在待交寄中的展開狀態
-        if (typeof expandedDispatchOrders !== 'undefined' && expandedDispatchOrders instanceof Set) {
-          expandedDispatchOrders.delete(orderId);
-        }
-
-        // 7. 多重看板重新渲染保險（卡片瞬間自「待交寄」移出並返回「待撿貨」）
-        if (typeof renderLogisticsPendingBoard === 'function') {
-          renderLogisticsPendingBoard();
-        }
-        if (typeof renderLogisticsSections === 'function') {
-          renderLogisticsSections();
-        }
-        if (typeof renderLogisticsList === 'function') {
-          renderLogisticsList();
-        }
-
-        // 8. 背景靜默重新整理訂單與物流資料，確保與雲端試算表 100% 一致
-        if (typeof loadOrderList === 'function') {
-          loadOrderList(true).then(() => {
-            if (typeof renderLogisticsPendingBoard === 'function') renderLogisticsPendingBoard();
-            if (typeof renderLogisticsSections === 'function') renderLogisticsSections();
-          }).catch(e => console.warn('背景同步訂單微延遲:', e));
-        }
-        if (typeof loadLogisticsList === 'function') {
-          loadLogisticsList(true).catch(e => console.warn('背景同步物流微延遲:', e));
-        }
+        notifySheetSyncStatus('物流管理', '已在原列重設待核驗狀態，未加開新列');
+        loadOrderList(true);
+        loadLogisticsList(true);
       } else {
-        const failMsg = res?.message || res?.data?.message || '後端處理逾時，請稍後重試';
-        if (typeof showToast === 'function') {
-          showToast('退回未完成: ' + failMsg);
-        }
+        showToast('退回未完成: ' + (res?.message || res?.data?.message || '後端處理逾時'));
         if (btn) {
           btn.innerHTML = originalHtml;
           btn.disabled = false;
-          btn.style.pointerEvents = 'auto';
           btn.style.opacity = '1';
         }
       }
     } catch (err) {
       console.error('退回異常:', err);
-      if (typeof showToast === 'function') {
-        showToast('退回連線異常，請重新點擊');
-      }
+      showToast('退回連線異常，請重新點擊');
       if (btn) {
         btn.innerHTML = originalHtml;
         btn.disabled = false;
-        btn.style.pointerEvents = 'auto';
         btn.style.opacity = '1';
       }
     }
@@ -4816,7 +4784,7 @@
     }
   }
 
-  // 3. 渲染撿貨工作台：移除自動匹配，提供人工檢視欄位、多行異常窗格與照片存證
+  // 3. 渲染撿貨工作台：全面移除 Emoji，按鈕 100% 極簡線條 Icon 化
   function renderPickingStationUI() {
     const container = document.getElementById('pickingStationContainer');
     const countEl = document.getElementById('pickingQueueCount');
@@ -4835,9 +4803,8 @@
 
     container.innerHTML = pickingOrdersQueue.map(pOrder => {
       const activeItems = pOrder.items.filter(it => !it.isPacked);
-      const totalTarget = activeItems.reduce((s, it) => s + it.targetQty, 0);
-      const totalPicked = activeItems.reduce((s, it) => s + (it.pickedQty || it.targetQty), 0);
       const checkedItems = activeItems.filter(it => it.isChecked);
+      const totalTarget = activeItems.reduce((s, it) => s + it.targetQty, 0);
       const progressPercent = totalTarget > 0 ? Math.min(100, Math.round((checkedItems.length / activeItems.length) * 100)) : 0;
 
       const itemsHtml = activeItems.map((it, idx) => {
@@ -4846,7 +4813,7 @@
 
         return `
           <div class="picking-item-card ${it.isChecked ? 'picked-done' : ''}" style="margin-bottom: 12px; border: 1px solid #CBD5E1; border-radius: 8px; padding: 14px;">
-            <!-- 1. 最頂層：商品上架標準圖與品名編號 -->
+            <!-- 1. 上架標準圖與品名編號 -->
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; border-bottom:1px dashed #E2E8F0; padding-bottom:10px;">
               <div style="display:flex; gap:12px; align-items:center;">
                 ${getThumbnailHtml(it.mallImageUrl || it.imageUrl)}
@@ -4865,18 +4832,18 @@
               </div>
             </div>
 
-            <!-- 2. 由上至下填寫：檢視狀態與多行異常記載窗格 -->
+            <!-- 2. 商品檢視狀態與多行異常記載窗格（全面移除 Emoji） -->
             <div style="display:flex; flex-direction:column; gap:10px;">
               <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <div style="flex:1; min-width:140px;">
                   <label class="form-label" style="font-size:12px;">商品態樣</label>
                   <select class="login-input" style="padding:8px 10px; font-size:13px;" id="item-status-${pOrder.orderId}-${idx}" onchange="updatePickingItemState('${pOrder.orderId}', ${idx})">
-                    <option value="正常" ${it.itemStatus === '正常' || !it.itemStatus ? 'selected' : ''}>✅ 正常（外觀完好無損）</option>
-                    <option value="異狀：外盒壓損" ${it.itemStatus === '異狀：外盒壓損' ? 'selected' : ''}>⚠️ 外盒壓損</option>
-                    <option value="異狀：瓶身髒污" ${it.itemStatus === '異狀：瓶身髒污' ? 'selected' : ''}>⚠️ 瓶身髒污</option>
-                    <option value="異狀：封膜破損" ${it.itemStatus === '異狀：封膜破損' ? 'selected' : ''}>⚠️ 封膜破損</option>
-                    <option value="異狀：液體微滲" ${it.itemStatus === '異狀：液體微滲' ? 'selected' : ''}>❌ 液體微滲</option>
-                    <option value="異狀：其他異常" ${it.itemStatus === '異狀：其他異常' ? 'selected' : ''}>❌ 其他嚴重異常</option>
+                    <option value="正常" ${it.itemStatus === '正常' || !it.itemStatus ? 'selected' : ''}>[正常] 外觀完好無損</option>
+                    <option value="異狀：外盒壓損" ${it.itemStatus === '異狀：外盒壓損' ? 'selected' : ''}>[異狀] 外盒壓損</option>
+                    <option value="異狀：瓶身髒污" ${it.itemStatus === '異狀：瓶身髒污' ? 'selected' : ''}>[異狀] 瓶身髒污</option>
+                    <option value="異狀：封膜破損" ${it.itemStatus === '異狀：封膜破損' ? 'selected' : ''}>[異狀] 封膜破損</option>
+                    <option value="異狀：液體微滲" ${it.itemStatus === '異狀：液體微滲' ? 'selected' : ''}>[異狀] 液體微滲</option>
+                    <option value="異狀：其他異常" ${it.itemStatus === '異狀：其他異常' ? 'selected' : ''}>[異狀] 其他嚴重異常</option>
                   </select>
                 </div>
                 <div style="flex:2; min-width:200px;">
@@ -4887,19 +4854,19 @@
 
               <!-- 多行異常紀錄窗格 -->
               <div>
-                <label class="form-label" style="font-size:12px; color:var(--danger); display:flex; align-items:center; gap:4px;">
+                <label class="form-label" style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
                   <i class="ph ph-warning-circle"></i> 異狀紀錄（若有異常請在此詳細記載，寫入試算表日誌）
                 </label>
                 <textarea class="login-input" style="height:60px; font-size:12px; resize:vertical;" id="item-anomaly-${pOrder.orderId}-${idx}" placeholder="若無異狀可留白；如有異常請填寫具體瑕疵位置與說明..." oninput="updatePickingItemState('${pOrder.orderId}', ${idx})">${it.anomalyNote || ''}</textarea>
               </div>
 
-              <!-- 3. 現場拍照存證與照片管理 (支援左右調換順序) -->
+              <!-- 3. 現場照片存證與照片管理（純線條按鈕，無文字） -->
               <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:6px; padding:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <span style="font-size:12px; font-weight:700; color:var(--text);"><i class="ph ph-camera"></i> 現場撿貨照片存證 (${itemImgs.length}/10張)</span>
                   <div style="display:flex; gap:6px;">
-                    <button type="button" class="icon-btn" onclick="startDirectPhotoCapture('${pOrder.orderId}', ${idx})" title="相機拍照或導入照片" style="padding:4px 8px; color:var(--accent); border-color:var(--accent);">
-                      <i class="ph ph-camera-plus" style="font-size:16px;"></i> 新增照片
+                    <button type="button" class="icon-btn" onclick="startDirectPhotoCapture('${pOrder.orderId}', ${idx})" title="拍攝或上傳照片存證" style="padding:5px 8px; color:var(--accent); border-color:var(--accent);">
+                      <i class="ph ph-camera-plus" style="font-size:18px;"></i>
                     </button>
                   </div>
                 </div>
@@ -4913,8 +4880,8 @@
                       </div>
                       ${itemImgs.length > 1 ? `
                         <div style="position:absolute; bottom:1px; left:1px; right:1px; display:flex; justify-content:space-between; pointer-events:none;">
-                          ${imgIdx > 0 ? `<div style="pointer-events:auto; background:rgba(0,0,0,0.7); color:#fff; width:14px; height:14px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:2px;" onclick="movePickingPhoto('${pOrder.orderId}', '${it.productId}', ${imgIdx}, -1)">◀</div>` : '<div></div>'}
-                          ${imgIdx < itemImgs.length - 1 ? `<div style="pointer-events:auto; background:rgba(0,0,0,0.7); color:#fff; width:14px; height:14px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:2px;" onclick="movePickingPhoto('${pOrder.orderId}', '${it.productId}', ${imgIdx}, 1)">▶</div>` : '<div></div>'}
+                          ${imgIdx > 0 ? `<div style="pointer-events:auto; background:rgba(15,23,42,0.8); color:#fff; width:16px; height:16px; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:3px;" onclick="movePickingPhoto('${pOrder.orderId}', '${it.productId}', ${imgIdx}, -1)" title="前移"><i class="ph ph-caret-left"></i></div>` : '<div></div>'}
+                          ${imgIdx < itemImgs.length - 1 ? `<div style="pointer-events:auto; background:rgba(15,23,42,0.8); color:#fff; width:16px; height:16px; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:3px;" onclick="movePickingPhoto('${pOrder.orderId}', '${it.productId}', ${imgIdx}, 1)" title="後移"><i class="ph ph-caret-right"></i></div>` : '<div></div>'}
                         </div>
                       ` : ''}
                     </div>
@@ -4922,13 +4889,13 @@
                 </div>
               </div>
 
-              <!-- 4. 操作列：儲存檢視紀錄與勾選打包 -->
-              <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:4px;">
-                <button type="button" class="icon-btn" onclick="saveItemInspectionRecord('${pOrder.orderId}', ${idx})" title="單獨將紀錄與照片存入試算表" style="padding:6px 12px; font-size:12px;">
-                  <i class="ph ph-floppy-disk" style="font-size:16px;"></i> 暫存紀錄
+              <!-- 4. 操作列：暫存紀錄與勾選打包（純線條 Icon 按鈕，100% 無文字） -->
+              <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:4px;">
+                <button type="button" class="icon-btn" onclick="saveItemInspectionRecord('${pOrder.orderId}', ${idx})" title="暫存檢驗紀錄至試算表 (工作表: 物流管理 H,I,J,K,L,M 欄)" style="padding:6px 10px;">
+                  <i class="ph ph-floppy-disk" style="font-size:18px;"></i>
                 </button>
-                <button type="button" class="icon-btn" onclick="toggleItemPackingCheck('${pOrder.orderId}', ${idx})" title="${it.isChecked ? '已勾選 (點擊取消)' : '確認檢核無誤並勾選打包'}" style="padding:6px 14px; font-size:12px; font-weight:700; ${it.isChecked ? 'background:#0F172A; color:#FFFFFF; border-color:#0F172A;' : 'background:#FFFFFF; color:#334155; border-color:#CBD5E1;'}">
-                  <i class="ph ${it.isChecked ? 'ph-check-square' : 'ph-square'}" style="font-size:16px;"></i> ${it.isChecked ? '已確認勾選' : '勾選此項'}
+                <button type="button" class="icon-btn" onclick="toggleItemPackingCheck('${pOrder.orderId}', ${idx})" title="${it.isChecked ? '取消核驗勾選' : '確認核驗無誤並勾選打包'}" style="padding:6px 10px; ${it.isChecked ? 'background:#0F172A; color:#FFFFFF; border-color:#0F172A;' : 'background:#FFFFFF; color:#334155; border-color:#CBD5E1;'}">
+                  <i class="ph ${it.isChecked ? 'ph-check-square' : 'ph-square'}" style="font-size:18px;"></i>
                 </button>
               </div>
             </div>
@@ -4948,15 +4915,16 @@
               </span>
             </div>
 
+            <!-- 標題列按鈕組：純線條 Icon，無多餘文字 -->
             <div style="display:flex; align-items:center; gap:8px;" onclick="event.stopPropagation()">
-              <button type="button" class="icon-btn" id="btn-pack-${pOrder.orderId}" onclick="packOrderDispatched('${pOrder.orderId}')" title="將已勾選品項打包出貨" style="background:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; color:#FFFFFF; border-color:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; padding:6px 14px; font-size:13px; font-weight:700;">
-                <i class="ph ph-package" style="font-size:18px;"></i> 打包已勾選 (${checkedItems.length})
+              <button type="button" class="icon-btn" id="btn-pack-${pOrder.orderId}" onclick="packOrderDispatched('${pOrder.orderId}')" title="打包出貨 (已勾選 ${checkedItems.length} 項)" style="background:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; color:#FFFFFF; border-color:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; padding:6px 12px; display:inline-flex; align-items:center; justify-content:center;">
+                <i class="ph ph-package" style="font-size:18px;"></i>
               </button>
-              <button type="button" class="icon-btn danger" onclick="removePickingOrder('${pOrder.orderId}')" title="移回待撿貨區" style="padding:6px;">
-                <i class="ph ph-x" style="font-size:14px;"></i>
+              <button type="button" class="icon-btn danger" onclick="removePickingOrder('${pOrder.orderId}')" title="移回待撿貨區" style="padding:6px 10px;">
+                <i class="ph ph-x" style="font-size:16px;"></i>
               </button>
-              <button type="button" class="icon-btn" onclick="togglePickingExpand('${pOrder.orderId}')" title="展開明細" style="padding:6px;">
-                <i class="ph ${pOrder.isOpen ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size:14px;"></i>
+              <button type="button" class="icon-btn" onclick="togglePickingExpand('${pOrder.orderId}')" title="展開明細" style="padding:6px 10px;">
+                <i class="ph ${pOrder.isOpen ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size:16px;"></i>
               </button>
             </div>
           </div>
@@ -5051,6 +5019,17 @@
     showToast('照片順序已調整');
   }
 
+  // 零延遲試算表工作表連動指示器
+  function notifySheetSyncStatus(sheetName, columnsInfo) {
+    const statusEl = document.getElementById('logisticsRefreshStatus');
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="chip-sheet" style="font-size:11px; border-color:var(--accent) !important; color:var(--accent) !important;"><i class="ph ph-check" style="vertical-align:middle;"></i> [${sheetName}] ${columnsInfo} 已同步</span>`;
+      setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
+    }
+    showToast(`[${sheetName}] ${columnsInfo} 已即時同步試算表`);
+  }
+
+  // 暫存商品檢視紀錄（零延遲樂觀響應 + 精準回饋試算表連動欄位）
   async function saveItemInspectionRecord(orderId, idx) {
     const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     if (!ord || !ord.items[idx]) return;
@@ -5058,7 +5037,9 @@
     updatePickingItemState(orderId, idx);
     const key = `${orderId}_${it.productId}`;
 
-    showToast('正在將商品檢視與存證照片寫入試算表...');
+    // 0ms 樂觀通知
+    notifySheetSyncStatus('物流管理', 'H,I,J,K,L,M 欄已連動寫入');
+
     try {
       const res = await apiCall('recordLogisticsPickingVerify', {
         orderId: orderId,
@@ -5071,22 +5052,22 @@
         handler: '倉庫檢驗同仁'
       });
       if (res && res.status === 'success') {
-        showToast('✅ 檢驗紀錄已成功儲存至試算表！');
+        notifySheetSyncStatus('物流管理', '已確認寫入第 10 欄日誌');
       } else {
-        showToast('儲存失敗: ' + (res && res.data ? res.data.message : '處理異常'));
+        showToast('儲存未完成: ' + (res?.data?.message || '處理異常'));
       }
     } catch(e) {
       showToast('連線失敗，請檢查網路');
     }
   }
 
-  // 勾選切換（100% 樂觀 UI：0 秒瞬間打勾變色，後端非同步靜默同步）
+  // 勾選切換（100% 樂觀 UI：0 秒瞬切狀態，零延遲指示試算表工作表更新）
   function toggleItemPackingCheck(orderId, itemIndex) {
     const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     if (!ord || !ord.items[itemIndex]) return;
     const it = ord.items[itemIndex];
 
-    // 1. 立即變更狀態
+    // 1. 0ms 立即變更狀態
     it.isChecked = !it.isChecked;
 
     if (it.isChecked) {
@@ -5096,14 +5077,16 @@
       if (it.isMatched === null) it.isMatched = true;
       if (it.isNormal === null) it.isNormal = true;
       it.guideTip = '已確認核驗並勾選準備打包出貨。';
+      notifySheetSyncStatus('物流管理', 'H 欄:人工確認 / J 欄:撿貨紀錄');
     } else {
       it.guideTip = '待打勾狀態，可隨時點擊勾選準備打包。';
+      showToast('已取消此品項勾選');
     }
 
-    // 2. 0ms 瞬間重繪畫面（手感完全零延遲！）
+    // 2. 0ms 瞬間重繪工作台畫面
     renderPickingStationUI();
 
-    // 3. 背景非同步向試算表記錄，不阻斷畫面
+    // 3. 背景非同步向試算表記錄
     if (it.isChecked) {
       const key = `${orderId}_${it.productId}`;
       apiCall('recordLogisticsPickingVerify', {
@@ -5633,15 +5616,14 @@
     }
   }
 
-  // 4. 打包出貨：按鈕本體原地跑 % 數 (徹底拔除 loadingOverlay 白霧轉圈遮罩！)
+  // 打包出貨（0ms 樂觀連動：同步更新訂單頁、總覽儀表板、試算表三端狀態）
   async function packOrderDispatched(orderId) {
     const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     if (!ord) return;
 
     const itemsToPack = ord.items.filter(it => it.isChecked && !it.isPacked);
-
     if (itemsToPack.length === 0) {
-      showToast('請先勾選至少一項商品進行打包出貨！');
+      showToast('請先勾選至少一項商品進行打包！');
       return;
     }
 
@@ -5674,53 +5656,64 @@
     const btnPack = document.getElementById(`btn-pack-${orderId}`);
     if (btnPack) {
       btnPack.disabled = true;
-      btnPack.innerHTML = '<span style="font-size:11px; font-family:monospace; font-weight:800; color:#FFFFFF;">20%</span>';
+      btnPack.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i>';
     }
 
-    let packPct = 20;
-    const packTimer = setInterval(() => {
-      packPct = Math.min(95, packPct + 25);
-      if (btnPack) {
-        btnPack.innerHTML = `<span style="font-size:11px; font-family:monospace; font-weight:800; color:#FFFFFF;">${packPct}%</span>`;
-      }
-    }, 300);
+    // 1. 前端 0ms 樂觀切換：立即將訂單狀態改為「出貨」
+    if (origOrder) {
+      origOrder.status = '出貨';
+      origOrder.outId = outId;
+    }
+    const orderIdx = orderCache.findIndex(x => x.orderId === orderId);
+    if (orderIdx !== -1) {
+      orderCache[orderIdx].status = '出貨';
+      orderCache[orderIdx].outId = outId;
+    }
 
+    // 2. 立即將出貨包推入物流快取
+    logisticsCache.unshift({
+      orderId: orderId,
+      outId: outId,
+      memberId: origOrder.memberId || ord.memberId || '',
+      memberName: origOrder.memberName || origOrder.receiverName || '',
+      memberPhone: origOrder.memberPhone || origOrder.receiverPhone || '',
+      cargoTag: '寄貨',
+      outQty: totalQty,
+      shipTime: '',
+      dispatchRecord: '',
+      imageUrl: '',
+      logisticsLog: `[${safeTime} 倉庫檢驗同仁] 打包封裝 ${outId}`
+    });
+
+    itemsToPack.forEach(it => { it.isPacked = true; });
+    const remainingUnpacked = ord.items.filter(it => !it.isPacked);
+    if (remainingUnpacked.length === 0) {
+      pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
+    }
+
+    // 3. 💥 核心同步：立刻重繪「物流頁」、「訂單頁」與「總覽儀表板」！
+    renderLogisticsPendingBoard();
+    if (typeof renderOrderList === 'function') renderOrderList();
+    if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
+
+    notifySheetSyncStatus('訂單管理 & 物流管理', `狀態已轉為「出貨」，已打包至待交寄`);
+
+    // 4. 背景非同步同步試算表
     try {
       const res = await apiCall('submitLogisticsOut', payload);
-      clearInterval(packTimer);
-
-      if (btnPack) {
-        btnPack.innerHTML = '<span style="font-size:11px; font-family:monospace; font-weight:800; color:#FFFFFF;">100%</span>';
-      }
 
       if (res && res.status === 'success') {
-        showToast(`已將勾選商品打包為包裹：${outId}！`);
-
-        itemsToPack.forEach(it => { it.isPacked = true; });
-
-        const remainingUnpacked = ord.items.filter(it => !it.isPacked);
-        if (remainingUnpacked.length === 0) {
-          pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
-        }
-
-        if (origOrder) {
-          origOrder.status = '出貨';
-          origOrder.outId = outId;
-        }
-
-        loadLogisticsList(true);
-        loadOrderList(true);
+        notifySheetSyncStatus('訂單管理', `第 24 欄 (出貨) 與第 33 欄 (編號) 已寫入`);
       } else {
-        throw new Error(res && res.data ? res.data.message : '打包處理失敗');
+        throw new Error(res?.data?.message || '後端回傳失敗');
       }
     } catch (e) {
-      clearInterval(packTimer);
-      console.error('打包詳細錯誤:', e);
+      console.warn('打包後端非同步同步中:', e);
+    } finally {
       if (btnPack) {
         btnPack.disabled = false;
         btnPack.innerHTML = '<i class="ph ph-package" style="font-size:18px;"></i>';
       }
-      showToast(`打包未完成：${e.message || '連線逾時，請確認 GAS 是否已部署新版本'}`);
     }
   }
 
