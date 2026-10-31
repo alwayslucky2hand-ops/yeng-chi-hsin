@@ -509,10 +509,33 @@
     .login-input, .filter-input, textarea, select {
       white-space: normal !important;
       word-break: break-word !important;
-      overflow-wrap: anywhere !important;
+      overflow-wrap: break-word !important;
       max-width: 100% !important;
     }
+
+     
+     
+     
     @media (max-width: 768px) {
+       
+      body {
+        padding: 12px 8px !important;
+      }
+      .settings-section {
+        padding: 16px 12px !important;
+        border-radius: 8px !important;
+      }
+      .tab-nav {
+        gap: 12px !important;
+        padding: 0 10px !important;
+        margin-bottom: 8px !important;
+      }
+      .tab-btn {
+        font-size: 14px !important;
+        padding: 14px 6px !important;
+      }
+
+       
       .input-row {
         flex-direction: column !important;
         gap: 12px !important;
@@ -522,15 +545,254 @@
         min-width: 100% !important;
         max-width: 100% !important;
       }
+
+       
+      .filter-bar {
+        gap: 8px !important;
+      }
+      .filter-bar > div {
+        width: 100% !important;
+        min-width: 100% !important;
+        flex: 1 1 100% !important;
+      }
+      .filter-input {
+        height: 42px !important;
+        font-size: 13px !important;
+      }
+
+       
+      .inv-card {
+        padding: 14px 12px !important;
+        margin-bottom: 12px !important;
+        border-radius: 8px !important;
+      }
+      .inv-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+      }
+      .inv-header > div:first-child {
+        width: 100% !important;
+      }
+      .inv-header > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        gap: 8px !important;
+        border-top: 1px dashed var(--border-subtle) !important;
+        padding-top: 10px !important;
+        margin-top: 2px !important;
+      }
+      .inv-header .icon-btn {
+        height: 36px !important;
+        padding: 0 12px !important;
+        border-radius: 6px !important;
+      }
       .inv-info {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 6px !important;
+        width: 100% !important;
+      }
+      .id-chip, .chip-sheet {
+        white-space: nowrap !important;
+        max-width: 100% !important;
+      }
+
+       
+      .card-readonly-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+      }
+      .card-readonly-content > div:first-child {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 2px !important;
+      }
+      .card-readonly-content > div:first-child img {
+        width: 54px !important;
+        height: 54px !important;
+        flex-shrink: 0 !important;
+        border-radius: 6px !important;
+      }
+      .card-readonly-content > div:last-child {
+        width: 100% !important;
+        font-size: 13px !important;
+        line-height: 1.75 !important;
+      }
+
+       
+      .mall-shelf-group {
+        padding: 14px 10px !important;
+        margin-bottom: 16px !important;
+        border-radius: 10px !important;
+      }
+      .shelf-header-bar {
+        font-size: 15px !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 10px !important;
+      }
+      .shelf-header-bar > div:first-child span {
+        font-size: 14px !important;
+        word-break: break-all !important;
+      }
+
+       
+      .order-header-flex {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+      }
+      .order-header-flex .inv-info {
+        width: 100% !important;
+      }
+      .order-header-flex .order-text-full {
+        width: 100% !important;
+      }
+      .order-header-flex .order-text-full > span:first-child {
+        display: block !important;
+        margin-bottom: 4px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        white-space: nowrap !important;
+        color: var(--text) !important;
+      }
+      .order-header-right {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-top: 1px dashed var(--border-subtle) !important;
+        padding-top: 10px !important;
+        margin-top: 4px !important;
+      }
+      .order-header-right > div:first-child {
+        flex: 1 !important;
+        max-width: calc(100% - 46px) !important;
+      }
+      .order-header-right select {
+        width: 100% !important;
+        font-size: 13px !important;
+        height: 38px !important;
+      }
+      .order-header-right .icon-btn {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+       
+      .picking-order-card {
+        padding: 8px 0 14px 0 !important;
       }
       .picking-order-header {
         flex-direction: column !important;
-        align-items: flex-start !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 10px 12px !important;
+      }
+      .picking-order-header > div:first-child {
+        width: 100% !important;
+        gap: 6px !important;
+      }
+      .picking-order-header > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: flex-end !important;
         gap: 8px !important;
+        border-top: 1px dashed #E2E8F0 !important;
+        padding-top: 10px !important;
+      }
+      .picking-order-header .icon-btn {
+        height: 36px !important;
+        padding: 0 10px !important;
+      }
+
+       
+      .picking-item-card {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .picking-item-card > div:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        gap: 10px !important;
+      }
+      .picking-item-thumbs {
+        display: flex !important;
+        gap: 8px !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      .picking-item-thumbs img {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 6px !important;
+        flex-shrink: 0 !important;
+      }
+      .picking-item-info {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+      }
+      .picking-item-info .chip-sheet {
+        max-width: 100% !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .picking-item-card > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-top: 1px dashed #E2E8F0 !important;
+        padding-top: 10px !important;
+        margin-top: 2px !important;
+      }
+      .picking-item-card > div:last-child > div:first-child {
+        font-size: 16px !important;
+        font-weight: 800 !important;
+      }
+      .picking-item-card > div:last-child .icon-btn {
+        height: 38px !important;
+        padding: 0 16px !important;
+        border-radius: 6px !important;
+      }
+
+       
+      #dashActiveStatusGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+      }
+      .slip-a4-eighth-card {
+        max-width: 100% !important;
+        aspect-ratio: auto !important;
+        min-height: auto !important;
+        padding: 12px 14px !important;
       }
     }
 
@@ -6958,16 +7220,18 @@
 
         return `
           <div class="picking-item-card ${isDone ? 'picked-done' : ''}" style="margin-bottom: 10px; border: 1.5px solid ${isDone ? 'var(--success)' : '#E2E8F0'}; border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: ${isDone ? '#F0FDF4' : '#FFFFFF'}; transition: all 0.2s ease; flex-wrap: wrap;">
-            <!-- 左側：上架標準圖與品名編號規格 -->
-            <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:220px;">
-              ${getThumbnailHtml(it.mallImageUrl || it.imageUrl)}
-              <div style="display:flex; flex-direction:column; gap:3px;">
-                <div style="font-weight:800; font-size:15px; color:var(--text);">${it.productName}</div>
+            <!-- 左側：上架標準圖與品名編號規格 (結構化容器) -->
+            <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:0;">
+              <div class="picking-item-thumbs" style="display:flex; gap:6px; flex-shrink:0;">
+                ${getThumbnailHtml(it.mallImageUrl || it.imageUrl)}
+              </div>
+              <div class="picking-item-info" style="display:flex; flex-direction:column; gap:3px; flex:1; min-width:0;">
+                <div style="font-weight:800; font-size:15px; color:var(--text); word-break:break-word;">${it.productName}</div>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                   <span class="chip-sheet">架號: ${it.mallPrdId || '-'}</span>
                   <span class="chip-sheet">進貨: ${it.productId || '-'}</span>
                 </div>
-                <div style="font-size:12px; color:var(--text-muted);">
+                <div style="font-size:12px; color:var(--text-muted); word-break:break-word;">
                   規格: ${it.spec || '-'}
                 </div>
               </div>
@@ -6976,7 +7240,7 @@
             <!-- 右側：件數與勾選確認按鈕 -->
             <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
               <div style="font-size:16px; font-weight:800; font-family:monospace; color:var(--accent);">${it.targetQty} 件</div>
-              <button type="button" class="icon-btn" onclick="toggleItemPackingCheck('${pOrder.orderId}', ${idx})" title="${isDone ? '取消完成標記' : '手動確認撿貨'}" style="padding:6px 10px; ${isDone ? 'background:#0F172A; color:#FFFFFF; border-color:#0F172A;' : 'background:#FFFFFF; color:#334155; border-color:#CBD5E1;'}">
+              <button type="button" class="icon-btn" onclick="toggleItemPackingCheck('${pOrder.orderId}', ${idx})" title="${isDone ? '取消完成標記' : '手動確認撿貨'}" style="padding:6px 12px; ${isDone ? 'background:#0F172A; color:#FFFFFF; border-color:#0F172A;' : 'background:#FFFFFF; color:#334155; border-color:#CBD5E1;'}">
                 <i class="ph ${isDone ? 'ph-check-square' : 'ph-square'}" style="font-size:18px;"></i>
               </button>
             </div>
