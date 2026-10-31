@@ -594,16 +594,11 @@
       line-height: normal !important;
       overflow: hidden !important;
     }
-    .input-col {
+    .input-col, .input-row {
       width: 100% !important;
+      max-width: 100% !important;
       min-width: 0 !important;
-      max-width: 100% !important;
       overflow: hidden !important;
-      box-sizing: border-box !important;
-    }
-    .input-row {
-      width: 100% !important;
-      max-width: 100% !important;
       box-sizing: border-box !important;
     }
     #mallAddFormContainer, #addFormContainer, #memAddFormContainer, #orderAddFormContainer, #logisticsAddFormContainer {
@@ -617,7 +612,6 @@
      
      
     @media (max-width: 768px) {
-       
       body {
         padding: 12px 8px !important;
       }
@@ -625,14 +619,10 @@
         padding: 16px 12px !important;
         border-radius: 8px !important;
       }
-
-       
       .input-row {
         flex-direction: column !important;
         gap: 12px !important;
       }
-
-       
       .filter-bar {
         gap: 8px !important;
       }
@@ -645,8 +635,6 @@
         height: 42px !important;
         font-size: 13px !important;
       }
-
-       
       .inv-card {
         padding: 14px 12px !important;
         margin-bottom: 12px !important;
@@ -731,10 +719,6 @@
         margin-bottom: 12px !important;
         padding-bottom: 10px !important;
       }
-      .shelf-header-bar > div:first-child span {
-        font-size: 14px !important;
-        word-break: break-all !important;
-      }
 
        
       .order-header-flex {
@@ -799,10 +783,6 @@
         gap: 10px !important;
         padding: 10px 12px !important;
       }
-      .picking-order-header > div:first-child {
-        width: 100% !important;
-        gap: 6px !important;
-      }
       .picking-order-header > div:last-child {
         width: 100% !important;
         display: flex !important;
@@ -811,11 +791,6 @@
         border-top: 1px dashed #E2E8F0 !important;
         padding-top: 10px !important;
       }
-      .picking-order-header .icon-btn {
-        height: 36px !important;
-        padding: 0 10px !important;
-      }
-
       .picking-item-card {
         flex-direction: column !important;
         align-items: stretch !important;
@@ -854,12 +829,6 @@
         flex-direction: column !important;
         gap: 4px !important;
       }
-      .picking-item-info .chip-sheet {
-        max-width: 100% !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
       .picking-item-card > div:last-child {
         width: 100% !important;
         display: flex !important;
@@ -868,27 +837,6 @@
         border-top: 1px dashed #E2E8F0 !important;
         padding-top: 10px !important;
         margin-top: 2px !important;
-      }
-      .picking-item-card > div:last-child > div:first-child {
-        font-size: 16px !important;
-        font-weight: 800 !important;
-      }
-      .picking-item-card > div:last-child .icon-btn {
-        height: 38px !important;
-        padding: 0 16px !important;
-        border-radius: 6px !important;
-      }
-
-       
-      #dashActiveStatusGrid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 6px !important;
-      }
-      .slip-a4-eighth-card {
-        max-width: 100% !important;
-        aspect-ratio: auto !important;
-        min-height: auto !important;
-        padding: 12px 14px !important;
       }
     }
 
@@ -2626,7 +2574,7 @@
 </div>
 
 <script>
-  const GAS_WEB_URL = "https://script.google.com/macros/s/AKfycbzjj5jgqiyt7qk5WET8B4Dwo_CL4m9PnRRdtGrJKQMDJC8NGgsWg4QJ6l-5egCRYqbT/exec";
+  const GAS_WEB_URL = "https://script.google.com/macros/s/AKfycbwMIIHng3Un9fdRjGn6Ty9dMJ2ngSW7BCpsllTdrm2yvnZHRj9I60jBhTWDoCZyNoHu/exec";
   const GAS_API_URL = GAS_WEB_URL;
 
   let currentInvImageBase64 = ""; 
@@ -5226,9 +5174,8 @@
     const kw = kwElement ? kwElement.value.toLowerCase() : '';
 
     // =========================================================================
-    // 💥 嚴格同一人驗證鐵律（同姓名 且 同電話）：
-    // 若該人已有「有效經銷商」，前端僅顯示經銷商卡片，自動排除其會員卡片！
-    // 若同姓名不同電話、或同電話不同姓名，一律判定為不同人，正常各自呈現！
+    // 嚴格同一人驗證鐵律（同姓名 且 同電話）：
+    // 若該人已有「有效經銷商」，前端僅顯示經銷商卡片，自動排除其會員卡片
     // =========================================================================
     const activeDistPersonKeys = new Set();
     memberCache.forEach(item => {
@@ -5248,7 +5195,6 @@
       if (!isDist) {
         const name = String(item.memberName || '').trim();
         const phone = normalizeMemberPhone(item.phone);
-        // 唯有姓名且電話「兩者皆完全相同」，且已有有效經銷商，才予以過濾隱藏
         if (name && phone && activeDistPersonKeys.has(`${name}__${phone}`)) {
           return false;
         }
@@ -5280,34 +5226,22 @@
       const isActive = (String(item.status || '有效').trim() !== '失效');
 
       // 1. 膠囊標籤樣式分流：經銷會員(琉璃紫) / VIP(橙金) / 一般(冰藍)
-      let badgeBg, badgeColor, badgeBorder, badgeIcon, circleBorder, circleBg, circleColor, circleIcon;
+      let badgeBg, badgeColor, badgeBorder, badgeIcon;
       if (isDist) {
         badgeBg = 'rgba(124, 58, 237, 0.08)';
         badgeColor = '#7C3AED';
         badgeBorder = '#DDD6FE';
         badgeIcon = '<i class="ph ph-handshake" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
-        circleBorder = '#A78BFA';
-        circleBg = '#F5F3FF';
-        circleColor = '#7C3AED';
-        circleIcon = 'ph-handshake';
       } else if (isVip) {
         badgeBg = 'rgba(245, 158, 11, 0.10)';
         badgeColor = 'var(--warning)';
         badgeBorder = '#FDE68A';
         badgeIcon = '<i class="ph ph-crown" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
-        circleBorder = 'var(--warning)';
-        circleBg = '#FFFBEB';
-        circleColor = 'var(--warning)';
-        circleIcon = 'ph-crown';
       } else {
         badgeBg = 'var(--accent-soft)';
         badgeColor = 'var(--accent)';
         badgeBorder = 'var(--border)';
         badgeIcon = '<i class="ph ph-user" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
-        circleBorder = 'var(--border)';
-        circleBg = 'var(--bg)';
-        circleColor = 'var(--accent)';
-        circleIcon = 'ph-user';
       }
 
       // 2. 有效 / 失效極簡線條膠囊標籤
@@ -5315,7 +5249,12 @@
         ? `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`
         : `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
 
-      // 3. 極致呼吸感：單行化對稱資訊渲染器 (每項獨立一行，嚴禁並排擁擠)
+      // 3. 容錯讀取真實試算表欄位，杜絕出現「-」缺漏
+      const bday = item.birthday || item.birth || '-';
+      const distExp = item.distExpiry || item.distExp || item.vipExpiry || '-';
+      const vipExp = item.vipExpiry || item.vipExp || '-';
+
+      // 4. 單行化極致呼吸感渲染器：每項資訊獨立一行，嚴禁擠壓並排
       const renderDetailRow = (icon, label, value, highlightColor = '') => `
         <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; line-height:1.6; padding:4px 0; border-bottom:1px dashed #F1F5F9;">
           <span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
@@ -5334,8 +5273,8 @@
           renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '經銷申請', item.registerTime),
-          renderDetailRow('ph-calendar-check', '有效到期', item.distExpiry, isActive ? '#7C3AED' : 'var(--danger)'),
-          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+          renderDetailRow('ph-calendar-check', '有效到期', distExp, isActive ? '#7C3AED' : 'var(--danger)'),
+          renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       } else if (isVip) {
         timeDetailsHtml = [
@@ -5344,8 +5283,8 @@
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
           renderDetailRow('ph-sparkle', '晉升 VIP', item.vipTime),
-          renderDetailRow('ph-calendar-check', '有效到期', item.vipExpiry, isActive ? 'var(--warning)' : 'var(--danger)'),
-          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+          renderDetailRow('ph-calendar-check', '有效到期', vipExp, isActive ? 'var(--warning)' : 'var(--danger)'),
+          renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       } else {
         timeDetailsHtml = [
@@ -5353,14 +5292,14 @@
           renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
-          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+          renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       }
 
       return `
         <div class="inv-card" id="mem-card-${item._rowId}" onclick="toggleMemEdit(${item._rowId})">
           <div class="inv-header">
-            <!-- 1. 頂部：身份標籤 + 姓名 + 會員編號 (大字醒目、滿版展開) -->
+            <!-- 1. 頂部：身份標籤 + 姓名 + 會員編號 (大字滿版展示) -->
             <div class="inv-info">
               <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; padding:2px 9px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center; font-weight:700;">
@@ -5371,18 +5310,12 @@
               </div>
             </div>
 
-            <!-- 2. 中間操作列：左側 (大頭貼LOGO + 有效標籤) ＋ 右側 (操作按鈕群) -->
+            <!-- 2. 中間操作列：左側 (僅留有效/失效標籤，已移除人頭ICON) ＋ 右側 (僅留刪除與展開，已移除複製) -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border-subtle); padding-top:8px; margin-top:2px;" onclick="event.stopPropagation()">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid ${circleBorder}; background: ${circleBg}; color: ${circleColor}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <i class="ph ${circleIcon}" style="font-size: 16px;"></i>
-                </div>
+              <div style="display:flex; align-items:center;">
                 ${statusBadgeHtml}
               </div>
               <div style="display:flex; gap:6px; align-items:center;">
-                <button type="button" class="icon-btn" onclick="copyMemItem(${item._rowId})" title="複製新增會員" style="padding:6px 8px;">
-                  <i class="ph ph-copy" style="font-size: 18px;"></i>
-                </button>
                 <span id="mem-del-zone-${item._rowId}">
                   <button type="button" class="icon-btn danger" onclick="askInlineDeleteMember(${item._rowId})" title="刪除會員" style="padding:6px 8px;">
                     <i class="ph ph-trash" style="font-size: 18px;"></i>
@@ -5395,7 +5328,7 @@
             </div>
           </div>
 
-          <!-- 3. 下方詳細資訊區：100% 滿版，極致呼吸感，每樣資訊完整獨立一行 -->
+          <!-- 3. 下方詳細資訊區：100% 滿版橫幅，極致呼吸感，每樣資訊完整獨立一行 -->
           <div class="card-readonly-content" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-subtle); display:flex; flex-direction:column; gap:2px; width:100%;">
             ${timeDetailsHtml}
           </div>
