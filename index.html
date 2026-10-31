@@ -580,16 +580,37 @@
       box-sizing: border-box !important;
       max-width: 100% !important;
     }
-    input[type="date"], input[type="text"], input[type="number"], input[type="email"] {
+     
+    input[type="date"], input[type="date"].login-input {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      padding: 10px 12px !important;
+      margin: 0 !important;
+      line-height: normal !important;
+      overflow: hidden !important;
+    }
+    .input-col {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+    .input-row {
       width: 100% !important;
       max-width: 100% !important;
       box-sizing: border-box !important;
     }
-    input[type="date"] {
-      min-height: 42px !important;
-      padding: 8px 12px !important;
-      line-height: normal !important;
+    #mallAddFormContainer, #addFormContainer, #memAddFormContainer, #orderAddFormContainer, #logisticsAddFormContainer {
       box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
     }
 
      
@@ -609,11 +630,6 @@
       .input-row {
         flex-direction: column !important;
         gap: 12px !important;
-      }
-      .input-col {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
       }
 
        
@@ -644,19 +660,9 @@
       .inv-header > div:first-child {
         width: 100% !important;
       }
-      .inv-header > div:last-child {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
-        gap: 8px !important;
-        border-top: 1px dashed var(--border-subtle) !important;
-        padding-top: 10px !important;
-        margin-top: 2px !important;
-      }
       .inv-header .icon-btn {
         height: 36px !important;
-        padding: 0 12px !important;
+        padding: 0 10px !important;
         border-radius: 6px !important;
       }
       .inv-info {
@@ -668,35 +674,6 @@
       .id-chip, .chip-sheet {
         white-space: nowrap !important;
         max-width: 100% !important;
-      }
-
-       
-      #memberListContainer .card-readonly-content {
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 14px !important;
-        margin-top: 12px !important;
-        padding-top: 12px !important;
-      }
-      #memberListContainer .card-readonly-content > div:first-child {
-        width: 46px !important;
-        min-width: 46px !important;
-        max-width: 46px !important;
-        height: 46px !important;
-        min-height: 46px !important;
-        max-height: 46px !important;
-        border-radius: 50% !important;
-        flex-shrink: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-      }
-      #memberListContainer .card-readonly-content > div:last-child {
-        flex: 1 !important;
-        min-width: 0 !important;
-        width: auto !important;
-        font-size: 13px !important;
-        line-height: 1.7 !important;
       }
 
        
@@ -729,6 +706,17 @@
         width: 100% !important;
         font-size: 13px !important;
         line-height: 1.75 !important;
+      }
+
+       
+      #memberListContainer .card-readonly-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0 !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+        padding-top: 10px !important;
       }
 
        
@@ -828,7 +816,6 @@
         padding: 0 10px !important;
       }
 
-       
       .picking-item-card {
         flex-direction: column !important;
         align-items: stretch !important;
@@ -5328,65 +5315,89 @@
         ? `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`
         : `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
 
-      // 3. 嚴格排他呈現：經銷商僅顯示申請日與到期日，絕不出現會員註冊/晉升
+      // 3. 極致呼吸感：單行化對稱資訊渲染器 (每項獨立一行，嚴禁並排擁擠)
+      const renderDetailRow = (icon, label, value, highlightColor = '') => `
+        <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; line-height:1.6; padding:4px 0; border-bottom:1px dashed #F1F5F9;">
+          <span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+            <i class="ph ${icon}" style="font-size:15px; color:var(--accent);"></i> ${label}
+          </span>
+          <span style="font-weight:600; color:${highlightColor || 'var(--text)'}; font-family:inherit; text-align:right; word-break:break-all; max-width:65%;">
+            ${value || '-'}
+          </span>
+        </div>
+      `;
+
       let timeDetailsHtml = '';
       if (isDist) {
-        timeDetailsHtml = `
-          <i class="ph ph-calendar-plus" style="vertical-align: middle;"></i> 經銷申請：${item.registerTime || '-'} &nbsp;|&nbsp; 
-          <i class="ph ph-calendar-check" style="vertical-align: middle;"></i> 到期日：<strong style="color:${isActive ? '#7C3AED' : 'var(--danger)'};">${item.distExpiry || '-'}</strong> &nbsp;|&nbsp; 
-          <i class="ph ph-cake" style="vertical-align: middle;"></i> 生日：${item.birthday || '-'}
-        `;
+        timeDetailsHtml = [
+          renderDetailRow('ph-phone', '聯絡電話', item.phone),
+          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
+          renderDetailRow('ph-calendar-plus', '經銷申請', item.registerTime),
+          renderDetailRow('ph-calendar-check', '有效到期', item.distExpiry, isActive ? '#7C3AED' : 'var(--danger)'),
+          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+        ].join('');
       } else if (isVip) {
-        timeDetailsHtml = `
-          <i class="ph ph-calendar-plus" style="vertical-align: middle;"></i> 註冊時間：${item.registerTime || '-'} &nbsp;|&nbsp; 
-          <i class="ph ph-sparkle" style="vertical-align: middle;"></i> 晉升VIP：${item.vipTime || '-'} &nbsp;|&nbsp; 
-          <i class="ph ph-calendar-check" style="vertical-align: middle;"></i> 到期日：<strong style="color:${isActive ? 'var(--warning)' : 'var(--danger)'};">${item.vipExpiry || '-'}</strong> &nbsp;|&nbsp; 
-          <i class="ph ph-cake" style="vertical-align: middle;"></i> 生日：${item.birthday || '-'}
-        `;
+        timeDetailsHtml = [
+          renderDetailRow('ph-phone', '聯絡電話', item.phone),
+          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
+          renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
+          renderDetailRow('ph-sparkle', '晉升 VIP', item.vipTime),
+          renderDetailRow('ph-calendar-check', '有效到期', item.vipExpiry, isActive ? 'var(--warning)' : 'var(--danger)'),
+          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+        ].join('');
       } else {
-        timeDetailsHtml = `
-          <i class="ph ph-calendar-plus" style="vertical-align: middle;"></i> 註冊時間：${item.registerTime || '-'} &nbsp;|&nbsp; 
-          <i class="ph ph-cake" style="vertical-align: middle;"></i> 生日：${item.birthday || '-'}
-        `;
+        timeDetailsHtml = [
+          renderDetailRow('ph-phone', '聯絡電話', item.phone),
+          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
+          renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
+          renderDetailRow('ph-cake', '生日資訊', item.birthday)
+        ].join('');
       }
 
       return `
         <div class="inv-card" id="mem-card-${item._rowId}" onclick="toggleMemEdit(${item._rowId})">
           <div class="inv-header">
+            <!-- 1. 頂部：身份標籤 + 姓名 + 會員編號 (大字醒目、滿版展開) -->
             <div class="inv-info">
               <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; padding:2px 9px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center;">
+                <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; padding:2px 9px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center; font-weight:700;">
                   ${badgeIcon}${memberType}
                 </span>
-                <span>${item.memberName || '未命名會員'}</span>
-                <span class="id-chip" style="font-size:11px;">${item.memberId || '-'}</span>
-                ${statusBadgeHtml}
+                <span style="font-weight:800; font-size:16px; color:var(--text); letter-spacing:0.5px;">${item.memberName || '未命名會員'}</span>
+                <span class="id-chip" style="font-size:11px;"><i class="ph ph-identification-card"></i> ${item.memberId || '-'}</span>
               </div>
             </div>
-            <div style="display:flex; gap:6px; align-items:center;" onclick="event.stopPropagation()">
-              <button type="button" class="icon-btn" onclick="copyMemItem(${item._rowId})" title="複製新增會員" style="padding:6px 8px;">
-                <i class="ph ph-copy" style="font-size: 18px;"></i>
-              </button>
-              <span id="mem-del-zone-${item._rowId}">
-                <button type="button" class="icon-btn danger" onclick="askInlineDeleteMember(${item._rowId})" title="刪除會員" style="padding:6px 8px;">
-                  <i class="ph ph-trash" style="font-size: 18px;"></i>
+
+            <!-- 2. 中間操作列：左側 (大頭貼LOGO + 有效標籤) ＋ 右側 (操作按鈕群) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border-subtle); padding-top:8px; margin-top:2px;" onclick="event.stopPropagation()">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid ${circleBorder}; background: ${circleBg}; color: ${circleColor}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <i class="ph ${circleIcon}" style="font-size: 16px;"></i>
+                </div>
+                ${statusBadgeHtml}
+              </div>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button type="button" class="icon-btn" onclick="copyMemItem(${item._rowId})" title="複製新增會員" style="padding:6px 8px;">
+                  <i class="ph ph-copy" style="font-size: 18px;"></i>
                 </button>
-              </span>
-              <button type="button" class="icon-btn" onclick="toggleMemEdit(${item._rowId})" title="展開或收合" style="padding:6px 8px;">
-                <i class="ph ph-caret-down" id="icon-mem-${item._rowId}" style="font-size: 18px;"></i>
-              </button>
+                <span id="mem-del-zone-${item._rowId}">
+                  <button type="button" class="icon-btn danger" onclick="askInlineDeleteMember(${item._rowId})" title="刪除會員" style="padding:6px 8px;">
+                    <i class="ph ph-trash" style="font-size: 18px;"></i>
+                  </button>
+                </span>
+                <button type="button" class="icon-btn" onclick="toggleMemEdit(${item._rowId})" title="展開或收合" style="padding:6px 8px;">
+                  <i class="ph ph-caret-down" id="icon-mem-${item._rowId}" style="font-size: 18px;"></i>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="card-readonly-content" style="display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-subtle); align-items: center;">
-            <div style="width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid ${circleBorder}; background: ${circleBg}; color: ${circleColor}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <i class="ph ${circleIcon}" style="font-size: 22px;"></i>
-            </div>
-            <div style="font-size:13px; color:var(--text-muted); line-height:1.7; flex-grow: 1; word-break: break-word;">
-              <i class="ph ph-phone" style="vertical-align: middle;"></i> 電話：${item.phone || '-'} &nbsp;|&nbsp; 
-              <i class="ph ph-share-network" style="vertical-align: middle;"></i> 推薦人編號：${item.lineId || '無'} &nbsp;|&nbsp; 
-              <i class="ph ph-envelope-simple" style="vertical-align: middle;"></i> Email：${item.email || '-'} <br>
-              ${timeDetailsHtml}
-            </div>
+
+          <!-- 3. 下方詳細資訊區：100% 滿版，極致呼吸感，每樣資訊完整獨立一行 -->
+          <div class="card-readonly-content" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-subtle); display:flex; flex-direction:column; gap:2px; width:100%;">
+            ${timeDetailsHtml}
           </div>
           <div id="form-slot-mem-${item._rowId}"></div>
         </div>
