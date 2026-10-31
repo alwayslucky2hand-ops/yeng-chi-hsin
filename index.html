@@ -2582,12 +2582,17 @@
     renderDashboardOrderList(activeOrders);
   }
 
+  
+  let dashCurrentPage = 1;
+  const DASH_PAGE_SIZE = 10;
+
   function selectDashboardStatusFilter(statusName) {
     if (dashSelectedStatus === statusName) {
       dashSelectedStatus = '';
     } else {
       dashSelectedStatus = statusName;
     }
+    dashCurrentPage = 1; 
     computeAndRenderDashboard();
   }
 
@@ -2598,7 +2603,6 @@
     const kwInput = document.getElementById('dashKeywordInput');
     const kw = kwInput ? kwInput.value.toLowerCase().trim() : '';
 
-    
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     if (!baseOrders) {
@@ -2633,21 +2637,33 @@
       return true;
     });
 
-    if (countEl) countEl.innerText = filtered.length;
+    const totalRecords = filtered.length;
+    const totalPages = Math.ceil(totalRecords / DASH_PAGE_SIZE) || 1;
+
+    
+    if (dashCurrentPage > totalPages) dashCurrentPage = totalPages;
+    if (dashCurrentPage < 1) dashCurrentPage = 1;
+
+    if (countEl) {
+      countEl.innerHTML = `${totalRecords} 筆 <span style="font-weight:normal; font-size:11px; color:var(--text-muted);">(第 ${dashCurrentPage} / ${totalPages} 頁)</span>`;
+    }
     if (!listContainer) return;
 
-    if (filtered.length === 0) {
-      listContainer.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">無符合條件的訂單紀錄</div>';
+    if (totalRecords === 0) {
+      listContainer.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:12px;">無符合條件的訂單紀錄</div>';
       return;
     }
 
-    listContainer.innerHTML = filtered.map(o => {
+    
+    const startIndex = (dashCurrentPage - 1) * DASH_PAGE_SIZE;
+    const pageOrders = filtered.slice(startIndex, startIndex + DASH_PAGE_SIZE);
+
+    const cardsHtml = pageOrders.map(o => {
       const curStatus = o.status || '選購';
       const orderDateStr = o.orderTime ? o.orderTime.split(' ')[0] : '-';
       const custName = o.receiverName || o.memberName || '訪客';
       const custPhone = o.receiverPhone || o.memberPhone || '-';
 
-      
       const itemsHtml = (o.items || []).map(it => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #E2E8F0; font-size:12px;">
           <div style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">
@@ -2685,7 +2701,52 @@
           </div>
         </div>
       `;
-    }).join('<div style="height: 10px;"></div>');
+    }).join('<div style="width:100%; border-top:1.5px dashed #CBD5E1; margin:14px 0;"></div>'); // 🌟 每一筆訂單中間皆有淺淡優雅虛線分隔
+
+    
+    let paginationHtml = '';
+    if (totalPages > 1) {
+      let pageBtns = '';
+      for (let p = 1; p <= totalPages; p++) {
+        const isCurrent = p === dashCurrentPage;
+        pageBtns += `
+          <button type="button" class="icon-btn" onclick="changeDashboardPage(${p})" style="width:32px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; font-size:12px; font-family:monospace; font-weight:700; ${isCurrent ? 'background:#0F172A; color:#FFFFFF; border-color:#0F172A; box-shadow:0 1px 3px rgba(0,0,0,0.12);' : 'background:#FFFFFF; color:#475569; border-color:#CBD5E1;'}">
+            ${p}
+          </button>
+        `;
+      }
+
+      paginationHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:14px; border-top:1px dashed #E2E8F0; flex-wrap:wrap; gap:10px;">
+          <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+            顯示第 ${startIndex + 1} ~ ${Math.min(startIndex + DASH_PAGE_SIZE, totalRecords)} 筆 / 共 ${totalRecords} 筆
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="icon-btn" onclick="changeDashboardPage(${dashCurrentPage - 1})" ${dashCurrentPage <= 1 ? 'disabled style="opacity:0.35; cursor:not-allowed;"' : 'style="cursor:pointer;"'} title="上一頁">
+              <i class="ph ph-caret-left" style="font-size:16px;"></i>
+            </button>
+            <div style="display:flex; gap:4px; align-items:center;">
+              ${pageBtns}
+            </div>
+            <button type="button" class="icon-btn" onclick="changeDashboardPage(${dashCurrentPage + 1})" ${dashCurrentPage >= totalPages ? 'disabled style="opacity:0.35; cursor:not-allowed;"' : 'style="cursor:pointer;"'} title="下一頁">
+              <i class="ph ph-caret-right" style="font-size:16px;"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    listContainer.innerHTML = cardsHtml + paginationHtml;
+  }
+
+  
+  function changeDashboardPage(newPage) {
+    dashCurrentPage = newPage;
+    renderDashboardOrderList();
+    const section = document.getElementById('dashOrderListContainer');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
   
 
@@ -2696,7 +2757,7 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // ==========================================
+  
   
   
   const SUGGESTION_MAP = {
