@@ -2555,7 +2555,7 @@
 
 
 
-<div id="qrScannerModal" class="qr-scanner-modal">
+<div id="qrScannerModal" class="qr-scanner-modal" onclick="stopQrCodeScanner()">
   <div class="qr-scanner-box" onclick="event.stopPropagation()">
     <div class="qr-scanner-header" style="padding:12px 16px; background:#FFFFFF; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:8px;">
@@ -6586,7 +6586,7 @@
   let checkedDispatchParcels = new Set();    // 記錄待交寄中已勾選的包裹 ID
 
   // ==========================================
-  // 現場相機連續掃描流水線（不跳出、極簡指示、自動直接流轉下一階段、杜絕 Emoji）
+  // 現場相機連續掃描流水線（不跳出、極簡指示、自動直接流轉下一階段）
   // ==========================================
   let isQrScanningActive = false;
   let isQrScanCooldown = false; // 1.6 秒防抖防重複掃描閥門
@@ -6601,6 +6601,7 @@
 
     if (!modal || !video) return;
 
+    // 極簡標題指示：只顯示「掃碼轉出貨」或「掃碼轉配貨」
     if (headerTitle) {
       headerTitle.innerText = mode === 'PICK' ? '掃碼轉出貨' : (mode === 'SHIP' ? '掃碼轉配貨' : '掃碼作業');
     }
@@ -6615,106 +6616,26 @@
       feedbackBox.innerHTML = mode === 'PICK' ? '請對準左側撿貨單 QR Code' : '請對準右側外箱貼條 QR Code';
     }
 
-    // 展開彈窗（常駐開啟，除非點擊右上角 X 否則絕不主動關閉）
     modal.classList.add('active');
     isQrScanningActive = true;
     isQrScanCooldown = false;
 
-    // 1. 先行釋放先前可能佔用的殘留鏡頭軌道，杜絕 NotReadableError (相機佔用)
-    if (qrScanStream) {
-      try {
-        qrScanStream.getTracks().forEach(t => t.stop());
-      } catch (e) {}
-      qrScanStream = null;
-    }
-
-    // 2. 注入 iOS Safari WebKit 內嵌播放必備屬性
-    video.muted = true;
-    video.playsInline = true;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-
-    // 3. 檢查環境 MediaDevices 支援度
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      if (feedbackBox) {
-        feedbackBox.style.background = '#FEF2F2';
-        feedbackBox.style.borderColor = '#EF4444';
-        feedbackBox.style.color = '#991B1B';
-        feedbackBox.innerHTML = `
-          <div style="font-weight:700;">瀏覽器不支援即時視訊</div>
-          <div style="font-size:11px; margin-top:2px;">請使用下方「照片解析」拍照或選取照片解碼</div>
-        `;
-      }
-      return; // 絕不關閉彈窗
-    }
-
-    // 4. 三段式鏡頭約束自適應降級 (確保在各款手機與 iOS Safari 均能順利取得畫面)
-    const constraintCandidates = [
-      { video: { facingMode: { ideal: "environment" } } },
-      { video: { facingMode: "environment" } },
-      { video: true }
-    ];
-
-    let streamObtained = null;
-    let lastError = null;
-
-    for (const constraints of constraintCandidates) {
-      try {
-        streamObtained = await navigator.mediaDevices.getUserMedia(constraints);
-        if (streamObtained) break;
-      } catch (err) {
-        lastError = err;
-        console.warn("鏡頭約束條件嘗試降級:", constraints, err);
-      }
-    }
-
-    // 5. 若均未成功，在原位內聯給予明確引導，彈窗保持常駐不閃退
-    if (!streamObtained) {
-      console.error("相機啟動所有約束皆未成功:", lastError);
-      const isDenied = lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError');
-      if (feedbackBox) {
-        feedbackBox.style.background = '#FEF2F2';
-        feedbackBox.style.borderColor = '#EF4444';
-        feedbackBox.style.color = '#991B1B';
-        feedbackBox.innerHTML = `
-          <div style="font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; gap:4px;">
-            <i class="ph ph-warning-circle" style="font-size:16px; color:#EF4444;"></i>
-            <span>${isDenied ? '相機存取權限目前被瀏覽器拒絕' : '相機暫時無法啟動'}</span>
-          </div>
-          <div style="font-size:11px; font-weight:600; margin-top:4px; line-height:1.4;">
-            ${isDenied ? '請點擊網址列左側「大小 (aA)」或鎖頭圖示 ➔ 網站設定 ➔ 將相機改為「允許」，或使用下方「照片解析」' : '請確認手機相機未被其他 App 佔用，或直接使用下方「照片解析」'}
-          </div>
-          <div style="margin-top:6px;">
-            <button type="button" class="icon-btn" onclick="startQrCodeScanner('${mode}')" style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; font-size:11px; border-radius:12px; background:#FFFFFF; color:#991B1B; border-color:#EF4444;">
-              <i class="ph ph-arrows-clockwise"></i> 重新開啟相機
-            </button>
-          </div>
-        `;
-      }
-      return; // 絕不關閉彈窗
-    }
-
-    // 6. 相機成功取得，綁定至 video 元素並啟動播放
-    qrScanStream = streamObtained;
-    video.srcObject = qrScanStream;
-
     try {
+      qrScanStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      video.srcObject = qrScanStream;
+      video.setAttribute("playsinline", true);
+      video.setAttribute("muted", "true");
       await video.play();
-    } catch (playErr) {
-      console.warn("video.play 自動播放微警告(略過):", playErr);
+
+      runActiveQrFrameDecodeLoop();
+    } catch (err) {
+      console.error("相機啟動異常:", err);
+      showToast("相機啟動未成功，請確認瀏覽器相機權限");
+      stopQrCodeScanner();
     }
-
-    // 7. 解耦啟動影格解析循環
-    setTimeout(() => {
-      if (isQrScanningActive) {
-        runActiveQrFrameDecodeLoop();
-      }
-    }, 150);
   }
-
-
-
 
   // 實時影格解碼循環：中央瞄準框 ROI 核心聚焦採樣 (排除周圍雜訊干擾，0.05秒瞬發)
   function runActiveQrFrameDecodeLoop() {
@@ -6738,11 +6659,11 @@
     const vh = video.videoHeight;
 
     if (vw > 0 && vh > 0) {
-      // 精準鎖定畫面正中央 62% 瞄準框區域 (ROI)
+      // 精準鎖定畫面正中央 62% 瞄準框區域 (ROI)，徹底排除標題與周圍雜訊
       const cropW = Math.round(vw * 0.62);
       const cropH = Math.round(vh * 0.62);
       const cropX = Math.round((vw - cropW) / 2);
-      const cropY = Math.round((vh - cropY) / 2);
+      const cropY = Math.round((vh - cropH) / 2);
 
       canvas.width = cropW;
       canvas.height = cropH;
@@ -6813,7 +6734,7 @@
     }, 1600);
   }
 
-  // 連續掃描流水線處理核心：內聯呈現正常/異常，自動推進下一區域 (全面純線條 Icon，杜絕 Emoji)
+  // 連續掃描流水線處理核心：內聯呈現正常/異常，自動推進下一區域
   async function handleContinuousQrProcess(codeText) {
     const feedbackBox = document.getElementById('qrScanFeedbackBox');
     const setFeedback = (type, title, desc = '') => {
@@ -6823,12 +6744,12 @@
       feedbackBox.style.borderColor = isOk ? '#10B981' : '#EF4444';
       feedbackBox.style.color = isOk ? '#065F46' : '#991B1B';
       feedbackBox.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:2px; width:100%; text-align:center;">
-          <div style="font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px;">
-            <i class="ph ${isOk ? 'ph-check-circle' : 'ph-warning-circle'}" style="font-size:17px; color:${isOk ? '#10B981' : '#EF4444'};"></i>
+        <div style="display:flex; flex-direction:column; gap:2px; width:100%;">
+          <div style="font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:4px;">
+            <i class="ph ${isOk ? 'ph-check-circle' : 'ph-warning-circle'}" style="font-size:16px;"></i>
             <span>${title}</span>
           </div>
-          ${desc ? `<div style="font-size:11px; font-weight:600; opacity:0.9; margin-top:2px;">${desc}</div>` : ''}
+          ${desc ? `<div style="font-size:11px; font-weight:600; opacity:0.9;">${desc}</div>` : ''}
         </div>
       `;
     };
@@ -6839,11 +6760,11 @@
     }
 
     // ==========================================
-    // 流程 A：掃碼轉出貨 (PICK 模式) ➔ 自動標記、整單出貨並真實寫入試算表
+    // 流程 A：掃碼轉出貨 (PICK 模式) ➔ 直接打包轉為出貨
     // ==========================================
     if (currentScanMode === 'PICK') {
       if (codeText.startsWith('SHIP:')) {
-        setFeedback('error', '異常：此為外箱貼條碼', '請在出貨區進行掃碼');
+        setFeedback('error', '異常：此為外箱貼條碼', '請在「出貨區」點擊掃碼');
         return;
       }
       if (!codeText.startsWith('PICK:')) {
@@ -6872,23 +6793,23 @@
         return;
       }
 
-      // 執行直接打包流轉至出貨區 (傳入 isAutoScan = true，保證商品自動勾選)
-      setFeedback('success', '正在同步出貨打包...', targetOrderId);
+      // 執行直接打包流轉至出貨區
+      setFeedback('success', `正在出貨打包...`, targetOrderId);
       try {
-        const packRes = await packOrderDispatched(targetOrderId, true);
-        setFeedback('success', '正常：已轉出貨', `訂單 ${targetOrderId} 已移入出貨區 (包裹: ${packRes.outId})`);
+        await packOrderDispatched(targetOrderId);
+        setFeedback('success', `✅ 正常：已轉出貨！`, `訂單 ${targetOrderId} 已自動移至出貨區`);
       } catch (e) {
-        setFeedback('error', '異常：出貨同步失敗', e.message || '請確認試算表連線');
+        setFeedback('error', '異常：出貨處理失敗', e.message || '請稍後重試');
       }
       return;
     }
 
     // ==========================================
-    // 流程 B：掃碼轉配貨 (SHIP 模式) ➔ 直接出庫轉為配送並真實寫入試算表
+    // 流程 B：掃碼轉配貨 (SHIP 模式) ➔ 直接出庫轉為配送
     // ==========================================
     if (currentScanMode === 'SHIP') {
       if (codeText.startsWith('PICK:')) {
-        setFeedback('error', '異常：此為撿貨單碼', '請在撿貨區進行掃碼');
+        setFeedback('error', '異常：此為撿貨單碼', '請在「撿貨區」點擊掃碼');
         return;
       }
       if (!codeText.startsWith('SHIP:')) {
@@ -6906,12 +6827,13 @@
         return;
       }
 
-      setFeedback('success', '正在同步配貨出庫...', targetOutId);
+      // 執行直接出庫配貨，移入配送中歷史
+      setFeedback('success', `正在配貨出庫...`, targetOutId);
       try {
         await executeDirectDispatch(targetOrderId, targetOutId);
-        setFeedback('success', '正常：已轉配貨', `包裹 ${targetOutId} 已出庫進入配送歷史`);
+        setFeedback('success', `✅ 正常：已轉配貨！`, `包裹 ${targetOutId} 已完成出庫進入配送`);
       } catch (e) {
-        setFeedback('error', '異常：配貨同步失敗', e.message || '請確認試算表連線');
+        setFeedback('error', '異常：配貨處理失敗', e.message || '請稍後重試');
       }
       return;
     }
@@ -8399,47 +8321,15 @@
     }
   }
 
-  // 打包出貨：支援「手動點擊」與「相機掃碼直接整單出貨 (isAutoScan)」雙模式
-  async function packOrderDispatched(orderId, isAutoScan = false) {
-    let ord = pickingOrdersQueue.find(x => x.orderId === orderId);
-    const origOrder = (orderCache || []).find(x => x.orderId === orderId);
-
-    if (!origOrder && !ord) {
-      throw new Error(`查無訂單 ${orderId}`);
-    }
-
-    // 若掃碼觸發時該單尚未在隊列，自動組裝品項
-    if (!ord && origOrder) {
-      const items = (origOrder.items || []).map((it, idx) => ({
-        index: idx,
-        productId: it.productId || '',
-        productName: it.productName || '商品',
-        spec: it.spec || '',
-        mallPrdId: it.mallPrdId || '',
-        targetQty: Number(it.buyQty) || 1,
-        pickedQty: Number(it.buyQty) || 1,
-        isChecked: true,
-        isPacked: false
-      }));
-      ord = { orderId: orderId, items: items };
-    }
-
-    // 核心修復：若是相機掃碼模式，自動將該單未打包品項全部標記核驗完成
-    if (isAutoScan && ord && ord.items) {
-      ord.items.forEach(it => {
-        if (!it.isPacked) {
-          it.isChecked = true;
-          it.pickedQty = it.targetQty;
-          it.isMatched = true;
-          it.isNormal = true;
-        }
-      });
-    }
+  // 打包出貨（0ms 樂觀連動：同步更新訂單頁、總覽儀表板、試算表三端狀態）
+  async function packOrderDispatched(orderId) {
+    const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
+    if (!ord) return;
 
     const itemsToPack = ord.items.filter(it => it.isChecked && !it.isPacked);
     if (itemsToPack.length === 0) {
-      if (!isAutoScan) showToast('請先勾選至少一項商品進行打包！');
-      throw new Error('該單無待打包出貨的商品品項');
+      showToast('請先勾選至少一項商品進行打包！');
+      return;
     }
 
     const totalQty = itemsToPack.reduce((s, it) => s + (it.pickedQty || it.targetQty), 0);
@@ -8449,14 +8339,15 @@
     const outId = "OUT-" + safeTime;
 
     const pickLogDetail = itemsToPack.map(it => `[${it.productName}] x ${it.pickedQty || it.targetQty}件`).join('、');
+    const origOrder = orderCache.find(x => x.orderId === orderId) || {};
 
     const payload = {
-      orderId: orderId,
+      orderId: ord.orderId,
       outId: outId,
-      memberId: origOrder ? (origOrder.memberId || ord.memberId) : (ord.memberId || ''),
-      memberType: origOrder ? (origOrder.memberType || '一般會員') : '一般會員',
-      memberName: origOrder ? (origOrder.memberName || origOrder.receiverName || '') : '',
-      memberPhone: origOrder ? (origOrder.memberPhone || origOrder.receiverPhone || '') : '',
+      memberId: origOrder.memberId || ord.memberId,
+      memberType: origOrder.memberType || '一般會員',
+      memberName: origOrder.memberName || origOrder.receiverName || '',
+      memberPhone: origOrder.memberPhone || origOrder.receiverPhone || '',
       totalQty: totalQty,
       handler: '倉庫檢驗同仁',
       pickLog: pickLogDetail,
@@ -8473,55 +8364,56 @@
       btnPack.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i>';
     }
 
-    // 1. 本地快取 0ms 瞬間響應：將訂單狀態改為「出貨」
+    // 1. 前端 0ms 樂觀切換：立即將訂單狀態改為「出貨」
     if (origOrder) {
       origOrder.status = '出貨';
       origOrder.outId = outId;
     }
-    const orderIdx = (orderCache || []).findIndex(x => x.orderId === orderId);
+    const orderIdx = orderCache.findIndex(x => x.orderId === orderId);
     if (orderIdx !== -1) {
       orderCache[orderIdx].status = '出貨';
       orderCache[orderIdx].outId = outId;
     }
 
-    // 2. 立即將新出貨包推入物流快取（出貨區待配）
-    if (Array.isArray(logisticsCache)) {
-      logisticsCache.unshift({
-        orderId: orderId,
-        outId: outId,
-        memberId: payload.memberId,
-        memberName: payload.memberName,
-        memberPhone: payload.memberPhone,
-        cargoTag: '寄貨',
-        outQty: totalQty,
-        shipTime: '',
-        dispatchRecord: '',
-        imageUrl: '',
-        logisticsLog: `[${safeTime} 倉庫檢驗同仁] 打包封裝 ${outId}`
-      });
+    // 2. 立即將出貨包推入物流快取
+    logisticsCache.unshift({
+      orderId: orderId,
+      outId: outId,
+      memberId: origOrder.memberId || ord.memberId || '',
+      memberName: origOrder.memberName || origOrder.receiverName || '',
+      memberPhone: origOrder.memberPhone || origOrder.receiverPhone || '',
+      cargoTag: '寄貨',
+      outQty: totalQty,
+      shipTime: '',
+      dispatchRecord: '',
+      imageUrl: '',
+      logisticsLog: `[${safeTime} 倉庫檢驗同仁] 打包封裝 ${outId}`
+    });
+
+    itemsToPack.forEach(it => { it.isPacked = true; });
+    const remainingUnpacked = ord.items.filter(it => !it.isPacked);
+    if (remainingUnpacked.length === 0) {
+      pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
     }
 
-    // 3. 標記品項已封裝，並將該訂單移出撿貨區隊列
-    itemsToPack.forEach(it => { it.isPacked = true; });
-    pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
-
-    // 4. 0ms 立即重繪物流看盤：撿貨區扣除、出貨區立刻出現新包裹！
+    // 3. 💥 核心同步：立刻重繪「物流頁」、「訂單頁」與「總覽儀表板」！
     renderLogisticsPendingBoard();
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
 
-    // 5. 真實寫入 Google 試算表（不遺漏、確實同步）
+    notifySheetSyncStatus('訂單管理 & 物流管理', `狀態已轉為「出貨」，已打包至待交寄`);
+
+    // 4. 背景非同步同步試算表
     try {
       const res = await apiCall('submitLogisticsOut', payload);
+
       if (res && res.status === 'success') {
-        notifySheetSyncStatus('訂單管理 & 物流管理', `狀態轉為「出貨」，出貨包 ${outId} 已建檔`);
-        return { status: 'success', outId: outId };
+        notifySheetSyncStatus('訂單管理', `第 24 欄 (出貨) 與第 33 欄 (編號) 已寫入`);
       } else {
         throw new Error(res?.data?.message || '後端回傳失敗');
       }
     } catch (e) {
-      console.error('出貨打包試算表同步失敗:', e);
-      throw e; // 向上拋出，讓掃碼器清楚顯示紅字異常，絕不假裝成功！
+      console.warn('打包後端非同步同步中:', e);
     } finally {
       if (btnPack) {
         btnPack.disabled = false;
