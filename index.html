@@ -6706,9 +6706,20 @@
     }
   }
 
-  // 成功掃碼反饋：不跳出畫面、瞄準框亮綠光霓虹、內聯呈現流轉狀態、自動等待下一筆
+  // ==========================================
+  // 連續掃描流水線：智慧防抖記憶鎖 ＋ 0ms 極速樂觀回饋
+  // ==========================================
+  let lastProcessedQrCode = null;
+  let lastProcessedQrTime = 0;
+
   function triggerQrDecodeSuccess(rawCode) {
     if (isQrScanCooldown) return;
+    
+    // 智慧防抖：若鏡頭仍停留在 4 秒內剛成功掃描的同一張單上，維持成功綠燈，絕不重複報錯！
+    if (rawCode === lastProcessedQrCode && (Date.now() - lastProcessedQrTime < 4000)) {
+      return;
+    }
+
     isQrScanCooldown = true;
 
     const reticle = document.querySelector('.qr-reticle');
@@ -6720,10 +6731,10 @@
       try { navigator.vibrate([60, 40, 60]); } catch(e) {}
     }
 
-    // 執行業務流轉（直接推進下一階段，絕對不關閉相機！）
+    // 0ms 瞬間執行樂觀業務流轉（不卡頓、不關相機）
     handleContinuousQrProcess(rawCode);
 
-    // 1.6 秒後瞄準框恢復藍色，允許繼續連續掃碼
+    // 1.2 秒後瞄準框恢復藍色，允許繼續連續掃描下一張單
     setTimeout(() => {
       if (reticle) {
         reticle.style.borderColor = '#38BDF8';
@@ -6731,11 +6742,11 @@
       }
       isQrScanCooldown = false;
       if (isQrScanningActive) runActiveQrFrameDecodeLoop();
-    }, 1600);
+    }, 1200);
   }
 
   // 連續掃描流水線處理核心：內聯呈現正常/異常，自動推進下一區域
-  async function handleContinuousQrProcess(codeText) {
+  function handleContinuousQrProcess(codeText) {
     const feedbackBox = document.getElementById('qrScanFeedbackBox');
     const setFeedback = (type, title, desc = '') => {
       if (!feedbackBox) return;
@@ -6760,11 +6771,11 @@
     }
 
     // ==========================================
-    // 流程 A：掃碼轉出貨 (PICK 模式) ➔ 直接打包轉為出貨
+    // 流程 A：掃碼轉出貨 (PICK 模式) ➔ 0ms 樂觀直接轉出貨
     // ==========================================
     if (currentScanMode === 'PICK') {
       if (codeText.startsWith('SHIP:')) {
-        setFeedback('error', '異常：此為外箱貼條碼', '請在「出貨區」點擊掃碼');
+        setFeedback('error', '異常：此為外箱貼條碼', '請至「出貨區」點擊掃碼');
         return;
       }
       if (!codeText.startsWith('PICK:')) {
@@ -6780,7 +6791,8 @@
         return;
       }
 
-      if (ord.status === '出貨') {
+      // 檢查是否真的早已出貨/配送（排除剛處理完的同一張單）
+      if (ord.status === '出貨' && targetOrderId !== lastProcessedQrCode?.replace('PICK:', '').trim()) {
         setFeedback('error', '異常：該單已完成出貨', `訂單 ${targetOrderId} 已在出貨區待配`);
         return;
       }
@@ -6788,28 +6800,23 @@
         setFeedback('error', '異常：該單已完成配貨', `訂單 ${targetOrderId} 已進入配送`);
         return;
       }
-      if (ord.status !== '收款') {
-        setFeedback('error', '異常：非待撿貨狀態', `當前狀態為「${ord.status}」`);
-        return;
-      }
 
-      // 執行直接打包流轉至出貨區
-      setFeedback('success', `正在出貨打包...`, targetOrderId);
-      try {
-        await packOrderDispatched(targetOrderId);
-        setFeedback('success', `✅ 正常：已轉出貨！`, `訂單 ${targetOrderId} 已自動移至出貨區`);
-      } catch (e) {
-        setFeedback('error', '異常：出貨處理失敗', e.message || '請稍後重試');
-      }
+      // 記錄本次成功處理的 QR Code 與時間戳記
+      lastProcessedQrCode = codeText;
+      lastProcessedQrTime = Date.now();
+
+      // 💥 0ms 樂觀推進：立刻更新 UI 與快取，並立即亮起綠框！
+      packOrderDispatched(targetOrderId);
+      setFeedback('success', `✅ 正常：已轉出貨！`, `訂單 ${targetOrderId} 已自動移至出貨區`);
       return;
     }
 
     // ==========================================
-    // 流程 B：掃碼轉配貨 (SHIP 模式) ➔ 直接出庫轉為配送
+    // 流程 B：掃碼轉配貨 (SHIP 模式) ➔ 0ms 樂觀直接轉配送
     // ==========================================
     if (currentScanMode === 'SHIP') {
       if (codeText.startsWith('PICK:')) {
-        setFeedback('error', '異常：此為撿貨單碼', '請在「撿貨區」點擊掃碼');
+        setFeedback('error', '異常：此為撿貨單碼', '請至「撿貨區」點擊掃碼');
         return;
       }
       if (!codeText.startsWith('SHIP:')) {
@@ -6822,19 +6829,18 @@
       const targetOutId = parts[2] || '';
 
       const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
-      if (ord && ord.status === '配送') {
+      if (ord && ord.status === '配送' && codeText !== lastProcessedQrCode) {
         setFeedback('error', '異常：該包裹已完成配貨', `包裹 ${targetOutId} 已在配送中`);
         return;
       }
 
-      // 執行直接出庫配貨，移入配送中歷史
-      setFeedback('success', `正在配貨出庫...`, targetOutId);
-      try {
-        await executeDirectDispatch(targetOrderId, targetOutId);
-        setFeedback('success', `✅ 正常：已轉配貨！`, `包裹 ${targetOutId} 已完成出庫進入配送`);
-      } catch (e) {
-        setFeedback('error', '異常：配貨處理失敗', e.message || '請稍後重試');
-      }
+      // 記錄本次成功處理的 QR Code 與時間戳記
+      lastProcessedQrCode = codeText;
+      lastProcessedQrTime = Date.now();
+
+      // 💥 0ms 樂觀推進：立刻更新 UI 與快取，並立即亮起綠框！
+      executeDirectDispatch(targetOrderId, targetOutId);
+      setFeedback('success', `✅ 正常：已轉配貨！`, `包裹 ${targetOutId} 已完成出庫進入配送`);
       return;
     }
 
@@ -7036,20 +7042,21 @@
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
 
-    // 3. 背景非同步寫入 Google 試算表（不阻塞掃碼畫面）
-    try {
-      const payload = {
-        orderId: orderId,
-        outId: outId || (targetOrder ? targetOrder.outId : ''),
-        handler: '倉庫交寄同仁',
-        dispatchRecord: '外箱掃碼核對完成，出庫配送',
-        imagesBase64: []
-      };
-      await apiCall('completeLogisticsDispatch', payload);
-      showToast(`🎉 訂單 ${orderId} 已完成出庫，正式進入「配送」狀態！`);
-    } catch (err) {
-      console.warn("配送狀態背景同步微延遲:", err);
-    }
+    // 3. 💥 真・樂觀 UI：背景靜默同步試算表（不使用 await 阻塞掃碼流水線！）
+    const payload = {
+      orderId: orderId,
+      outId: outId || (targetOrder ? targetOrder.outId : ''),
+      handler: '倉庫交寄同仁',
+      dispatchRecord: '外箱掃碼核對完成，出庫配送',
+      imagesBase64: []
+    };
+    apiCall('completeLogisticsDispatch', payload).then(res => {
+      if (res && res.status === 'success') {
+        showToast(`🎉 訂單 ${orderId} 試算表已同步完成配送！`);
+      }
+    }).catch(err => {
+      console.warn("配送狀態背景同步延遲:", err);
+    });
   }
 
   function openDispatchVerifyModal(orderId, outId) {
@@ -8346,8 +8353,8 @@
     }
   }
 
-  // 打包出貨（0ms 樂觀連動：同步更新訂單頁、總覽儀表板、試算表三端狀態）
-  async function packOrderDispatched(orderId) {
+  // 打包出貨（0ms 樂觀連動：同步更新訂單頁、總覽儀表板、試算表背景非同步更新）
+  function packOrderDispatched(orderId) {
     let ord = pickingOrdersQueue.find(x => x.orderId === orderId);
     const origOrder = (orderCache || []).find(x => x.orderId === orderId) || {};
 
@@ -8382,7 +8389,7 @@
     if (!ord) return;
 
     let itemsToPack = ord.items.filter(it => it.isChecked && !it.isPacked);
-    // 💥 核心修復：掃碼時同仁未手動在螢幕打勾，自動將未打包品項全數視為檢驗完成並納入打包！
+    // 核心修復：掃碼時同仁未手動在螢幕打勾，自動將未打包品項全數納入打包！
     if (itemsToPack.length === 0) {
       itemsToPack = ord.items.filter(it => !it.isPacked);
       itemsToPack.forEach(it => {
@@ -8401,7 +8408,6 @@
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const safeTime = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-    // 沿用貼紙預覽已生成的 outId，確保 QR Code 與系統出貨單號 100% 吻合
     const outId = origOrder.outId || ord.outId || ("OUT-" + safeTime);
     origOrder.outId = outId;
     ord.outId = outId;
@@ -8463,29 +8469,26 @@
       pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
     }
 
-    // 3. 💥 核心同步：立刻重繪「物流看盤」、「待交寄」、「訂單列表」與「總覽儀表板」！
+    // 3. 核心同步：立刻重繪「物流看盤」、「待交寄」、「訂單列表」與「總覽儀表板」！
     renderLogisticsPendingBoard();
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
 
     notifySheetSyncStatus('訂單管理 & 物流管理', `狀態已轉為「出貨」，已打包至待交寄`);
 
-    // 4. 背景非同步同步試算表
-    try {
-      const res = await apiCall('submitLogisticsOut', payload);
+    // 4. 真・樂觀 UI：背景靜默非同步寫入試算表（不使用 await 阻塞掃碼流水線！）
+    apiCall('submitLogisticsOut', payload).then(res => {
       if (res && res.status === 'success') {
-        notifySheetSyncStatus('訂單管理', `第 24 欄 (出貨) 與第 33 欄 (編號) 已寫入`);
-      } else {
-        throw new Error(res?.data?.message || '後端回傳失敗');
+        notifySheetSyncStatus('訂單管理', `第 24 欄 (出貨) 與第 33 欄 (編號) 試算表已寫入`);
       }
-    } catch (e) {
-      console.warn('打包後端非同步同步中:', e);
-    } finally {
+    }).catch(e => {
+      console.warn('打包後端非同步同步延遲:', e);
+    }).finally(() => {
       if (btnPack) {
         btnPack.disabled = false;
         btnPack.innerHTML = '<i class="ph ph-package" style="font-size:18px;"></i>';
       }
-    }
+    });
   }
 
   // 5. 開啟掃描寄貨畫面
