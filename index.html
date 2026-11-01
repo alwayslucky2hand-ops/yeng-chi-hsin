@@ -6995,14 +6995,38 @@
     if (targetOrder) targetOrder.status = '配送';
 
     const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
-    const targetLog = (logisticsCache || []).find(l => (outId && l.outId === outId) || l.orderId === orderId);
-    if (targetLog) {
-      targetLog.shipTime = nowStr;
-      targetLog.dispatchRecord = '外箱掃碼完成，出庫進入配送';
+    // 💥 遍歷更新該訂單在物流快取中的所有包裹項目，杜絕多品項殘留
+    let matchedCount = 0;
+    (logisticsCache || []).forEach(l => {
+      if ((outId && l.outId === outId) || l.orderId === orderId) {
+        l.shipTime = nowStr;
+        l.dispatchRecord = '外箱掃碼完成，出庫進入配送';
+        if (outId && !l.outId) l.outId = outId;
+        matchedCount++;
+      }
+    });
+
+    if (matchedCount === 0) {
+      logisticsCache.unshift({
+        orderId: orderId,
+        outId: outId || (targetOrder ? targetOrder.outId : ('OUT-' + Date.now())),
+        memberId: targetOrder ? targetOrder.memberId : '',
+        memberName: targetOrder ? (targetOrder.receiverName || targetOrder.memberName) : '',
+        memberPhone: targetOrder ? (targetOrder.receiverPhone || targetOrder.memberPhone) : '',
+        cargoTag: '寄貨',
+        outQty: targetOrder ? targetOrder.totalQty : 1,
+        shipTime: nowStr,
+        dispatchRecord: '外箱掃碼完成，出庫進入配送',
+        imageUrl: '',
+        logisticsLog: `[${nowStr} 倉庫交寄同仁] 掃碼出庫配貨`
+      });
     }
 
     if (typeof expandedDispatchOrders !== 'undefined') {
       expandedDispatchOrders.delete(orderId);
+    }
+    if (typeof checkedDispatchParcels !== 'undefined' && outId) {
+      checkedDispatchParcels.delete(outId);
     }
 
     // 2. 0ms 瞬間更新「物流看盤」、「待交寄」、「訂單列表」與「總覽儀表板」
@@ -7012,7 +7036,7 @@
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
 
-    // 3. 背景靜默非同步寫入 Google 試算表（不阻塞畫面）
+    // 3. 背景非同步寫入 Google 試算表（不阻塞掃碼畫面）
     try {
       const payload = {
         orderId: orderId,
@@ -7224,10 +7248,11 @@
       return paidOrders.some(po => po.orderId === pq.orderId);
     });
 
-    // 待交寄清單渲染
+    // 待交寄清單渲染（排除已進入配送之訂單）
     const dispatchOrders = orderCache.filter(o => {
       const st = String(o.status || '').trim();
       const oid = String(o.orderId || '').trim();
+      if (st === '配送' || st === '到貨' || st === '收貨' || st === '退貨' || st === '取消') return false;
       return (st === '出貨') || pendingDispatchOrderIds.has(oid);
     });
 
@@ -8323,12 +8348,52 @@
 
   // 打包出貨（0ms 樂觀連動：同步更新訂單頁、總覽儀表板、試算表三端狀態）
   async function packOrderDispatched(orderId) {
-    const ord = pickingOrdersQueue.find(x => x.orderId === orderId);
+    let ord = pickingOrdersQueue.find(x => x.orderId === orderId);
+    const origOrder = (orderCache || []).find(x => x.orderId === orderId) || {};
+
+    // 防呆容錯：若隊列中暫無此單但訂單快取存在，自動建立隊列物件
+    if (!ord && origOrder.orderId) {
+      const items = (origOrder.items || []).map((it, idx) => ({
+        index: idx,
+        productId: it.productId || '',
+        productName: it.productName || '商品',
+        spec: it.spec || '',
+        color: it.color || '',
+        type: it.type || '',
+        mallPrdId: it.mallPrdId || '',
+        targetQty: Number(it.buyQty) || 1,
+        pickedQty: Number(it.buyQty) || 1,
+        isChecked: true,
+        isPacked: false,
+        isMatched: true,
+        isNormal: true
+      }));
+      ord = {
+        orderId: origOrder.orderId,
+        memberId: origOrder.memberId || '',
+        memberName: origOrder.memberName || '',
+        receiverName: origOrder.receiverName || '',
+        receiverPhone: origOrder.receiverPhone || '',
+        items: items,
+        isOpen: true
+      };
+      pickingOrdersQueue.push(ord);
+    }
     if (!ord) return;
 
-    const itemsToPack = ord.items.filter(it => it.isChecked && !it.isPacked);
+    let itemsToPack = ord.items.filter(it => it.isChecked && !it.isPacked);
+    // 💥 核心修復：掃碼時同仁未手動在螢幕打勾，自動將未打包品項全數視為檢驗完成並納入打包！
     if (itemsToPack.length === 0) {
-      showToast('請先勾選至少一項商品進行打包！');
+      itemsToPack = ord.items.filter(it => !it.isPacked);
+      itemsToPack.forEach(it => {
+        it.isChecked = true;
+        it.isMatched = true;
+        it.isNormal = true;
+        it.pickedQty = it.targetQty || 1;
+      });
+    }
+    if (itemsToPack.length === 0) {
+      showToast('該訂單所有商品已全數打包完畢！');
       return;
     }
 
@@ -8336,10 +8401,12 @@
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const safeTime = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-    const outId = "OUT-" + safeTime;
+    // 沿用貼紙預覽已生成的 outId，確保 QR Code 與系統出貨單號 100% 吻合
+    const outId = origOrder.outId || ord.outId || ("OUT-" + safeTime);
+    origOrder.outId = outId;
+    ord.outId = outId;
 
     const pickLogDetail = itemsToPack.map(it => `[${it.productName}] x ${it.pickedQty || it.targetQty}件`).join('、');
-    const origOrder = orderCache.find(x => x.orderId === orderId) || {};
 
     const payload = {
       orderId: ord.orderId,
@@ -8396,7 +8463,7 @@
       pickingOrdersQueue = pickingOrdersQueue.filter(x => x.orderId !== orderId);
     }
 
-    // 3. 💥 核心同步：立刻重繪「物流頁」、「訂單頁」與「總覽儀表板」！
+    // 3. 💥 核心同步：立刻重繪「物流看盤」、「待交寄」、「訂單列表」與「總覽儀表板」！
     renderLogisticsPendingBoard();
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
@@ -8406,7 +8473,6 @@
     // 4. 背景非同步同步試算表
     try {
       const res = await apiCall('submitLogisticsOut', payload);
-
       if (res && res.status === 'success') {
         notifySheetSyncStatus('訂單管理', `第 24 欄 (出貨) 與第 33 欄 (編號) 已寫入`);
       } else {
@@ -9322,6 +9388,7 @@
   function generateA4RightStickerHtml(order) {
     const totalQty = order.totalQty || (order.items || []).reduce((s, it) => s + (Number(it.buyQty) || 1), 0);
     const outId = order.outId || ('OUT-' + Date.now());
+    if (!order.outId) order.outId = outId; // 💥 固化至訂單快取，確保掃碼時比對一致
     const qrData = `SHIP:${order.orderId}:${outId}`;
     const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=0&data=${encodeURIComponent(qrData)}`;
 
