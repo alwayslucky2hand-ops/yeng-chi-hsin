@@ -2555,7 +2555,7 @@
 
 
 
-<div id="qrScannerModal" class="qr-scanner-modal" onclick="stopQrCodeScanner()">
+<div id="qrScannerModal" class="qr-scanner-modal">
   <div class="qr-scanner-box" onclick="event.stopPropagation()">
     <div class="qr-scanner-header" style="padding:12px 16px; background:#FFFFFF; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:8px;">
@@ -6615,59 +6615,106 @@
       feedbackBox.innerHTML = mode === 'PICK' ? '請對準左側撿貨單 QR Code' : '請對準右側外箱貼條 QR Code';
     }
 
+    // 展開彈窗（常駐開啟，除非點擊右上角 X 否則絕不主動關閉）
     modal.classList.add('active');
     isQrScanningActive = true;
     isQrScanCooldown = false;
 
-    // 核心修復 1：在向 iOS 請求鏡頭前，先行注入 WebKit 播放必備屬性
+    // 1. 先行釋放先前可能佔用的殘留鏡頭軌道，杜絕 NotReadableError (相機佔用)
+    if (qrScanStream) {
+      try {
+        qrScanStream.getTracks().forEach(t => t.stop());
+      } catch (e) {}
+      qrScanStream = null;
+    }
+
+    // 2. 注入 iOS Safari WebKit 內嵌播放必備屬性
     video.muted = true;
     video.playsInline = true;
     video.setAttribute("muted", "");
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
 
-    try {
-      // 核心修復 2：移除硬編碼的 1280x720 寬高限制，完美相容直向握持鏡頭
-      const constraints = {
-        video: { facingMode: { ideal: "environment" } },
-        audio: false
-      };
+    // 3. 檢查環境 MediaDevices 支援度
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (feedbackBox) {
+        feedbackBox.style.background = '#FEF2F2';
+        feedbackBox.style.borderColor = '#EF4444';
+        feedbackBox.style.color = '#991B1B';
+        feedbackBox.innerHTML = `
+          <div style="font-weight:700;">瀏覽器不支援即時視訊</div>
+          <div style="font-size:11px; margin-top:2px;">請使用下方「照片解析」拍照或選取照片解碼</div>
+        `;
+      }
+      return; // 絕不關閉彈窗
+    }
 
-      qrScanStream = await navigator.mediaDevices.getUserMedia(constraints);
-      video.srcObject = qrScanStream;
+    // 4. 三段式鏡頭約束自適應降級 (確保在各款手機與 iOS Safari 均能順利取得畫面)
+    const constraintCandidates = [
+      { video: { facingMode: { ideal: "environment" } } },
+      { video: { facingMode: "environment" } },
+      { video: true }
+    ];
 
-      // 核心修復 3：雙軌啟動（監聽 loadedmetadata ＋ 容錯播放），絕不掉進 catch
-      await new Promise((resolve) => {
-        let isStarted = false;
-        const doPlay = () => {
-          if (isStarted) return;
-          isStarted = true;
-          video.play().then(resolve).catch((e) => {
-            console.warn("video.play 警告(略過):", e);
-            resolve();
-          });
-        };
+    let streamObtained = null;
+    let lastError = null;
 
-        video.onloadedmetadata = doPlay;
-        setTimeout(doPlay, 250); // 若 iOS 未及時回傳 loadedmetadata，0.25 秒自動防護播放
-      });
-
-      // 啟動影格解析循環
-      runActiveQrFrameDecodeLoop();
-    } catch (err) {
-      console.error("相機啟動異常:", err);
-      // 備援：若後鏡頭失敗，嘗試通用視訊啟動
+    for (const constraints of constraintCandidates) {
       try {
-        qrScanStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        video.srcObject = qrScanStream;
-        await video.play().catch(() => {});
-        runActiveQrFrameDecodeLoop();
-      } catch (fallbackErr) {
-        showToast("相機畫面載入異常，可改用下方「照片解析」");
-        stopQrCodeScanner();
+        streamObtained = await navigator.mediaDevices.getUserMedia(constraints);
+        if (streamObtained) break;
+      } catch (err) {
+        lastError = err;
+        console.warn("鏡頭約束條件嘗試降級:", constraints, err);
       }
     }
+
+    // 5. 若均未成功，在原位內聯給予明確引導，彈窗保持常駐不閃退
+    if (!streamObtained) {
+      console.error("相機啟動所有約束皆未成功:", lastError);
+      const isDenied = lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError');
+      if (feedbackBox) {
+        feedbackBox.style.background = '#FEF2F2';
+        feedbackBox.style.borderColor = '#EF4444';
+        feedbackBox.style.color = '#991B1B';
+        feedbackBox.innerHTML = `
+          <div style="font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; gap:4px;">
+            <i class="ph ph-warning-circle" style="font-size:16px; color:#EF4444;"></i>
+            <span>${isDenied ? '相機存取權限目前被瀏覽器拒絕' : '相機暫時無法啟動'}</span>
+          </div>
+          <div style="font-size:11px; font-weight:600; margin-top:4px; line-height:1.4;">
+            ${isDenied ? '請點擊網址列左側「大小 (aA)」或鎖頭圖示 ➔ 網站設定 ➔ 將相機改為「允許」，或使用下方「照片解析」' : '請確認手機相機未被其他 App 佔用，或直接使用下方「照片解析」'}
+          </div>
+          <div style="margin-top:6px;">
+            <button type="button" class="icon-btn" onclick="startQrCodeScanner('${mode}')" style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; font-size:11px; border-radius:12px; background:#FFFFFF; color:#991B1B; border-color:#EF4444;">
+              <i class="ph ph-arrows-clockwise"></i> 重新開啟相機
+            </button>
+          </div>
+        `;
+      }
+      return; // 絕不關閉彈窗
+    }
+
+    // 6. 相機成功取得，綁定至 video 元素並啟動播放
+    qrScanStream = streamObtained;
+    video.srcObject = qrScanStream;
+
+    try {
+      await video.play();
+    } catch (playErr) {
+      console.warn("video.play 自動播放微警告(略過):", playErr);
+    }
+
+    // 7. 解耦啟動影格解析循環
+    setTimeout(() => {
+      if (isQrScanningActive) {
+        runActiveQrFrameDecodeLoop();
+      }
+    }, 150);
   }
+
+
+
 
   // 實時影格解碼循環：中央瞄準框 ROI 核心聚焦採樣 (排除周圍雜訊干擾，0.05秒瞬發)
   function runActiveQrFrameDecodeLoop() {
