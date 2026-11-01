@@ -6601,7 +6601,6 @@
 
     if (!modal || !video) return;
 
-    // 極簡標題指示：只顯示「掃碼轉出貨」或「掃碼轉配貨」
     if (headerTitle) {
       headerTitle.innerText = mode === 'PICK' ? '掃碼轉出貨' : (mode === 'SHIP' ? '掃碼轉配貨' : '掃碼作業');
     }
@@ -6620,20 +6619,53 @@
     isQrScanningActive = true;
     isQrScanCooldown = false;
 
-    try {
-      qrScanStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      video.srcObject = qrScanStream;
-      video.setAttribute("playsinline", true);
-      video.setAttribute("muted", "true");
-      await video.play();
+    // 核心修復 1：在向 iOS 請求鏡頭前，先行注入 WebKit 播放必備屬性
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
 
+    try {
+      // 核心修復 2：移除硬編碼的 1280x720 寬高限制，完美相容直向握持鏡頭
+      const constraints = {
+        video: { facingMode: { ideal: "environment" } },
+        audio: false
+      };
+
+      qrScanStream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = qrScanStream;
+
+      // 核心修復 3：雙軌啟動（監聽 loadedmetadata ＋ 容錯播放），絕不掉進 catch
+      await new Promise((resolve) => {
+        let isStarted = false;
+        const doPlay = () => {
+          if (isStarted) return;
+          isStarted = true;
+          video.play().then(resolve).catch((e) => {
+            console.warn("video.play 警告(略過):", e);
+            resolve();
+          });
+        };
+
+        video.onloadedmetadata = doPlay;
+        setTimeout(doPlay, 250); // 若 iOS 未及時回傳 loadedmetadata，0.25 秒自動防護播放
+      });
+
+      // 啟動影格解析循環
       runActiveQrFrameDecodeLoop();
     } catch (err) {
       console.error("相機啟動異常:", err);
-      showToast("相機啟動未成功，請確認瀏覽器相機權限");
-      stopQrCodeScanner();
+      // 備援：若後鏡頭失敗，嘗試通用視訊啟動
+      try {
+        qrScanStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = qrScanStream;
+        await video.play().catch(() => {});
+        runActiveQrFrameDecodeLoop();
+      } catch (fallbackErr) {
+        showToast("相機畫面載入異常，可改用下方「照片解析」");
+        stopQrCodeScanner();
+      }
     }
   }
 
