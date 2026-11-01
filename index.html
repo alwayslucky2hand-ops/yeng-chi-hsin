@@ -4868,9 +4868,10 @@
       const itemsHtml = grouped[shelfId].map(item => `
         <div class="inv-card" id="mall-card-${item._rowId}" onclick="toggleMallEdit(${item._rowId})">
           <div class="inv-header">
-            <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px;">
-              <span style="background:${item.visibility === 'VIP限定' ? '#f59e0b20' : 'var(--accent-soft)'}; color:${item.visibility === 'VIP限定' ? 'var(--warning)' : 'var(--accent)'}; padding:2px 8px; border-radius:12px; font-size:11px;">${item.visibility || '未設定'}</span>
-              ${item.productName}
+            <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="background:${item.visibility === 'VIP限定' ? '#f59e0b20' : 'var(--accent-soft)'}; color:${item.visibility === 'VIP限定' ? 'var(--warning)' : 'var(--accent)'}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">${item.visibility || '未設定'}</span>
+              <span style="color:var(--text);">${item.productName}</span>
+              <span class="id-chip" style="font-size:11px;" title="商品編號"><i class="ph ph-barcode"></i> ${item.productId || '-'}</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               <button type="button" class="icon-btn" onclick="event.stopPropagation(); copyMallItem(${item._rowId});" title="複製新增"><i class="ph ph-copy" style="font-size: 20px;"></i></button>
@@ -6567,61 +6568,166 @@
   let currentScanMode = 'ALL';               // 'PICK' (撿貨單) 或 'SHIP' (外箱貼條)
   let checkedDispatchParcels = new Set();    // 記錄待交寄中已勾選的包裹 ID
 
-  // 獨立掃碼啟動：支援 PICK / SHIP 專屬提示
+  // 獨立掃碼啟動：跨平台全面接通 jsQR 引擎 (iOS Safari / Android / LINE 瞬發秒解)
+  let isQrScanningActive = false;
+
   async function startQrCodeScanner(mode = 'ALL') {
     currentScanMode = mode;
     const modal = document.getElementById('qrScannerModal');
     const video = document.getElementById('qrScannerVideo');
     const headerTitle = modal ? modal.querySelector('.qr-scanner-header span') : null;
-    const tipText = modal ? modal.querySelector('.qr-scanner-box > div:last-child') : null;
+    const dynamicTip = document.getElementById('qrScannerDynamicTip');
 
     if (!modal || !video) return;
 
     if (headerTitle) {
       headerTitle.innerText = mode === 'PICK' ? '相機掃描 - 撿貨單 QR Code 核驗勾選' : (mode === 'SHIP' ? '相機掃描 - 外箱託運貼條 QR Code 勾選配貨' : '相機掃描 QR Code');
     }
-    if (tipText) {
-      tipText.innerText = mode === 'PICK' ? '請對準撿貨清單上的 QR Code (PICK:BUY-xxxx) 進行核驗勾選' : (mode === 'SHIP' ? '請對準外箱託運貼條上的 QR Code (SHIP:BUY-xxxx:OUT-xxxx) 勾選配貨' : '對準撿貨單轉出貨；對準箱外單據轉配貨');
+    if (dynamicTip) {
+      dynamicTip.innerText = mode === 'PICK' ? '請對準撿貨清單上的 QR Code (PICK:BUY-xxxx) 進行核驗勾選' : (mode === 'SHIP' ? '請對準外箱託運貼條上的 QR Code (SHIP:BUY-xxxx:OUT-xxxx) 勾選配貨' : '對準左側撿貨單轉【出貨】；對準右側外箱貼條轉【配貨】');
     }
 
     modal.classList.add('active');
+    isQrScanningActive = true;
 
     try {
       qrScanStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } }
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
       });
       video.srcObject = qrScanStream;
       video.setAttribute("playsinline", true);
+      video.setAttribute("muted", "true");
       await video.play();
 
-      // 使用 BarcodeDetector 原生 API 或 Canvas 輪詢分析
-      if ('BarcodeDetector' in window) {
-        const detector = new BarcodeDetector({ formats: ['qr_code'] });
-        qrScanTimer = setInterval(async () => {
-          try {
-            const barcodes = await detector.detect(video);
-            if (barcodes.length > 0) {
-              handleScannedQrResult(barcodes[0].rawValue);
-            }
-          } catch(e) {}
-        }, 300);
-      } else {
-        showToast("相機已啟動，請保持對準 QR Code");
-      }
+      // 啟動高靈敏實時循環解碼引擎 (原生 BarcodeDetector + jsQR 雙保險)
+      runActiveQrFrameDecodeLoop();
     } catch (err) {
-      showToast("相機啟動未成功，請確認瀏覽器相機權限");
+      console.error("相機啟動異常:", err);
+      showToast("相機啟動未成功，請確認瀏覽器相機使用權限");
       stopQrCodeScanner();
     }
   }
 
+  // 實時影格解碼循環 (每秒 10~15 次高速探測)
+  function runActiveQrFrameDecodeLoop() {
+    if (!isQrScanningActive) return;
+
+    const video = document.getElementById('qrScannerVideo');
+    const canvas = document.getElementById('qrScanCanvas');
+
+    if (!video || !canvas || video.readyState < 2) {
+      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 80);
+      return;
+    }
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    if (vw > 0 && vh > 0) {
+      canvas.width = vw;
+      canvas.height = vh;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, vw, vh);
+
+      let detectedCode = null;
+
+      // 1. 若支援原生 BarcodeDetector 優先探測
+      if ('BarcodeDetector' in window) {
+        try {
+          const detector = new BarcodeDetector({ formats: ['qr_code'] });
+          detector.detect(canvas).then(barcodes => {
+            if (barcodes && barcodes.length > 0 && isQrScanningActive) {
+              triggerQrDecodeSuccess(barcodes[0].rawValue);
+              return;
+            }
+          }).catch(() => {});
+        } catch(e) {}
+      }
+
+      // 2. iOS Safari / LINE 全面由 jsQR 接管瞬發解碼
+      if (typeof jsQR === 'function' && isQrScanningActive) {
+        try {
+          const imageData = ctx.getImageData(0, 0, vw, vh);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert"
+          });
+          if (code && code.data) {
+            detectedCode = code.data;
+          }
+        } catch(err) {}
+      }
+
+      if (detectedCode && isQrScanningActive) {
+        triggerQrDecodeSuccess(detectedCode);
+        return; // 解碼成功，終止後續循環
+      }
+    }
+
+    // 繼續下一影格探測 (100ms 循環間隔，流暢且不發燙)
+    if (isQrScanningActive) {
+      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 100);
+    }
+  }
+
+  // 成功掃碼反饋機制 (音效/震動/關閉相機)
+  function triggerQrDecodeSuccess(rawCode) {
+    isQrScanningActive = false;
+    if (navigator.vibrate) {
+      try { navigator.vibrate(80); } catch(e) {} // 觸覺微震動
+    }
+    stopQrCodeScanner();
+    handleScannedQrResult(rawCode);
+  }
+
   function stopQrCodeScanner() {
-    if (qrScanTimer) clearInterval(qrScanTimer);
+    isQrScanningActive = false;
+    if (qrScanTimer) {
+      clearTimeout(qrScanTimer);
+      clearInterval(qrScanTimer);
+      qrScanTimer = null;
+    }
     if (qrScanStream) {
       qrScanStream.getTracks().forEach(t => t.stop());
       qrScanStream = null;
     }
     const modal = document.getElementById('qrScannerModal');
     if (modal) modal.classList.remove('active');
+  }
+
+  // 備援方案：支援直接上傳或拍攝條碼照片進行 jsQR 解析
+  function handleQrPhotoFile(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    showToast("正在解析條碼圖片...");
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+
+        if (typeof jsQR === 'function') {
+          try {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code && code.data) {
+              triggerQrDecodeSuccess(code.data);
+              return;
+            }
+          } catch(err) {
+            console.error("jsQR 靜態解析失敗:", err);
+          }
+        }
+        showToast("未能從該照片辨識出有效 QR Code，請調整光線重拍");
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
   }
 
   function handleScannedQrResult(codeText) {
