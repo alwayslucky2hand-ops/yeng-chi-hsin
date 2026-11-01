@@ -216,34 +216,115 @@
     border: 1.5px solid var(--accent-line);
   }
   .a4-stickers-header {
-    padding: 16px 20px;
-    background: #F8FAFC;
-    border-bottom: 1.5px solid var(--accent-line);
+    padding: 12px 18px;
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--accent-line);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    gap: 8px;
   }
   .a4-stickers-body {
-    padding: 20px;
+    padding: 16px;
     overflow-y: auto;
-    background: #E2E8F0;
+    overflow-x: auto;
+    background: #CBD5E1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+   
+  .a4-sheet-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .a4-page-sheet {
     background: #FFFFFF;
     width: 210mm;
     min-height: 297mm;
     padding: 10mm 6mm;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.18);
     display: grid;
     grid-template-columns: repeat(2, 98mm);
     grid-auto-rows: 67mm;
     gap: 2.5mm 2mm;
     box-sizing: border-box;
+    transform-origin: top center;
+  }
+
+   
+  .a4-segmented-control {
+    display: flex;
+    background: #F1F5F9;
+    border-radius: 8px;
+    padding: 2.5px;
+    gap: 3px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .a4-segment-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .a4-segment-btn.active {
+    background: #FFFFFF;
+    color: var(--text);
+    font-weight: 800;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+   
+  @media (max-width: 768px) {
+    .a4-stickers-modal {
+      padding: 0 !important;
+    }
+    .a4-stickers-dialog {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+    }
+    .a4-stickers-header {
+      padding: 10px 12px !important;
+    }
+    .a4-stickers-body {
+      padding: 12px 6px !important;
+    }
+     
+    .a4-stickers-body.mode-fit .a4-sheet-wrapper {
+      transform-origin: top center;
+    }
+     
+    #a4StickersOrderChipsContainer {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+      max-height: 108px !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding: 2px 0 !important;
+    }
   }
   .sticker-cell {
     width: 98mm;
@@ -2548,11 +2629,15 @@
 <div id="a4StickersModal" class="a4-stickers-modal" onclick="closeA4StickersModal()">
   <div class="a4-stickers-dialog" onclick="event.stopPropagation()">
     
-    <div class="a4-stickers-header" style="background:#FFFFFF; border-bottom:1px solid #CBD5E1; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div class="a4-stickers-header" style="background:#FFFFFF; border-bottom:1px solid #CBD5E1; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <span id="a4StickersSummaryBadge" style="font-size:11px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; padding:3px 10px; border-radius:6px; font-weight:700; font-family:monospace;"></span>
+        <span id="a4StickersSummaryBadge" style="font-size:11px; background:#F8FAFC; border:1px solid #CBD5E1; color:#0F172A; padding:3px 8px; border-radius:6px; font-weight:700; font-family:monospace;"></span>
       </div>
-      <div style="display:flex; gap:8px; align-items:center;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        
+        <button type="button" class="icon-btn" id="btnToggleA4Scale" onclick="toggleA4ViewScale()" title="切換整頁全覽 / 原始 1:1 細節" style="padding:6px 9px;">
+          <i class="ph ph-arrows-in-simple" id="iconToggleA4Scale" style="font-size:18px;"></i>
+        </button>
         
         <button type="button" class="icon-btn" id="btnToggleAllA4" onclick="toggleAllA4StickerSelection()" title="全選 / 取消全選" style="padding:6px 9px;">
           <i class="ph ph-check-square-offset" id="iconToggleAllA4" style="font-size:18px;"></i>
@@ -2569,13 +2654,28 @@
     </div>
 
     
-    <div class="a4-stickers-header" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; padding:8px 18px; display:flex; align-items:center; gap:10px; overflow-x:auto;">
-      <span style="font-size:11px; font-weight:700; color:var(--text-muted); flex-shrink:0;">選擇訂單：</span>
-      <div id="a4StickersOrderChipsContainer" style="display:flex; gap:6px; align-items:center; flex-wrap:nowrap;"></div>
+    <div class="a4-stickers-header" style="background:#F8FAFC; border-bottom:1px solid #E2E8F0; padding:8px 14px; display:flex; flex-direction:column; align-items:stretch; gap:8px;">
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div class="a4-segmented-control">
+          <button type="button" class="a4-segment-btn active" id="btnA4SegAll" onclick="switchA4OrderSegment('ALL')">
+            <i class="ph ph-squares-four"></i> 全部
+          </button>
+          <button type="button" class="a4-segment-btn" id="btnA4SegPick" onclick="switchA4OrderSegment('PICK')">
+            <i class="ph ph-barcode"></i> 撿貨區
+          </button>
+          <button type="button" class="a4-segment-btn" id="btnA4SegShip" onclick="switchA4OrderSegment('SHIP')">
+            <i class="ph ph-truck"></i> 出貨區
+          </button>
+        </div>
+        <div id="a4SegmentStatsText" style="font-size:11px; font-weight:700; color:var(--text-muted); font-family:monospace;"></div>
+      </div>
+      
+      <div id="a4StickersOrderChipsContainer" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;"></div>
     </div>
 
     
-    <div class="a4-stickers-body" id="a4StickersPreviewBody">
+    <div class="a4-stickers-body mode-fit" id="a4StickersPreviewBody">
       
     </div>
   </div>
@@ -8693,30 +8793,14 @@
   // 上到下 1/4 為同一訂單：左半邊商品清單、右半邊出貨託運貼條
   // ==========================================
   let selectedA4OrderIds = new Set();
+  let currentA4Segment = 'ALL'; // 'ALL' | 'PICK' | 'SHIP'
+  let isA4FitMode = true;       // 手機端預設開啟鳥瞰縮放
 
   function openA4StickersModal(singleOrderId = null) {
     const modal = document.getElementById('a4StickersModal');
     if (!modal) return;
 
-    // 收集所有進行中訂單 (待撿貨 + 待交寄)
-    const availableOrders = [];
-    const seenIds = new Set();
-
-    (pickingOrdersQueue || []).forEach(pq => {
-      const fullOrder = (orderCache || []).find(o => o.orderId === pq.orderId) || pq;
-      if (!seenIds.has(pq.orderId)) {
-        seenIds.add(pq.orderId);
-        availableOrders.push(fullOrder);
-      }
-    });
-
-    (orderCache || []).forEach(o => {
-      if ((o.status === '出貨' || o.status === '收款') && !seenIds.has(o.orderId)) {
-        seenIds.add(o.orderId);
-        availableOrders.push(o);
-      }
-    });
-
+    const availableOrders = getAvailableA4OrdersList();
     if (availableOrders.length === 0) {
       showToast("目前無待撿貨或待交寄的進行中訂單！");
       return;
@@ -8727,7 +8811,6 @@
     if (singleOrderId) {
       selectedA4OrderIds.add(singleOrderId);
     } else {
-      // 優先帶入頁面上已被勾選的訂單或包裹
       let hasPreChecked = false;
       (pickingOrdersQueue || []).forEach(pq => {
         if (pq.items && pq.items.some(it => it.isChecked)) {
@@ -8744,15 +8827,19 @@
           }
         });
       }
-      // 若頁面尚未勾選任何項目，預設全選所有進行中訂單
       if (!hasPreChecked) {
         availableOrders.forEach(o => selectedA4OrderIds.add(o.orderId));
       }
     }
 
+    currentA4Segment = 'ALL';
+    updateA4SegmentUI();
     renderA4StickersChips(availableOrders);
     renderA4StickersPreview(availableOrders);
     modal.classList.add('active');
+
+    // 開啟後自動依螢幕寬度校準鳥瞰比例
+    setTimeout(applyA4ViewScale, 50);
   }
 
   function closeA4StickersModal() {
@@ -8760,92 +8847,88 @@
     if (modal) modal.classList.remove('active');
   }
 
-  function renderA4StickersChips(availableOrders) {
-    const container = document.getElementById('a4StickersOrderChipsContainer');
-    if (!container) return;
+  // 賈伯斯分段切換：全部 / 撿貨區 / 出貨區
+  function switchA4OrderSegment(segKey) {
+    currentA4Segment = segKey;
+    updateA4SegmentUI();
+    const availableOrders = getAvailableA4OrdersList();
+    renderA4StickersChips(availableOrders);
+  }
 
-    // 分流為「撿貨區訂單」與「出貨區訂單」
-    const pickingList = [];
-    const dispatchList = [];
-
-    availableOrders.forEach(o => {
-      const isOut = (o.status === '出貨') || (logisticsCache || []).some(l => l.orderId === o.orderId && l.outId && (!l.shipTime || String(l.shipTime).trim() === ''));
-      if (isOut) {
-        dispatchList.push(o);
+  function updateA4SegmentUI() {
+    ['ALL', 'PICK', 'SHIP'].forEach(k => {
+      const btn = document.getElementById(`btnA4Seg${k === 'ALL' ? 'All' : (k === 'PICK' ? 'Pick' : 'Ship')}`);
+      if (!btn) return;
+      if (k === currentA4Segment) {
+        btn.classList.add('active');
       } else {
-        pickingList.push(o);
+        btn.classList.remove('active');
       }
     });
+  }
 
-    const renderChipBtn = (o, isDispatch = false) => {
-      const isSelected = selectedA4OrderIds.has(o.orderId);
-      const activeColor = isDispatch ? '#0D9488' : '#0F172A';
-      return `
-        <button type="button" class="icon-btn" onclick="toggleA4OrderSelection('${o.orderId}')" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:14px; flex-shrink:0; ${isSelected ? `background:${activeColor}; color:#FFFFFF; border-color:${activeColor};` : 'background:#FFFFFF; color:#64748B; border-color:#CBD5E1;'}">
-          <i class="ph ${isSelected ? 'ph-check-circle' : 'ph-circle'}"></i>
-          <span>${o.orderId} (${o.receiverName || o.memberName || '顧客'})</span>
-        </button>
-      `;
-    };
+  // 切換整頁全覽 (Fit) vs 1:1 細節模式
+  function toggleA4ViewScale() {
+    isA4FitMode = !isA4FitMode;
+    const body = document.getElementById('a4StickersPreviewBody');
+    const icon = document.getElementById('iconToggleA4Scale');
+    const btn = document.getElementById('btnToggleA4Scale');
 
-    let html = '';
-
-    if (pickingList.length > 0) {
-      html += `
-        <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
-          <span style="font-size:10px; font-weight:800; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-line); padding:2px 6px; border-radius:4px; white-space:nowrap;">撿貨區</span>
-          ${pickingList.map(o => renderChipBtn(o, false)).join('')}
-        </div>
-      `;
-    }
-
-    if (pickingList.length > 0 && dispatchList.length > 0) {
-      html += `<div style="width:1px; height:18px; background:#CBD5E1; margin:0 6px; flex-shrink:0;"></div>`;
-    }
-
-    if (dispatchList.length > 0) {
-      html += `
-        <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
-          <span style="font-size:10px; font-weight:800; color:#0D9488; background:#CCFBF1; border:1px solid #99F6E4; padding:2px 6px; border-radius:4px; white-space:nowrap;">出貨區</span>
-          ${dispatchList.map(o => renderChipBtn(o, true)).join('')}
-        </div>
-      `;
-    }
-
-    container.innerHTML = html || '<span style="font-size:11px; color:var(--text-muted);">無可選訂單</span>';
-
-    const toggleAllBtn = document.getElementById('btnToggleAllA4');
-    const toggleAllIcon = document.getElementById('iconToggleAllA4');
-    if (toggleAllBtn) {
-      const isAll = availableOrders.length > 0 && selectedA4OrderIds.size === availableOrders.length;
-      toggleAllBtn.title = isAll ? '取消全選' : '全選';
-      if (toggleAllIcon) {
-        toggleAllIcon.className = isAll ? 'ph ph-check-square' : 'ph ph-check-square-offset';
+    if (body) {
+      if (isA4FitMode) {
+        body.classList.add('mode-fit');
+        if (icon) icon.className = 'ph ph-arrows-in-simple';
+        if (btn) btn.title = '當前：整頁全覽 (點擊切換為 1:1 細節高清)';
+        showToast('已切換為：整頁全覽鳥瞰模式');
+      } else {
+        body.classList.remove('mode-fit');
+        if (icon) icon.className = 'ph ph-arrows-out-simple';
+        if (btn) btn.title = '當前：1:1 原始尺寸 (點擊切換為整頁全覽)';
+        showToast('已切換為：1:1 細節模式 (可自由水平垂直滑動)');
       }
     }
+    applyA4ViewScale();
   }
 
-  function toggleA4OrderSelection(orderId) {
-    if (selectedA4OrderIds.has(orderId)) {
-      selectedA4OrderIds.delete(orderId);
-    } else {
-      selectedA4OrderIds.add(orderId);
+  // 動態精準計算螢幕與 A4 210mm (約794px) 的最佳比例
+  function applyA4ViewScale() {
+    const body = document.getElementById('a4StickersPreviewBody');
+    if (!body) return;
+
+    const wrappers = body.querySelectorAll('.a4-sheet-wrapper');
+    const isMobile = window.innerWidth <= 768;
+
+    if (!isMobile || !isA4FitMode) {
+      wrappers.forEach(w => {
+        w.style.transform = 'none';
+        w.style.height = 'auto';
+        w.style.width = '100%';
+        w.style.marginBottom = '20px';
+      });
+      return;
     }
-    const availableOrders = getAvailableA4OrdersList();
-    renderA4StickersChips(availableOrders);
-    renderA4StickersPreview(availableOrders);
+
+    // 手機端鳥瞰模式：依可用寬度計算 scale
+    const bodyWidth = body.clientWidth || window.innerWidth;
+    const targetA4Width = 794; // 210mm 像素標準值
+    const scale = Math.min(1, Math.max(0.35, (bodyWidth - 16) / targetA4Width));
+
+    const scaledHeight = 1123 * scale; // 297mm 像素標準高度 1123px
+
+    wrappers.forEach(w => {
+      w.style.transform = `scale(${scale})`;
+      w.style.width = `${targetA4Width}px`;
+      w.style.height = `${scaledHeight}px`;
+      w.style.marginBottom = `${16}px`;
+    });
   }
 
-  function toggleAllA4StickerSelection() {
-    const availableOrders = getAvailableA4OrdersList();
-    if (selectedA4OrderIds.size === availableOrders.length) {
-      selectedA4OrderIds.clear();
-    } else {
-      availableOrders.forEach(o => selectedA4OrderIds.add(o.orderId));
+  window.addEventListener('resize', () => {
+    const modal = document.getElementById('a4StickersModal');
+    if (modal && modal.classList.contains('active')) {
+      applyA4ViewScale();
     }
-    renderA4StickersChips(availableOrders);
-    renderA4StickersPreview(availableOrders);
-  }
+  });
 
   function getAvailableA4OrdersList() {
     const availableOrders = [];
@@ -8866,6 +8949,87 @@
     return availableOrders;
   }
 
+  function renderA4StickersChips(availableOrders) {
+    const container = document.getElementById('a4StickersOrderChipsContainer');
+    const statsEl = document.getElementById('a4SegmentStatsText');
+    if (!container) return;
+
+    const pickingList = [];
+    const dispatchList = [];
+
+    availableOrders.forEach(o => {
+      const isOut = (o.status === '出貨') || (logisticsCache || []).some(l => l.orderId === o.orderId && l.outId && (!l.shipTime || String(l.shipTime).trim() === ''));
+      if (isOut) {
+        dispatchList.push(o);
+      } else {
+        pickingList.push(o);
+      }
+    });
+
+    let displayList = availableOrders;
+    if (currentA4Segment === 'PICK') displayList = pickingList;
+    if (currentA4Segment === 'SHIP') displayList = dispatchList;
+
+    if (statsEl) {
+      statsEl.innerText = `撿貨: ${pickingList.length} | 出貨: ${dispatchList.length}`;
+    }
+
+    const renderChipBtn = (o) => {
+      const isSelected = selectedA4OrderIds.has(o.orderId);
+      const isDispatch = (o.status === '出貨') || (logisticsCache || []).some(l => l.orderId === o.orderId && l.outId && (!l.shipTime || String(l.shipTime).trim() === ''));
+      const activeColor = isDispatch ? '#0D9488' : '#0F172A';
+      return `
+        <button type="button" class="icon-btn" onclick="toggleA4OrderSelection('${o.orderId}')" style="padding:5px 9px; font-size:11px; font-weight:700; border-radius:16px; flex-shrink:0; ${isSelected ? `background:${activeColor}; color:#FFFFFF; border-color:${activeColor}; box-shadow:0 1px 3px rgba(0,0,0,0.12);` : 'background:#FFFFFF; color:#64748B; border-color:#CBD5E1;'}">
+          <i class="ph ${isSelected ? 'ph-check-circle' : 'ph-circle'}"></i>
+          <span>${o.orderId} (${o.receiverName || o.memberName || '顧客'})</span>
+        </button>
+      `;
+    };
+
+    if (displayList.length === 0) {
+      container.innerHTML = '<span style="font-size:11px; color:var(--text-muted); padding:4px;">該分區無進行中訂單</span>';
+    } else {
+      container.innerHTML = displayList.map(o => renderChipBtn(o)).join('');
+    }
+
+    const toggleAllBtn = document.getElementById('btnToggleAllA4');
+    const toggleAllIcon = document.getElementById('iconToggleAllA4');
+    if (toggleAllBtn) {
+      const isAll = displayList.length > 0 && displayList.every(o => selectedA4OrderIds.has(o.orderId));
+      toggleAllBtn.title = isAll ? '取消全選當前分區' : '全選當前分區';
+      if (toggleAllIcon) {
+        toggleAllIcon.className = isAll ? 'ph ph-check-square' : 'ph ph-check-square-offset';
+      }
+    }
+  }
+
+  function toggleA4OrderSelection(orderId) {
+    if (selectedA4OrderIds.has(orderId)) {
+      selectedA4OrderIds.delete(orderId);
+    } else {
+      selectedA4OrderIds.add(orderId);
+    }
+    const availableOrders = getAvailableA4OrdersList();
+    renderA4StickersChips(availableOrders);
+    renderA4StickersPreview(availableOrders);
+  }
+
+  function toggleAllA4StickerSelection() {
+    const availableOrders = getAvailableA4OrdersList();
+    let targetList = availableOrders;
+    if (currentA4Segment === 'PICK') targetList = availableOrders.filter(o => o.status !== '出貨');
+    if (currentA4Segment === 'SHIP') targetList = availableOrders.filter(o => o.status === '出貨');
+
+    const isAll = targetList.length > 0 && targetList.every(o => selectedA4OrderIds.has(o.orderId));
+    if (isAll) {
+      targetList.forEach(o => selectedA4OrderIds.delete(o.orderId));
+    } else {
+      targetList.forEach(o => selectedA4OrderIds.add(o.orderId));
+    }
+    renderA4StickersChips(availableOrders);
+    renderA4StickersPreview(availableOrders);
+  }
+
   function renderA4StickersPreview(availableOrders) {
     const body = document.getElementById('a4StickersPreviewBody');
     const badge = document.getElementById('a4StickersSummaryBadge');
@@ -8876,15 +9040,14 @@
     const totalPages = Math.ceil(totalSelected / 4) || 1;
 
     if (badge) {
-      badge.innerText = `已選 ${totalSelected} 筆訂單 / 共 ${totalPages} 頁 A4 (${totalSelected * 2}格貼紙)`;
+      badge.innerText = `已選 ${totalSelected} 筆 / 共 ${totalPages} 頁 A4 (${totalSelected * 2}格貼紙)`;
     }
 
     if (totalSelected === 0) {
-      body.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted);">尚未選取任何訂單，請於上方勾選欲列印貼紙的訂單</div>';
+      body.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:12px;">尚未選取任何訂單，請於上方點選欲列印貼紙的訂單</div>';
       return;
     }
 
-    // 依每 4 筆訂單切為 1 頁 A4 (1筆訂單 = 左右2格，4筆 = 8格填滿整頁)
     let pagesHtml = '';
     for (let p = 0; p < totalPages; p++) {
       const pageOrders = selectedOrders.slice(p * 4, p * 4 + 4);
@@ -8893,24 +9056,27 @@
       for (let r = 0; r < 4; r++) {
         const order = pageOrders[r];
         if (order) {
-          cellsHtml += generateA4LeftStickerHtml(order);  // 第1格 (左邊)：商品清單
-          cellsHtml += generateA4RightStickerHtml(order); // 第2格 (右邊)：出貨資訊
+          cellsHtml += generateA4LeftStickerHtml(order);
+          cellsHtml += generateA4RightStickerHtml(order);
         } else {
-          // 空格填補：保持 2x4 模造規格完全對位
           cellsHtml += `<div class="sticker-cell" style="border:1px dashed #E2E8F0; background:#FAFAFA; justify-content:center; align-items:center; color:#CBD5E1; font-size:11px;">[ 貼紙預留格 ]</div>`;
           cellsHtml += `<div class="sticker-cell" style="border:1px dashed #E2E8F0; background:#FAFAFA; justify-content:center; align-items:center; color:#CBD5E1; font-size:11px;">[ 貼紙預留格 ]</div>`;
         }
       }
 
       pagesHtml += `
-        <div class="a4-page-sheet" style="position:relative;">
-          <div style="position:absolute; top:2mm; right:6mm; font-size:8px; font-family:monospace; color:#94A3B8;">A4 PAGE ${p + 1} / ${totalPages}</div>
-          ${cellsHtml}
+        <div class="a4-sheet-wrapper">
+          <div class="a4-page-sheet" style="position:relative;">
+            <div style="position:absolute; top:2mm; right:6mm; font-size:8px; font-family:monospace; color:#94A3B8;">A4 PAGE ${p + 1} / ${totalPages}</div>
+            ${cellsHtml}
+          </div>
         </div>
       `;
     }
 
     body.innerHTML = pagesHtml;
+    // 渲染完成後套用縮放比例
+    setTimeout(applyA4ViewScale, 20);
   }
 
   // 左半邊貼紙：商品清單 (移除下方冗餘訂單編號，回歸極簡純粹)
