@@ -855,9 +855,19 @@
       }
 
        
-      .picking-order-card {
-        padding: 8px 0 14px 0 !important;
-      }
+    .icon-btn {
+      flex-shrink: 0 !important;
+    }
+    #btnBatchPack, #btnBatchDispatch {
+      min-width: 36px !important;
+      max-width: 36px !important;
+      width: 36px !important;
+      height: 36px !important;
+      padding: 0 !important;
+    }
+    .picking-order-card {
+      padding: 8px 0 14px 0 !important;
+    }
       .picking-order-header {
         flex-direction: column !important;
         align-items: stretch !important;
@@ -2129,18 +2139,20 @@
       
       <div style="background: #FFFFFF; border: 1.5px solid #0F172A; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 140px;">
+            <span style="font-size: 14px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 6px;">
               <i class="ph ph-barcode" style="font-size: 18px; color: var(--accent);"></i> 撿貨區
             </span>
             <span id="pickingQueueCount" style="font-size: 11px; font-family: monospace; color: var(--text-muted);"></span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <button type="button" class="icon-btn" onclick="startQrCodeScanner('PICK')" title="掃描撿貨單 QR Code 勾選" style="color:var(--accent); border-color:var(--accent); padding:5px 9px;">
-              <i class="ph ph-qr-code" style="font-size: 16px;"></i> <span>掃碼</span>
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            
+            <button type="button" class="icon-btn" onclick="startQrCodeScanner('PICK')" title="掃碼轉出貨" style="color:var(--accent); border-color:var(--accent); width:36px; height:36px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+              <i class="ph ph-qr-code" style="font-size: 18px;"></i>
             </button>
-            <button type="button" class="icon-btn" id="btnBatchPack" onclick="batchPackCheckedOrders()" title="批量將已勾選訂單出貨打包" style="background:#0F172A; color:#FFFFFF; border-color:#0F172A; padding:5px 10px; font-weight:700;">
-              <i class="ph ph-package" style="font-size: 16px;"></i> <span>批量出貨</span>
+            
+            <button type="button" class="icon-btn" id="btnBatchPack" onclick="batchPackCheckedOrders()" title="批量出貨打包" style="background:#0F172A; color:#FFFFFF; border-color:#0F172A; width:36px; height:36px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+              <i class="ph ph-package" style="font-size: 18px;"></i>
             </button>
           </div>
         </div>
@@ -2157,18 +2169,20 @@
 
       
       <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 14px; margin-bottom: 14px;">
-        <div style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <i class="ph ph-paper-plane-tilt" style="font-size: 16px;"></i>
+        <div style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <div style="display:flex; align-items:center; gap:6px; flex: 1; min-width: 140px;">
+            <i class="ph ph-paper-plane-tilt" style="font-size: 18px; color:#0D9488;"></i>
             <span>出貨區（待配）</span>
             <span id="pendingDispatchCount" style="font-size: 11px; font-family: monospace; color: var(--text-muted);"></span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <button type="button" class="icon-btn" onclick="startQrCodeScanner('SHIP')" title="掃描外箱貼條 QR Code 勾選" style="color:#0D9488; border-color:#0D9488; padding:5px 9px;">
-              <i class="ph ph-qr-code" style="font-size: 16px;"></i> <span>掃碼</span>
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            
+            <button type="button" class="icon-btn" onclick="startQrCodeScanner('SHIP')" title="掃碼轉配貨" style="color:#0D9488; border-color:#0D9488; width:36px; height:36px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+              <i class="ph ph-qr-code" style="font-size: 18px;"></i>
             </button>
-            <button type="button" class="icon-btn" id="btnBatchDispatch" onclick="batchDispatchCheckedParcels()" title="批量將已勾選包裹進入配貨" style="background:#0D9488; color:#FFFFFF; border-color:#0D9488; padding:5px 10px; font-weight:700;">
-              <i class="ph ph-truck" style="font-size: 16px;"></i> <span>批量配貨</span>
+            
+            <button type="button" class="icon-btn" id="btnBatchDispatch" onclick="batchDispatchCheckedParcels()" title="批量配貨出庫" style="background:#0D9488; color:#FFFFFF; border-color:#0D9488; width:36px; height:36px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+              <i class="ph ph-truck" style="font-size: 18px;"></i>
             </button>
           </div>
         </div>
@@ -2544,31 +2558,33 @@
 <div id="qrScannerModal" class="qr-scanner-modal" onclick="stopQrCodeScanner()">
   <div class="qr-scanner-box" onclick="event.stopPropagation()">
     <div class="qr-scanner-header" style="padding:12px 16px; background:#FFFFFF; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
-      <div style="display:flex; align-items:center; gap:6px;">
+      <div style="display:flex; align-items:center; gap:8px;">
         <i class="ph ph-qr-code" style="font-size:20px; color:var(--accent);"></i>
-        <span style="font-weight:800; font-size:14px;">相機掃描核驗</span>
+        <span id="qrScannerHeaderTitle" style="font-weight:800; font-size:15px; letter-spacing:0.5px;">掃碼作業</span>
       </div>
-      <button type="button" class="icon-btn" onclick="stopQrCodeScanner()" title="關閉" style="border:none; padding:4px;">
-        <i class="ph ph-x" style="font-size:18px;"></i>
+      
+      <button type="button" class="icon-btn" onclick="stopQrCodeScanner()" title="關閉掃碼器" style="border:none; padding:4px;">
+        <i class="ph ph-x" style="font-size:20px;"></i>
       </button>
     </div>
     
     <div class="qr-scanner-viewport" style="position:relative; width:100%; height:280px; background:#000; overflow:hidden; display:flex; align-items:center; justify-content:center;">
       <video id="qrScannerVideo" playsinline style="width:100%; height:100%; object-fit:cover;"></video>
-      <div class="qr-reticle" style="position:absolute; width:190px; height:190px; border:2.5px dashed #38BDF8; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.45); pointer-events:none;"></div>
+      <div class="qr-reticle" style="position:absolute; width:190px; height:190px; border:2.5px dashed #38BDF8; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.45); pointer-events:none; transition:all 0.25s ease;"></div>
       <canvas id="qrScanCanvas" style="display:none;"></canvas>
     </div>
     
     
-    <div style="padding:10px 14px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; flex-direction:column; gap:6px;">
-      <div id="qrScannerDynamicTip" style="font-size:11px; font-weight:700; color:var(--text); text-align:center;">
-        對準左側撿貨單轉【出貨】；對準右側外箱貼條轉【配貨】
+    <div style="padding:12px 14px; background:#FFFFFF; border-top:1px solid #E2E8F0; display:flex; flex-direction:column; gap:8px;">
+      <div id="qrScanFeedbackBox" style="min-height:36px; display:flex; align-items:center; justify-content:center; text-align:center; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:700; background:#F8FAFC; border:1px solid #E2E8F0; color:var(--text-muted); line-height:1.4;">
+        請對準條碼進行掃描
       </div>
-      <div style="display:flex; justify-content:center; gap:8px;">
-        <input type="file" id="qrPhotoFallbackInput" accept="image/*" style="display:none;" onchange="handleQrPhotoFile(this)">
-        <button type="button" class="icon-btn" onclick="document.getElementById('qrPhotoFallbackInput').click()" style="padding:4px 10px; font-size:11px; border-radius:20px;">
-          <i class="ph ph-image"></i> 選擇條碼照片手動解析
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted);">
+        <span>模式: <strong id="qrScannerModeBadge" style="color:var(--text);">連續自動流轉</strong></span>
+        <button type="button" class="icon-btn" onclick="document.getElementById('qrPhotoFallbackInput').click()" style="padding:3px 8px; font-size:11px; border-radius:14px;">
+          <i class="ph ph-image"></i> 照片解析
         </button>
+        <input type="file" id="qrPhotoFallbackInput" accept="image/*" style="display:none;" onchange="handleQrPhotoFile(this)">
       </div>
     </div>
   </div>
@@ -6569,27 +6585,40 @@
   let currentScanMode = 'ALL';               // 'PICK' (撿貨單) 或 'SHIP' (外箱貼條)
   let checkedDispatchParcels = new Set();    // 記錄待交寄中已勾選的包裹 ID
 
-  // 獨立掃碼啟動：跨平台全面接通 jsQR 引擎 (iOS Safari / Android / LINE 瞬發秒解)
+  // ==========================================
+  // 現場相機連續掃描流水線（不跳出、極簡指示、自動直接流轉下一階段）
+  // ==========================================
   let isQrScanningActive = false;
+  let isQrScanCooldown = false; // 1.6 秒防抖防重複掃描閥門
 
   async function startQrCodeScanner(mode = 'ALL') {
     currentScanMode = mode;
     const modal = document.getElementById('qrScannerModal');
     const video = document.getElementById('qrScannerVideo');
-    const headerTitle = modal ? modal.querySelector('.qr-scanner-header span') : null;
-    const dynamicTip = document.getElementById('qrScannerDynamicTip');
+    const headerTitle = document.getElementById('qrScannerHeaderTitle');
+    const feedbackBox = document.getElementById('qrScanFeedbackBox');
+    const modeBadge = document.getElementById('qrScannerModeBadge');
 
     if (!modal || !video) return;
 
+    // 極簡標題指示：只顯示「掃碼轉出貨」或「掃碼轉配貨」
     if (headerTitle) {
-      headerTitle.innerText = mode === 'PICK' ? '相機掃描 - 撿貨單 QR Code 核驗勾選' : (mode === 'SHIP' ? '相機掃描 - 外箱託運貼條 QR Code 勾選配貨' : '相機掃描 QR Code');
+      headerTitle.innerText = mode === 'PICK' ? '掃碼轉出貨' : (mode === 'SHIP' ? '掃碼轉配貨' : '掃碼作業');
     }
-    if (dynamicTip) {
-      dynamicTip.innerText = mode === 'PICK' ? '請對準撿貨清單上的 QR Code (PICK:BUY-xxxx) 進行核驗勾選' : (mode === 'SHIP' ? '請對準外箱託運貼條上的 QR Code (SHIP:BUY-xxxx:OUT-xxxx) 勾選配貨' : '對準左側撿貨單轉【出貨】；對準右側外箱貼條轉【配貨】');
+    if (modeBadge) {
+      modeBadge.innerText = mode === 'PICK' ? '撿貨 ➔ 出貨' : '出貨 ➔ 配貨';
+    }
+    if (feedbackBox) {
+      feedbackBox.className = '';
+      feedbackBox.style.background = '#F8FAFC';
+      feedbackBox.style.borderColor = '#E2E8F0';
+      feedbackBox.style.color = 'var(--text-muted)';
+      feedbackBox.innerHTML = mode === 'PICK' ? '請對準左側撿貨單 QR Code' : '請對準右側外箱貼條 QR Code';
     }
 
     modal.classList.add('active');
     isQrScanningActive = true;
+    isQrScanCooldown = false;
 
     try {
       qrScanStream = await navigator.mediaDevices.getUserMedia({
@@ -6600,16 +6629,15 @@
       video.setAttribute("muted", "true");
       await video.play();
 
-      // 啟動高靈敏實時循環解碼引擎 (原生 BarcodeDetector + jsQR 雙保險)
       runActiveQrFrameDecodeLoop();
     } catch (err) {
       console.error("相機啟動異常:", err);
-      showToast("相機啟動未成功，請確認瀏覽器相機使用權限");
+      showToast("相機啟動未成功，請確認瀏覽器相機權限");
       stopQrCodeScanner();
     }
   }
 
-  // 實時影格解碼循環：中央瞄準框 ROI 核心聚焦採樣 (排除周圍雜訊，0.05秒瞬發)
+  // 實時影格解碼循環：中央瞄準框 ROI 核心聚焦採樣 (排除周圍雜訊干擾，0.05秒瞬發)
   function runActiveQrFrameDecodeLoop() {
     if (!isQrScanningActive) return;
 
@@ -6621,11 +6649,17 @@
       return;
     }
 
+    // 冷卻期間暫緩探測，保護畫面回饋
+    if (isQrScanCooldown) {
+      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 120);
+      return;
+    }
+
     const vw = video.videoWidth;
     const vh = video.videoHeight;
 
     if (vw > 0 && vh > 0) {
-      // 核心關鍵：精準鎖定畫面正中央 60% 瞄準框區域 (ROI)
+      // 精準鎖定畫面正中央 62% 瞄準框區域 (ROI)，徹底排除標題與周圍雜訊
       const cropW = Math.round(vw * 0.62);
       const cropH = Math.round(vh * 0.62);
       const cropX = Math.round((vw - cropW) / 2);
@@ -6634,52 +6668,49 @@
       canvas.width = cropW;
       canvas.height = cropH;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      // 只將瞄準框內的影像繪入畫布，100% 排除外圍黑框、標題字與底部雜訊！
       ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
       let detectedCode = null;
 
-      // 通道 1：iOS Safari / LINE 核心由 jsQR 毫秒級高速探測
+      // 1. jsQR 高靈敏毫秒級探測 (iOS Safari / Android 通用)
       if (typeof jsQR === 'function' && isQrScanningActive) {
         try {
           const imageData = ctx.getImageData(0, 0, cropW, cropH);
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: "dontInvert"
           });
-          if (code && code.data) {
-            detectedCode = code.data;
-          }
+          if (code && code.data) detectedCode = code.data;
         } catch(err) {}
       }
 
-      // 通道 2：原生 BarcodeDetector 輔助通道
+      // 2. 原生 BarcodeDetector 備援通道
       if (!detectedCode && 'BarcodeDetector' in window && isQrScanningActive) {
         try {
           const detector = new BarcodeDetector({ formats: ['qr_code'] });
           detector.detect(canvas).then(barcodes => {
-            if (barcodes && barcodes.length > 0 && isQrScanningActive) {
+            if (barcodes && barcodes.length > 0 && isQrScanningActive && !isQrScanCooldown) {
               triggerQrDecodeSuccess(barcodes[0].rawValue);
             }
           }).catch(() => {});
         } catch(e) {}
       }
 
-      // 只要任一通道成功捕獲，立刻觸發成功！
-      if (detectedCode && isQrScanningActive) {
+      if (detectedCode && isQrScanningActive && !isQrScanCooldown) {
         triggerQrDecodeSuccess(detectedCode);
         return;
       }
     }
 
-    // 高頻平滑循環 (80ms 間隔，順暢零卡頓)
     if (isQrScanningActive) {
       qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 80);
     }
   }
 
-  // 成功掃碼反饋：瞄準框亮綠光 + 震動 + 0.1秒秒殺關閉
+  // 成功掃碼反饋：不跳出畫面、瞄準框亮綠光霓虹、內聯呈現流轉狀態、自動等待下一筆
   function triggerQrDecodeSuccess(rawCode) {
-    isQrScanningActive = false;
+    if (isQrScanCooldown) return;
+    isQrScanCooldown = true;
+
     const reticle = document.querySelector('.qr-reticle');
     if (reticle) {
       reticle.style.borderColor = '#10B981';
@@ -6688,24 +6719,132 @@
     if (navigator.vibrate) {
       try { navigator.vibrate([60, 40, 60]); } catch(e) {}
     }
+
+    // 執行業務流轉（直接推進下一階段，絕對不關閉相機！）
+    handleContinuousQrProcess(rawCode);
+
+    // 1.6 秒後瞄準框恢復藍色，允許繼續連續掃碼
     setTimeout(() => {
-      stopQrCodeScanner();
-      handleScannedQrResult(rawCode);
-    }, 120);
+      if (reticle) {
+        reticle.style.borderColor = '#38BDF8';
+        reticle.style.boxShadow = '0 0 0 4000px rgba(0, 0, 0, 0.45)';
+      }
+      isQrScanCooldown = false;
+      if (isQrScanningActive) runActiveQrFrameDecodeLoop();
+    }, 1600);
   }
 
-  // 成功掃碼反饋機制 (音效/震動/關閉相機)
-  function triggerQrDecodeSuccess(rawCode) {
-    isQrScanningActive = false;
-    if (navigator.vibrate) {
-      try { navigator.vibrate(80); } catch(e) {} // 觸覺微震動
+  // 連續掃描流水線處理核心：內聯呈現正常/異常，自動推進下一區域
+  async function handleContinuousQrProcess(codeText) {
+    const feedbackBox = document.getElementById('qrScanFeedbackBox');
+    const setFeedback = (type, title, desc = '') => {
+      if (!feedbackBox) return;
+      const isOk = (type === 'success');
+      feedbackBox.style.background = isOk ? '#ECFDF5' : '#FEF2F2';
+      feedbackBox.style.borderColor = isOk ? '#10B981' : '#EF4444';
+      feedbackBox.style.color = isOk ? '#065F46' : '#991B1B';
+      feedbackBox.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:2px; width:100%;">
+          <div style="font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; gap:4px;">
+            <i class="ph ${isOk ? 'ph-check-circle' : 'ph-warning-circle'}" style="font-size:16px;"></i>
+            <span>${title}</span>
+          </div>
+          ${desc ? `<div style="font-size:11px; font-weight:600; opacity:0.9;">${desc}</div>` : ''}
+        </div>
+      `;
+    };
+
+    if (!codeText) {
+      setFeedback('error', '異常：無法讀取條碼內容');
+      return;
     }
-    stopQrCodeScanner();
-    handleScannedQrResult(rawCode);
+
+    // ==========================================
+    // 流程 A：掃碼轉出貨 (PICK 模式) ➔ 直接打包轉為出貨
+    // ==========================================
+    if (currentScanMode === 'PICK') {
+      if (codeText.startsWith('SHIP:')) {
+        setFeedback('error', '異常：此為外箱貼條碼', '請在「出貨區」點擊掃碼');
+        return;
+      }
+      if (!codeText.startsWith('PICK:')) {
+        setFeedback('error', '異常：非撿貨單格式', codeText);
+        return;
+      }
+
+      const targetOrderId = codeText.replace('PICK:', '').trim();
+      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
+
+      if (!ord) {
+        setFeedback('error', '異常：查無此訂單', targetOrderId);
+        return;
+      }
+
+      if (ord.status === '出貨') {
+        setFeedback('error', '異常：該單已完成出貨', `訂單 ${targetOrderId} 已在出貨區待配`);
+        return;
+      }
+      if (ord.status === '配送') {
+        setFeedback('error', '異常：該單已完成配貨', `訂單 ${targetOrderId} 已進入配送`);
+        return;
+      }
+      if (ord.status !== '收款') {
+        setFeedback('error', '異常：非待撿貨狀態', `當前狀態為「${ord.status}」`);
+        return;
+      }
+
+      // 執行直接打包流轉至出貨區
+      setFeedback('success', `正在出貨打包...`, targetOrderId);
+      try {
+        await packOrderDispatched(targetOrderId);
+        setFeedback('success', `✅ 正常：已轉出貨！`, `訂單 ${targetOrderId} 已自動移至出貨區`);
+      } catch (e) {
+        setFeedback('error', '異常：出貨處理失敗', e.message || '請稍後重試');
+      }
+      return;
+    }
+
+    // ==========================================
+    // 流程 B：掃碼轉配貨 (SHIP 模式) ➔ 直接出庫轉為配送
+    // ==========================================
+    if (currentScanMode === 'SHIP') {
+      if (codeText.startsWith('PICK:')) {
+        setFeedback('error', '異常：此為撿貨單碼', '請在「撿貨區」點擊掃碼');
+        return;
+      }
+      if (!codeText.startsWith('SHIP:')) {
+        setFeedback('error', '異常：非外箱貼條格式', codeText);
+        return;
+      }
+
+      const parts = codeText.split(':');
+      const targetOrderId = parts[1] || '';
+      const targetOutId = parts[2] || '';
+
+      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
+      if (ord && ord.status === '配送') {
+        setFeedback('error', '異常：該包裹已完成配貨', `包裹 ${targetOutId} 已在配送中`);
+        return;
+      }
+
+      // 執行直接出庫配貨，移入配送中歷史
+      setFeedback('success', `正在配貨出庫...`, targetOutId);
+      try {
+        await executeDirectDispatch(targetOrderId, targetOutId);
+        setFeedback('success', `✅ 正常：已轉配貨！`, `包裹 ${targetOutId} 已完成出庫進入配送`);
+      } catch (e) {
+        setFeedback('error', '異常：配貨處理失敗', e.message || '請稍後重試');
+      }
+      return;
+    }
+
+    setFeedback('error', '異常：未指定掃碼模式', codeText);
   }
 
+  // 關閉相機（只有手動點右上角 X 才會觸發）
   function stopQrCodeScanner() {
     isQrScanningActive = false;
+    isQrScanCooldown = false;
     if (qrScanTimer) {
       clearTimeout(qrScanTimer);
       clearInterval(qrScanTimer);
@@ -6719,7 +6858,22 @@
     if (modal) modal.classList.remove('active');
   }
 
-  // 備援方案：支援直接上傳或拍攝條碼照片進行 jsQR 解析
+  // 點擊出貨單一鍵穿透跳轉至訂單管理頁（單獨搜尋並展開查閱/編輯）
+  function jumpToOrderDetail(orderId) {
+    if (!orderId) return;
+    switchTab('tab4');
+    const kwInput = document.getElementById('filterOrderKeyword');
+    if (kwInput) {
+      kwInput.value = orderId;
+      renderOrderList();
+    }
+    setTimeout(() => {
+      toggleOrderEdit(orderId);
+    }, 180);
+    showToast(`已跳轉至訂單 ${orderId} 詳細資訊`);
+  }
+
+  // 備援照片手動解析
   function handleQrPhotoFile(input) {
     const file = input.files && input.files[0];
     if (!file) return;
@@ -6747,132 +6901,12 @@
             console.error("jsQR 靜態解析失敗:", err);
           }
         }
-        showToast("未能從該照片辨識出有效 QR Code，請調整光線重拍");
+        showToast("未能從該照片辨識出有效條碼");
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
     input.value = '';
-  }
-
-  function handleScannedQrResult(codeText) {
-    if (!codeText) return;
-    stopQrCodeScanner();
-
-    // ========================================================
-    // 模式 A：撿貨區專屬掃碼 (PICK 模式) ➔ 僅做「勾選」，避免直接打包
-    // ========================================================
-    if (currentScanMode === 'PICK') {
-      if (codeText.startsWith('SHIP:')) {
-        showToast('⚠️ 條碼錯誤：此為外箱託運條碼！請在「待交寄區」使用掃碼。');
-        return;
-      }
-      if (!codeText.startsWith('PICK:')) {
-        showToast(`⚠️ 非撿貨清單條碼格式：${codeText}`);
-        return;
-      }
-
-      const targetOrderId = codeText.replace('PICK:', '').trim();
-      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
-
-      if (!ord) {
-        showToast(`⚠️ 查無此訂單：${targetOrderId}`);
-        return;
-      }
-
-      // 狀態防錯檢查：避免重複掃描已進入後續流程的單據
-      if (ord.status === '出貨') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已掃過且已完成出貨，目前在「待交寄」！`);
-        return;
-      }
-      if (ord.status === '配送') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已完成出貨與配貨，目前在「配送」中！`);
-        return;
-      }
-      if (ord.status !== '收款') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 當前狀態為「${ord.status}」，非待撿貨訂單！`);
-        return;
-      }
-
-      // 檢查待撿貨佇列
-      const pOrder = pickingOrdersQueue.find(pq => pq.orderId === targetOrderId);
-      if (!pOrder) {
-        showToast(`⚠️ 訂單 ${targetOrderId} 不在待撿貨佇列中`);
-        return;
-      }
-
-      const allAlreadyChecked = pOrder.items.every(it => it.isChecked);
-      if (allAlreadyChecked) {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已完成掃碼勾選，請勿重複掃描！可點擊「批量出貨」`);
-        return;
-      }
-
-      // 勾選該訂單內的所有品項
-      pOrder.items.forEach(it => {
-        it.isChecked = true;
-        it.pickedQty = it.targetQty;
-        it.isMatched = true;
-        it.isNormal = true;
-      });
-
-      renderPickingStationUI();
-      showToast(`✅ 訂單 ${targetOrderId} 掃碼勾選成功！已標記完成，可點擊「批量出貨」`);
-
-      // 後端連動：寫入「物流管理」工作表 J, K, M 欄掃碼記錄
-      apiCall('recordLogisticsPickingVerify', {
-        orderId: targetOrderId,
-        itemStatus: '正常',
-        checkRecord: 'QR Code 掃碼核驗勾選完成',
-        handler: '倉庫檢驗同仁'
-      }).catch(e => console.warn('撿貨掃碼日誌連動微延遲:', e));
-      return;
-    }
-
-    // ========================================================
-    // 模式 B：待交寄區專屬掃碼 (SHIP 模式) ➔ 僅做「包裹勾選」，避免直接出庫
-    // ========================================================
-    if (currentScanMode === 'SHIP') {
-      if (codeText.startsWith('PICK:')) {
-        showToast('⚠️ 條碼錯誤：此為撿貨清單條碼！請在「撿貨作業區」使用掃碼。');
-        return;
-      }
-      if (!codeText.startsWith('SHIP:')) {
-        showToast(`⚠️ 非外箱貼條條碼格式：${codeText}`);
-        return;
-      }
-
-      const parts = codeText.split(':');
-      const targetOrderId = parts[1] || '';
-      const targetOutId = parts[2] || '';
-
-      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
-      if (ord && ord.status === '配送') {
-        showToast(`⚠️ 包裹 ${targetOutId} 已完成出庫，目前在「配送」中，請勿重複掃描！`);
-        return;
-      }
-
-      if (checkedDispatchParcels.has(targetOutId)) {
-        showToast(`⚠️ 包裹 ${targetOutId} 已完成掃碼勾選，請勿重複掃描！可點擊「批量配貨」`);
-        return;
-      }
-
-      // 勾選該包裹
-      checkedDispatchParcels.add(targetOutId);
-      renderLogisticsPendingBoard();
-      showToast(`✅ 包裹 ${targetOutId} 掃碼勾選成功！可繼續掃描或點擊「批量配貨」`);
-
-      notifySheetSyncStatus('物流管理', `包裹 ${targetOutId} 掃碼核驗已記錄`);
-      return;
-    }
-
-    // 通用模式兜底
-    if (codeText.startsWith('PICK:')) {
-      showToast('請在「撿貨作業區」點擊專屬掃碼鈕');
-    } else if (codeText.startsWith('SHIP:')) {
-      showToast('請在「待交寄區」點擊專屬掃碼鈕');
-    } else {
-      showToast(`掃描到條碼：${codeText}`);
-    }
   }
 
   // 包裹手動勾選切換
@@ -7260,7 +7294,8 @@
           return `
             <div style="background:#FFFFFF; border:1.5px solid #CBD5E1; border-radius:8px; margin-bottom:12px; overflow:hidden;">
               <div style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; flex-wrap:wrap; gap:8px;" onclick="toggleDispatchOrderExpand('${o.orderId}')">
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; min-width:0;">
+                  <!-- 出貨區（待配）：純粹單號標籤，點擊卡片正常展開收合包裹明細 -->
                   <span class="chip-sheet" style="font-weight:800; font-size:12px;">訂單: ${o.orderId}</span>
                   <span class="chip-sheet" style="font-size:11px;">會員: ${o.memberId || 'MEM'}</span>
                   <span style="font-size:13px; font-weight:700; color:var(--text);">${o.receiverName || o.memberName}</span>
@@ -8782,8 +8817,11 @@
       return `
         <div class="inv-card" id="history-order-card-${orderId}" onclick="toggleHistoryOrderExpand('${orderId}')" style="cursor:pointer; margin-bottom:12px; border:1.5px solid #CBD5E1;">
           <div class="inv-header">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="chip-sheet" style="font-weight:800; font-size:12px;">訂單: ${orderId}</span>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; min-width:0;">
+              <!-- 配貨區：點擊訂單編號晶片，直接穿透跳轉至訂單管理頁面過篩並展開查閱/編輯 -->
+              <span class="chip-sheet" onclick="event.stopPropagation(); jumpToOrderDetail('${orderId}')" title="點擊跳轉至訂單管理查閱或編輯此單" style="font-weight:800; font-size:12px; cursor:pointer; color:var(--accent) !important; border-color:var(--accent) !important;">
+                <i class="ph ph-arrow-square-out" style="font-size:13px;"></i> 訂單: ${orderId}
+              </span>
               <span class="chip-sheet" style="font-size:11px;">會員: ${first.memberId || '-'}</span>
               <span style="font-weight:700; font-size:14px; color:var(--text);">${first.memberName || '顧客'}</span>
               <span style="font-size:12px; color:var(--text-muted);">${first.memberPhone || ''}</span>
