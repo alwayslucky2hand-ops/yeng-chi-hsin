@@ -6422,8 +6422,9 @@
   // ==========================================
   // 橫式 A4 1/8 雙單據預覽引擎 (移除口方框 ＋ 收件在上/寄件在下 ＋ 專屬 QR Code)
   // ==========================================
-  function getQrCodeUrl(dataStr, size = 110) {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=0&data=${encodeURIComponent(dataStr)}`;
+  function getQrCodeUrl(dataStr, size = 130) {
+    // 注入標準白色靜區 margin=2 與高辨識糾錯 ecc=M
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=2&ecc=M&data=${encodeURIComponent(dataStr)}`;
   }
 
   function openPickingSlipModal(orderId) {
@@ -6496,7 +6497,7 @@
 
     const outId = order.outId || ('OUT-' + Date.now());
     const qrData = `SHIP:${order.orderId}:${outId}`;
-    const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=0&data=${encodeURIComponent(qrData)}`;
+    const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=2&ecc=M&data=${encodeURIComponent(qrData)}`;
 
     if (watermark) watermark.innerText = "EXPRESS";
     if (footerLeft) footerLeft.innerText = "妍之馨生技有限公司 ‧ 出貨包裹外箱標準貼條";
@@ -6608,7 +6609,7 @@
     }
   }
 
-  // 實時影格解碼循環 (每秒 10~15 次高速探測)
+  // 實時影格解碼循環：中央瞄準框 ROI 核心聚焦採樣 (排除周圍雜訊，0.05秒瞬發)
   function runActiveQrFrameDecodeLoop() {
     if (!isQrScanningActive) return;
 
@@ -6616,7 +6617,7 @@
     const canvas = document.getElementById('qrScanCanvas');
 
     if (!video || !canvas || video.readyState < 2) {
-      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 80);
+      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 60);
       return;
     }
 
@@ -6624,30 +6625,24 @@
     const vh = video.videoHeight;
 
     if (vw > 0 && vh > 0) {
-      canvas.width = vw;
-      canvas.height = vh;
+      // 核心關鍵：精準鎖定畫面正中央 60% 瞄準框區域 (ROI)
+      const cropW = Math.round(vw * 0.62);
+      const cropH = Math.round(vh * 0.62);
+      const cropX = Math.round((vw - cropW) / 2);
+      const cropY = Math.round((vh - cropH) / 2);
+
+      canvas.width = cropW;
+      canvas.height = cropH;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      ctx.drawImage(video, 0, 0, vw, vh);
+      // 只將瞄準框內的影像繪入畫布，100% 排除外圍黑框、標題字與底部雜訊！
+      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
       let detectedCode = null;
 
-      // 1. 若支援原生 BarcodeDetector 優先探測
-      if ('BarcodeDetector' in window) {
-        try {
-          const detector = new BarcodeDetector({ formats: ['qr_code'] });
-          detector.detect(canvas).then(barcodes => {
-            if (barcodes && barcodes.length > 0 && isQrScanningActive) {
-              triggerQrDecodeSuccess(barcodes[0].rawValue);
-              return;
-            }
-          }).catch(() => {});
-        } catch(e) {}
-      }
-
-      // 2. iOS Safari / LINE 全面由 jsQR 接管瞬發解碼
+      // 通道 1：iOS Safari / LINE 核心由 jsQR 毫秒級高速探測
       if (typeof jsQR === 'function' && isQrScanningActive) {
         try {
-          const imageData = ctx.getImageData(0, 0, vw, vh);
+          const imageData = ctx.getImageData(0, 0, cropW, cropH);
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
             inversionAttempts: "dontInvert"
           });
@@ -6657,16 +6652,46 @@
         } catch(err) {}
       }
 
+      // 通道 2：原生 BarcodeDetector 輔助通道
+      if (!detectedCode && 'BarcodeDetector' in window && isQrScanningActive) {
+        try {
+          const detector = new BarcodeDetector({ formats: ['qr_code'] });
+          detector.detect(canvas).then(barcodes => {
+            if (barcodes && barcodes.length > 0 && isQrScanningActive) {
+              triggerQrDecodeSuccess(barcodes[0].rawValue);
+            }
+          }).catch(() => {});
+        } catch(e) {}
+      }
+
+      // 只要任一通道成功捕獲，立刻觸發成功！
       if (detectedCode && isQrScanningActive) {
         triggerQrDecodeSuccess(detectedCode);
-        return; // 解碼成功，終止後續循環
+        return;
       }
     }
 
-    // 繼續下一影格探測 (100ms 循環間隔，流暢且不發燙)
+    // 高頻平滑循環 (80ms 間隔，順暢零卡頓)
     if (isQrScanningActive) {
-      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 100);
+      qrScanTimer = setTimeout(runActiveQrFrameDecodeLoop, 80);
     }
+  }
+
+  // 成功掃碼反饋：瞄準框亮綠光 + 震動 + 0.1秒秒殺關閉
+  function triggerQrDecodeSuccess(rawCode) {
+    isQrScanningActive = false;
+    const reticle = document.querySelector('.qr-reticle');
+    if (reticle) {
+      reticle.style.borderColor = '#10B981';
+      reticle.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.8), 0 0 0 4000px rgba(0, 0, 0, 0.55)';
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate([60, 40, 60]); } catch(e) {}
+    }
+    setTimeout(() => {
+      stopQrCodeScanner();
+      handleScannedQrResult(rawCode);
+    }, 120);
   }
 
   // 成功掃碼反饋機制 (音效/震動/關閉相機)
