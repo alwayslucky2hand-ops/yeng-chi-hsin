@@ -1265,6 +1265,8 @@
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Material&#43;Symbols&#43;Outlined" rel="stylesheet" />
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -2460,21 +2462,33 @@
 
 <div id="qrScannerModal" class="qr-scanner-modal" onclick="stopQrCodeScanner()">
   <div class="qr-scanner-box" onclick="event.stopPropagation()">
-    <div class="qr-scanner-header">
+    <div class="qr-scanner-header" style="padding:12px 16px; background:#FFFFFF; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:6px;">
-        <i class="ph ph-scan" style="font-size:18px; color:var(--accent);"></i>
-        <span>相機掃描 QR Code</span>
+        <i class="ph ph-qr-code" style="font-size:20px; color:var(--accent);"></i>
+        <span style="font-weight:800; font-size:14px;">相機掃描核驗</span>
       </div>
       <button type="button" class="icon-btn" onclick="stopQrCodeScanner()" title="關閉" style="border:none; padding:4px;">
         <i class="ph ph-x" style="font-size:18px;"></i>
       </button>
     </div>
-    <div class="qr-scanner-viewport">
-      <video id="qrScannerVideo" playsinline></video>
-      <div class="qr-reticle"></div>
+    
+    <div class="qr-scanner-viewport" style="position:relative; width:100%; height:280px; background:#000; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+      <video id="qrScannerVideo" playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+      <div class="qr-reticle" style="position:absolute; width:190px; height:190px; border:2.5px dashed #38BDF8; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.45); pointer-events:none;"></div>
+      <canvas id="qrScanCanvas" style="display:none;"></canvas>
     </div>
-    <div style="padding:10px 14px; font-size:11px; color:var(--text-muted); text-align:center;">
-      對準撿貨清單 QR Code 自動轉「出貨」；對準箱外單據轉「配貨」
+    
+    
+    <div style="padding:10px 14px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; flex-direction:column; gap:6px;">
+      <div id="qrScannerDynamicTip" style="font-size:11px; font-weight:700; color:var(--text); text-align:center;">
+        對準左側撿貨單轉【出貨】；對準右側外箱貼條轉【配貨】
+      </div>
+      <div style="display:flex; justify-content:center; gap:8px;">
+        <input type="file" id="qrPhotoFallbackInput" accept="image/*" style="display:none;" onchange="handleQrPhotoFile(this)">
+        <button type="button" class="icon-btn" onclick="document.getElementById('qrPhotoFallbackInput').click()" style="padding:4px 10px; font-size:11px; border-radius:20px;">
+          <i class="ph ph-image"></i> 選擇條碼照片手動解析
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -6447,61 +6461,114 @@
   // 1. 掃描 PICK:BUY-xxx ➔ 轉出貨
   // 2. 掃描 SHIP:BUY-xxx:OUT-xxx ➔ 彈出核驗確認 ➔ 轉配貨
   // ==========================================
+  // 現場相機即時 QR Code 掃描器 Modal (雙核跨平台引擎 + 雙流向智能分流)
   let qrScanStream = null;
   let qrScanTimer = null;
   let pendingDispatchConfirmData = null;
   let currentScanMode = 'ALL';               // 'PICK' (撿貨單) 或 'SHIP' (外箱貼條)
   let checkedDispatchParcels = new Set();    // 記錄待交寄中已勾選的包裹 ID
+  let isQrScanningActive = false;
 
-  // 獨立掃碼啟動：支援 PICK / SHIP 專屬提示
+  // 動態加載 jsQR 解碼庫 (雙保險防止 CDN 未加載完成)
+  function ensureJsQrLoaded() {
+    return new Promise((resolve) => {
+      if (typeof jsQR !== 'undefined') {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = "https:
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  }
+
+  
   async function startQrCodeScanner(mode = 'ALL') {
     currentScanMode = mode;
+    await ensureJsQrLoaded();
+
     const modal = document.getElementById('qrScannerModal');
     const video = document.getElementById('qrScannerVideo');
-    const headerTitle = modal ? modal.querySelector('.qr-scanner-header span') : null;
-    const tipText = modal ? modal.querySelector('.qr-scanner-box > div:last-child') : null;
+    const tipText = document.getElementById('qrScannerDynamicTip');
 
     if (!modal || !video) return;
 
-    if (headerTitle) {
-      headerTitle.innerText = mode === 'PICK' ? '相機掃描 - 撿貨單 QR Code 核驗勾選' : (mode === 'SHIP' ? '相機掃描 - 外箱託運貼條 QR Code 勾選配貨' : '相機掃描 QR Code');
-    }
     if (tipText) {
-      tipText.innerText = mode === 'PICK' ? '請對準撿貨清單上的 QR Code (PICK:BUY-xxxx) 進行核驗勾選' : (mode === 'SHIP' ? '請對準外箱託運貼條上的 QR Code (SHIP:BUY-xxxx:OUT-xxxx) 勾選配貨' : '對準撿貨單轉出貨；對準箱外單據轉配貨');
+      if (mode === 'PICK') {
+        tipText.innerHTML = '<span style="color:var(--accent);">【收款 ➔ 轉出貨】</span> 請對準撿貨清單 QR Code';
+      } else if (mode === 'SHIP') {
+        tipText.innerHTML = '<span style="color:#0D9488;">【出貨 ➔ 轉配貨】</span> 請對準外箱託運貼條 QR Code';
+      } else {
+        tipText.innerText = '對準左側撿貨單轉【出貨】；對準右側外箱貼條轉【配貨】';
+      }
     }
 
     modal.classList.add('active');
+    isQrScanningActive = true;
 
     try {
       qrScanStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } }
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
       });
       video.srcObject = qrScanStream;
       video.setAttribute("playsinline", true);
       await video.play();
 
-      // 使用 BarcodeDetector 原生 API 或 Canvas 輪詢分析
-      if ('BarcodeDetector' in window) {
-        const detector = new BarcodeDetector({ formats: ['qr_code'] });
-        qrScanTimer = setInterval(async () => {
+      
+      const canvas = document.getElementById('qrScanCanvas') || document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+      qrScanTimer = setInterval(async () => {
+        if (!isQrScanningActive || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        if (!w || !h) return;
+
+        
+        if (typeof jsQR !== 'undefined') {
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(video, 0, 0, w, h);
+          const imageData = ctx.getImageData(0, 0, w, h);
+          const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert"
+          });
+
+          if (qrCode && qrCode.data) {
+            handleScannedQrResult(qrCode.data);
+            return;
+          }
+        }
+
+        
+        if ('BarcodeDetector' in window) {
           try {
+            const detector = new BarcodeDetector({ formats: ['qr_code'] });
             const barcodes = await detector.detect(video);
-            if (barcodes.length > 0) {
+            if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
               handleScannedQrResult(barcodes[0].rawValue);
+              return;
             }
           } catch(e) {}
-        }, 300);
-      } else {
-        showToast("相機已啟動，請保持對準 QR Code");
-      }
+        }
+      }, 200);
+
     } catch (err) {
-      showToast("相機啟動未成功，請確認瀏覽器相機權限");
-      stopQrCodeScanner();
+      if (typeof showToast === 'function') {
+        showToast("相機啟動未成功，請確認瀏覽器相機權限，或使用照片解析");
+      }
     }
   }
 
   function stopQrCodeScanner() {
-    if (qrScanTimer) clearInterval(qrScanTimer);
+    isQrScanningActive = false;
+    if (qrScanTimer) {
+      clearInterval(qrScanTimer);
+      qrScanTimer = null;
+    }
     if (qrScanStream) {
       qrScanStream.getTracks().forEach(t => t.stop());
       qrScanStream = null;
@@ -6510,127 +6577,149 @@
     if (modal) modal.classList.remove('active');
   }
 
+  
+  function handleQrPhotoFile(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+        if (typeof jsQR !== 'undefined') {
+          const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+          if (qrCode && qrCode.data) {
+            handleScannedQrResult(qrCode.data);
+          } else {
+            if (typeof showToast === 'function') showToast("照片中未辨識到清晰的 QR Code，請重試");
+          }
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  
+  
+  
   function handleScannedQrResult(codeText) {
     if (!codeText) return;
     stopQrCodeScanner();
 
-    // ========================================================
-    // 模式 A：撿貨區專屬掃碼 (PICK 模式) ➔ 僅做「勾選」，避免直接打包
-    // ========================================================
-    if (currentScanMode === 'PICK') {
-      if (codeText.startsWith('SHIP:')) {
-        showToast('⚠️ 條碼錯誤：此為外箱託運條碼！請在「待交寄區」使用掃碼。');
-        return;
-      }
-      if (!codeText.startsWith('PICK:')) {
-        showToast(`⚠️ 非撿貨清單條碼格式：${codeText}`);
-        return;
-      }
+    
+    if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
 
-      const targetOrderId = codeText.replace('PICK:', '').trim();
-      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
+    const cleanCode = String(codeText).trim();
+
+    
+    
+    
+    if (cleanCode.startsWith('PICK:') || cleanCode.startsWith('BUY-')) {
+      const targetOrderId = cleanCode.replace('PICK:', '').trim();
+      const ord = (typeof orderCache !== 'undefined' ? orderCache : []).find(o => o.orderId === targetOrderId);
 
       if (!ord) {
-        showToast(`⚠️ 查無此訂單：${targetOrderId}`);
+        if (typeof showToast === 'function') showToast(`⚠️ 查無此訂單：${targetOrderId}`);
         return;
       }
 
-      // 狀態防錯檢查：避免重複掃描已進入後續流程的單據
+      
       if (ord.status === '出貨') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已掃過且已完成出貨，目前在「待交寄」！`);
+        if (typeof showToast === 'function') showToast(`ℹ️ 訂單 ${targetOrderId} 已完成出貨，目前處於「出貨區（待配）」！`);
         return;
       }
       if (ord.status === '配送') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已完成出貨與配貨，目前在「配送」中！`);
-        return;
-      }
-      if (ord.status !== '收款') {
-        showToast(`⚠️ 訂單 ${targetOrderId} 當前狀態為「${ord.status}」，非待撿貨訂單！`);
+        if (typeof showToast === 'function') showToast(`ℹ️ 訂單 ${targetOrderId} 已交寄出庫，目前處於「配送中」！`);
         return;
       }
 
-      // 檢查待撿貨佇列
-      const pOrder = pickingOrdersQueue.find(pq => pq.orderId === targetOrderId);
-      if (!pOrder) {
-        showToast(`⚠️ 訂單 ${targetOrderId} 不在待撿貨佇列中`);
-        return;
+      
+      let pOrder = (typeof pickingOrdersQueue !== 'undefined' ? pickingOrdersQueue : []).find(pq => pq.orderId === targetOrderId);
+      if (!pOrder && typeof addOrderToPickingStation === 'function') {
+        addOrderToPickingStation(targetOrderId);
+        pOrder = (typeof pickingOrdersQueue !== 'undefined' ? pickingOrdersQueue : []).find(pq => pq.orderId === targetOrderId);
       }
 
-      const allAlreadyChecked = pOrder.items.every(it => it.isChecked);
-      if (allAlreadyChecked) {
-        showToast(`⚠️ 訂單 ${targetOrderId} 已完成掃碼勾選，請勿重複掃描！可點擊「批量出貨」`);
-        return;
+      if (pOrder && pOrder.items) {
+        pOrder.items.forEach(it => {
+          it.isChecked = true;
+          it.pickedQty = it.targetQty;
+          it.isMatched = true;
+          it.isNormal = true;
+        });
       }
 
-      // 勾選該訂單內的所有品項
-      pOrder.items.forEach(it => {
-        it.isChecked = true;
-        it.pickedQty = it.targetQty;
-        it.isMatched = true;
-        it.isNormal = true;
-      });
+      if (typeof renderPickingStationUI === 'function') renderPickingStationUI();
+      if (typeof showToast === 'function') showToast(`✅【收款 ➔ 轉出貨】訂單 ${targetOrderId} 撿貨核驗完成！已全數勾選，可點擊「出貨打包」！`);
 
-      renderPickingStationUI();
-      showToast(`✅ 訂單 ${targetOrderId} 掃碼勾選成功！已標記完成，可點擊「批量出貨」`);
+      if (typeof apiCall === 'function') {
+        apiCall('recordLogisticsPickingVerify', {
+          orderId: targetOrderId,
+          itemStatus: '正常',
+          checkRecord: '撿貨單掃碼核驗通過 (收款 ➔ 轉出貨)',
+          handler: '倉庫檢驗同仁'
+        }).catch(e => console.warn('日誌連動微延遲:', e));
+      }
 
-      // 後端連動：寫入「物流管理」工作表 J, K, M 欄掃碼記錄
-      apiCall('recordLogisticsPickingVerify', {
-        orderId: targetOrderId,
-        itemStatus: '正常',
-        checkRecord: 'QR Code 掃碼核驗勾選完成',
-        handler: '倉庫檢驗同仁'
-      }).catch(e => console.warn('撿貨掃碼日誌連動微延遲:', e));
       return;
     }
 
-    // ========================================================
-    // 模式 B：待交寄區專屬掃碼 (SHIP 模式) ➔ 僅做「包裹勾選」，避免直接出庫
-    // ========================================================
-    if (currentScanMode === 'SHIP') {
-      if (codeText.startsWith('PICK:')) {
-        showToast('⚠️ 條碼錯誤：此為撿貨清單條碼！請在「撿貨作業區」使用掃碼。');
-        return;
-      }
-      if (!codeText.startsWith('SHIP:')) {
-        showToast(`⚠️ 非外箱貼條條碼格式：${codeText}`);
-        return;
+    
+    
+    
+    if (cleanCode.startsWith('SHIP:') || cleanCode.startsWith('OUT-')) {
+      const parts = cleanCode.split(':');
+      let targetOrderId = '';
+      let targetOutId = '';
+
+      if (parts.length >= 3) {
+        targetOrderId = parts[1];
+        targetOutId = parts[2];
+      } else if (parts.length === 2) {
+        targetOrderId = parts[0] === 'SHIP' ? parts[1] : '';
+        targetOutId = parts[1];
+      } else {
+        targetOutId = cleanCode;
       }
 
-      const parts = codeText.split(':');
-      const targetOrderId = parts[1] || '';
-      const targetOutId = parts[2] || '';
+      
+      if (!targetOrderId && targetOutId && typeof logisticsCache !== 'undefined') {
+        const matchLog = (logisticsCache || []).find(l => l.outId === targetOutId);
+        if (matchLog) targetOrderId = matchLog.orderId;
+      }
 
-      const ord = (orderCache || []).find(o => o.orderId === targetOrderId);
+      const ord = (typeof orderCache !== 'undefined' ? orderCache : []).find(o => o.orderId === targetOrderId);
       if (ord && ord.status === '配送') {
-        showToast(`⚠️ 包裹 ${targetOutId} 已完成出庫，目前在「配送」中，請勿重複掃描！`);
+        if (typeof showToast === 'function') showToast(`ℹ️ 包裹 ${targetOutId} 已完成配貨，目前正由物流配送中！`);
         return;
       }
 
-      if (checkedDispatchParcels.has(targetOutId)) {
-        showToast(`⚠️ 包裹 ${targetOutId} 已完成掃碼勾選，請勿重複掃描！可點擊「批量配貨」`);
-        return;
+      
+      if (typeof checkedDispatchParcels !== 'undefined') {
+        checkedDispatchParcels.add(targetOutId);
+        if (typeof renderLogisticsPendingBoard === 'function') renderLogisticsPendingBoard();
       }
 
-      // 勾選該包裹
-      checkedDispatchParcels.add(targetOutId);
-      renderLogisticsPendingBoard();
-      showToast(`✅ 包裹 ${targetOutId} 掃碼勾選成功！可繼續掃描或點擊「批量配貨」`);
-
-      notifySheetSyncStatus('物流管理', `包裹 ${targetOutId} 掃碼核驗已記錄`);
+      if (typeof openDispatchVerifyModal === 'function') {
+        openDispatchVerifyModal(targetOrderId, targetOutId);
+      }
+      if (typeof showToast === 'function') showToast(`✅【出貨 ➔ 轉配貨】包裹 ${targetOutId} 掃描成功！請確認無誤後點擊「確認出庫進入配送」`);
       return;
     }
 
-    // 通用模式兜底
-    if (codeText.startsWith('PICK:')) {
-      showToast('請在「撿貨作業區」點擊專屬掃碼鈕');
-    } else if (codeText.startsWith('SHIP:')) {
-      showToast('請在「待交寄區」點擊專屬掃碼鈕');
-    } else {
-      showToast(`掃描到條碼：${codeText}`);
-    }
+    if (typeof showToast === 'function') showToast(`辨識到條碼內容：${cleanCode}`);
   }
 
-  // 包裹手動勾選切換
+  
   function toggleParcelSelection(outId) {
     if (checkedDispatchParcels.has(outId)) {
       checkedDispatchParcels.delete(outId);
@@ -6640,7 +6729,7 @@
     renderLogisticsPendingBoard();
   }
 
-  // 1. 批量確認出貨（收款 ➔ 出貨，打包進入待交寄）
+  
   async function batchPackCheckedOrders() {
     const ordersToPack = pickingOrdersQueue.filter(pOrder => {
       const active = pOrder.items.filter(it => !it.isPacked);
@@ -6672,7 +6761,7 @@
     }
   }
 
-  // 2. 批量確認進入配貨（出貨 ➔ 配送，出庫進入完成配貨）
+  
   async function batchDispatchCheckedParcels() {
     if (checkedDispatchParcels.size === 0) {
       showToast('請先掃碼外箱或手動勾選欲配貨的包裹！');
@@ -6707,11 +6796,11 @@
     }
   }
 
-  // 直接出庫進入配送（0ms 樂觀連動 + 背景靜默同步試算表）
+  
   async function executeDirectDispatch(orderId, outId) {
     if (!orderId) return;
 
-    // 1. 0ms 樂觀切換前端訂單快取為「配送」
+    
     const targetOrder = (orderCache || []).find(o => o.orderId === orderId);
     if (targetOrder) targetOrder.status = '配送';
 
@@ -6726,14 +6815,14 @@
       expandedDispatchOrders.delete(orderId);
     }
 
-    // 2. 0ms 瞬間更新「物流看盤」、「待交寄」、「訂單列表」與「總覽儀表板」
+    
     notifySheetSyncStatus('訂單管理 & 物流管理', '狀態已轉為「配送」');
     renderLogisticsPendingBoard();
     renderLogisticsList();
     if (typeof renderOrderList === 'function') renderOrderList();
     if (typeof computeAndRenderDashboard === 'function') computeAndRenderDashboard();
 
-    // 3. 背景靜默非同步寫入 Google 試算表（不阻塞畫面）
+    
     try {
       const payload = {
         orderId: orderId,
@@ -6879,21 +6968,21 @@
     if (modal) modal.classList.remove('active');
   }
 
-  // 1. 待交寄隊列與收款訂單「自動直接進入撿貨區」
+  
   function renderLogisticsPendingBoard() {
     const dispatchContainer = document.getElementById('logisticsDispatchBoardContainer');
     const dispatchCountEl = document.getElementById('pendingDispatchCount');
 
-    // 抓取已生成出貨包 OUT- 但尚未完成交寄的訂單清單
+    
     const pendingDispatchOrderIds = new Set(
       logisticsCache
         .filter(l => l.outId && String(l.outId).trim() !== '' && (!l.shipTime || String(l.shipTime).trim() === ''))
         .map(l => String(l.orderId).trim())
     );
 
-    // ========================================================
-    // 💥 核心直通升級：凡狀態為「收款」之訂單，100% 自動直入撿貨區！
-    // ========================================================
+    
+    
+    
     const paidOrders = orderCache.filter(o => {
       const st = String(o.status || '').trim();
       const oid = String(o.orderId || '').trim();
@@ -6901,7 +6990,7 @@
       return (st === '收款') && !isAlreadyPacked;
     });
 
-    // 將收款訂單同步注入 pickingOrdersQueue
+    
     paidOrders.forEach(order => {
       if (!pickingOrdersQueue.some(pq => pq.orderId === order.orderId)) {
         const items = (order.items || []).map((it, idx) => {
@@ -6940,12 +7029,12 @@
       }
     });
 
-    // 清除已不在收款狀態或已打包的隊列項目
+    
     pickingOrdersQueue = pickingOrdersQueue.filter(pq => {
       return paidOrders.some(po => po.orderId === pq.orderId);
     });
 
-    // 待交寄清單渲染
+    
     const dispatchOrders = orderCache.filter(o => {
       const st = String(o.status || '').trim();
       const oid = String(o.orderId || '').trim();
