@@ -6317,7 +6317,7 @@
     const spinner = document.getElementById(`status-spinner-${orderId}`);
     if (spinner) spinner.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="color: var(--accent); font-size: 16px;"></i>';
 
-    // 樂觀 UI：卡片徽章即時響應
+    // 1. 樂觀 UI：訂單卡片徽章即時響應
     target.status = newStatus;
     const card = document.getElementById(`order-card-${orderId}`);
     if (card) {
@@ -6327,15 +6327,41 @@
         badge.innerText = newStatus;
       }
     }
-    // 同步更新已展開的 Stepper
     const stepperSlot = document.getElementById('orderFormStepperSlot');
     if (stepperSlot && card && card.classList.contains('editing')) {
       stepperSlot.innerHTML = getOrderStepperHtml(newStatus);
     }
 
+    // 2. 💥 跨表連動：訂單狀態一變，立刻同步修正物流快取並重繪物流區畫面
+    if (typeof logisticsCache !== 'undefined' && Array.isArray(logisticsCache)) {
+      const cleanOrderId = String(orderId).replace(/\s+/g, '');
+      logisticsCache.forEach(l => {
+        if (String(l.orderId).replace(/\s+/g, '') === cleanOrderId) {
+          if (newStatus === '收款') {
+            l.shipTime = '';
+            l.dispatchRecord = '';
+            l.outId = '';
+          } else if (newStatus === '出貨') {
+            l.shipTime = '';
+            l.dispatchRecord = '待配出貨';
+          } else if (newStatus === '配送') {
+            l.shipTime = new Date().toLocaleString('zh-TW', { hour12: false });
+            l.dispatchRecord = '外箱掃碼完成，出庫進入配送';
+          } else if (newStatus === '取消') {
+            l.shipTime = '';
+          }
+        }
+      });
+      // 0 秒立即重繪物流工作台與配貨歷史清單
+      if (typeof renderLogisticsPendingBoard === 'function') renderLogisticsPendingBoard();
+      if (typeof renderLogisticsList === 'function') renderLogisticsList();
+    }
+
+    // 3. 背景同步後端試算表（雙向更新訂單管理與物流管理）
     try {
       const res = await apiCall('updateOrderStatusInstant', {
         _rowIds: target._rowIds,
+        orderId: orderId,
         status: newStatus,
         oldStatus: oldStatus
       });
@@ -6345,7 +6371,7 @@
           spinner.innerHTML = '<i class="ph ph-check" style="color: var(--success); font-size: 16px;"></i>';
           setTimeout(() => { if (spinner) spinner.innerHTML = ''; }, 2000);
         }
-        showToast(`訂單 ${orderId} 狀態已更新：${newStatus}`);
+        showToast(`訂單 ${orderId} 狀態已更新：${newStatus}，物流表已連動對齊！`);
       } else {
         throw new Error(res && res.data ? res.data.message : '同步失敗');
       }
@@ -8833,23 +8859,31 @@
     renderLogisticsList();
   }
 
-  // 8. 下方配貨清單（嚴格推進・支援態樣膠囊複選過濾）
+  // 8. 下方配貨清單（嚴格推進・支援態樣膠囊複選過濾・絕無狀態矛盾誤導）
   function renderLogisticsList() {
     closeForm('logistics');
 
     const kwEl = document.getElementById('filterLogisticsKeyword');
     const kw = kwEl ? kwEl.value.toLowerCase().trim() : '';
 
+    const cleanId = (s) => String(s || '').replace(/\s+/g, '').toUpperCase();
+
     const dispatchedLogs = logisticsCache.filter(item => {
-      const ord = orderCache.find(o => o.orderId === item.orderId);
+      // 💥 鐵律一：依訂單編號對照最新訂單狀態，只有「配送/到貨/收貨」才准出現在配貨歷史清單！
+      const ord = (orderCache || []).find(o => cleanId(o.orderId) === cleanId(item.orderId));
       if (ord) {
         const st = String(ord.status || '').trim();
-        if (st === '收款' || st === '出貨' || st === '選購' || st === '下訂') {
-          return false;
+        if (st !== '配送' && st !== '到貨' && st !== '收貨') {
+          return false; // 若已調回「收款」、「出貨」、「取消」等，100% 堅決從配貨區移除！
         }
+      } else {
+        // 若快取無訂單，但自身完全無寄貨時間者，亦不顯示
+        if (!item.shipTime || String(item.shipTime).trim() === '') return false;
       }
+
+      // 💥 鐵律二：必須具備真實寄貨時間或有效配送紀錄
       const hasShipTime = item.shipTime && String(item.shipTime).trim() !== '';
-      const hasDispatchRec = item.dispatchRecord && !item.dispatchRecord.includes('同仁領貨') && !item.dispatchRecord.includes('出倉備寄');
+      const hasDispatchRec = item.dispatchRecord && !item.dispatchRecord.includes('同仁領貨') && !item.dispatchRecord.includes('出倉備寄') && !item.dispatchRecord.includes('待配');
       const isDispatched = hasShipTime || hasDispatchRec;
       if (!isDispatched) return false;
 
