@@ -2315,6 +2315,22 @@
         
         <div class="input-row">
           <div class="input-col">
+            <label class="form-label">銀行代碼</label>
+            <input type="text" id="regBankCode" class="login-input" placeholder="例如: 012 (台北富邦)、822 (中國信託)、700 (中華郵政)">
+          </div>
+        </div>
+
+        
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">銀行帳號</label>
+            <input type="text" id="regBankAccount" class="login-input" placeholder="請輸入完整金融機構存摺帳號數字">
+          </div>
+        </div>
+
+        
+        <div class="input-row">
+          <div class="input-col">
             <label class="form-label">存摺</label>
             <div class="auth-file-box">
               <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3755,6 +3771,60 @@
             <div class="input-col">
               <label class="form-label">生日</label>
               <input type="text" id="distSelfBirthday" class="login-input" placeholder="yyyy/mm/dd" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">銀行代碼</label>
+              <input type="text" id="distSelfBankCode" class="login-input" placeholder="例如: 012、822、700" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">銀行帳號</label>
+              <input type="text" id="distSelfBankAccount" class="login-input" placeholder="請輸入撥款金融機構帳號" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">存摺照片</label>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraDistSelfBank').click()" title="拍照新存摺">
+                    <i class="ph ph-camera" style="font-size:16px;"></i>
+                  </button>
+                  <button type="button" class="icon-btn" onclick="document.getElementById('fileDistSelfBank').click()" title="上傳新存摺">
+                    <i class="ph ph-upload-simple" style="font-size:16px;"></i>
+                  </button>
+                </div>
+              </div>
+              <input type="file" id="cameraDistSelfBank" accept="image/*" capture="environment" style="display:none;" onchange="handleDistSelfBankPhoto(this)">
+              <input type="file" id="fileDistSelfBank" accept="image/*" multiple style="display:none;" onchange="handleDistSelfBankPhoto(this)">
+              <div class="auth-file-box" style="background:#FAFBFD;">
+                <div id="previewDistSelfBank" class="auth-file-preview-strip">
+                  <span style="font-size:11px; color:var(--text-muted); padding:6px 0;">尚無存摺照片</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="order-sub-section" id="subSecDistSelfLogs" style="margin-top: 14px; border: 1px solid #E2E8F0; border-radius: 6px;">
+            <div class="order-sub-header" onclick="toggleGenericSubSection('subSecDistSelfLogs')" style="padding: 10px 12px; background: #F8FAFC;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <i class="ph ph-clock-counter-clockwise" style="font-size:16px; color:var(--accent);"></i>
+                <span style="font-size:12.5px; font-weight:700;">個人檔案變更歷程日誌</span>
+              </div>
+              <i class="ph ph-caret-down" id="iconSubSecDistSelfLogs" style="font-size:16px;"></i>
+            </div>
+            <div class="order-sub-body" style="padding: 12px;">
+              <div id="distSelfLogView" class="log-box" style="font-size:12px; max-height:180px;">尚無變更紀錄</div>
             </div>
           </div>
 
@@ -5383,6 +5453,8 @@
       companyTitle: (document.getElementById('regCompanyTitle')?.value || '').trim(),
       companyTaxId: (document.getElementById('regCompanyTaxId')?.value || '').trim(),
       companyOwner: (document.getElementById('regCompanyOwner')?.value || '').trim(),
+      bankCode: (document.getElementById('regBankCode')?.value || '').trim(),
+      bankAccount: (document.getElementById('regBankAccount')?.value || '').trim(),
       referrerId: (document.getElementById('regReferrerId')?.value || 'TW-NAMIS').trim(),
       distId: distId,
       contractSigned: document.getElementById('regContractAgreement')?.checked || false,
@@ -5534,6 +5606,8 @@
       companyTitle: (document.getElementById('regCompanyTitle')?.value || '').trim(),
       companyTaxId: (document.getElementById('regCompanyTaxId')?.value || '').trim(),
       companyOwner: (document.getElementById('regCompanyOwner')?.value || '').trim(),
+      bankCode: (document.getElementById('regBankCode')?.value || '').trim(),
+      bankAccount: (document.getElementById('regBankAccount')?.value || '').trim(),
       referrerId: referrerId,
       distId: distId,
       contractSigned: true,
@@ -12711,6 +12785,16 @@
     setEditableVal('distSelfAddress', me.address);
     setEditableVal('distSelfBirthday', me.birthday);
 
+    // 回填銀行代碼與銀行帳號
+    setEditableVal('distSelfBankCode', me.bankCode || '');
+    setEditableVal('distSelfBankAccount', me.bankAccount || '');
+
+    // 回填存摺照片預覽
+    renderDistSelfBankPhotos(me.bankUrl || '');
+
+    // 回填修改歷程日誌 (K 欄)
+    renderGenericLogBox('distSelfLogView', me.memLog || '');
+
     // 狀態徽章
     const badgeStatus = document.getElementById('badgeDistStatusChip');
     if (badgeStatus) {
@@ -13137,6 +13221,58 @@
     renderDistributorGenealogy();
   }
 
+  // ==========================================
+  // 經銷專頁存摺封面照片拍照/上傳狀態機
+  // ==========================================
+  let distSelfBankImagesWorkingArray = [];
+
+  function renderDistSelfBankPhotos(existingUrlStr) {
+    const box = document.getElementById('previewDistSelfBank');
+    if (!box) return;
+
+    if (distSelfBankImagesWorkingArray.length === 0 && existingUrlStr) {
+      const urls = existingUrlStr.split('\n').filter(u => u.trim().startsWith('http'));
+      distSelfBankImagesWorkingArray = urls;
+    }
+
+    if (distSelfBankImagesWorkingArray.length === 0) {
+      box.innerHTML = '<span style="font-size:11px; color:var(--text-muted); padding:6px 0;">尚無存摺照片</span>';
+      return;
+    }
+
+    box.innerHTML = distSelfBankImagesWorkingArray.map((imgSrc, idx) => `
+      <div style="position:relative; width:54px; height:54px; flex-shrink:0;">
+        <img src="${imgSrc}" class="auth-file-thumb" onclick="openImageModal('${imgSrc}')">
+        <span onclick="removeDistSelfBankPhoto(${idx})" style="position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:#EF4444; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;">
+          <i class="ph ph-x"></i>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  function handleDistSelfBankPhoto(input) {
+    const files = Array.from(input.files || []);
+    if (files.length === 0) return;
+
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        distSelfBankImagesWorkingArray.push(e.target.result);
+        renderDistSelfBankPhotos();
+        triggerDistSelfAutoSave();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+    showToast('新存摺照片已載入，點擊儲存即可同步寫入試算表！');
+  }
+
+  function removeDistSelfBankPhoto(idx) {
+    distSelfBankImagesWorkingArray.splice(idx, 1);
+    renderDistSelfBankPhotos();
+    triggerDistSelfAutoSave();
+  }
+
   // 4. 個人檔案編輯與自動儲存回寫試算表
   function triggerDistSelfAutoSave() {
     // 輸入時即時同步收合條的姓名標題
@@ -13167,7 +13303,10 @@
       phone: (document.getElementById('distSelfPhone')?.value || '').trim(),
       email: (document.getElementById('distSelfEmail')?.value || '').trim(),
       address: (document.getElementById('distSelfAddress')?.value || '').trim(),
-      birthday: (document.getElementById('distSelfBirthday')?.value || '').trim()
+      birthday: (document.getElementById('distSelfBirthday')?.value || '').trim(),
+      bankCode: (document.getElementById('distSelfBankCode')?.value || '').trim(),
+      bankAccount: (document.getElementById('distSelfBankAccount')?.value || '').trim(),
+      bankImages: distSelfBankImagesWorkingArray || []
     };
 
     if (tip) tip.innerHTML = '<span style="color:var(--accent);"><i class="ph ph-circle-notch ph-spin"></i> 同步試算表中...</span>';
