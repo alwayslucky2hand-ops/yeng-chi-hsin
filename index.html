@@ -114,15 +114,18 @@
       width: 100% !important;
     }
     .auth-country-select {
-      flex: 0 0 110px !important;
-      max-width: 110px !important;
-      padding: 12px 6px !important;
+      flex: 0 0 130px !important;
+      min-width: 130px !important;
+      max-width: 140px !important;
+      padding: 12px 8px !important;
       font-size: 13px !important;
+      font-weight: 600 !important;
       background: #FFFFFF;
       border: 1px solid var(--border);
       border-radius: 6px;
       outline: none;
       color: var(--text);
+      cursor: pointer;
     }
     .auth-phone-input {
       flex: 1 1 auto !important;
@@ -2208,9 +2211,31 @@
         
         <div class="input-row">
           <div class="input-col">
+            <label class="form-label">推薦人編號</label>
+            <input type="text" id="regReferrerId" class="login-input" value="TW-NAMIS" placeholder="請輸入推薦人編號 (預設 TW-NAMIS)">
+          </div>
+        </div>
+
+        
+        <div class="input-row">
+          <div class="input-col">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0;">編號</label>
+              <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+            </div>
+            <input type="text" id="regDistributorId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--accent);">
+          </div>
+        </div>
+
+        
+        <div class="input-row">
+          <div class="input-col">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <label class="form-label" style="margin-bottom:0;">合約</label>
-              <span id="badgeSignStatus" style="font-size:11px; font-weight:700; color:var(--danger); background:#FEF2F2; border:1px solid #FECACA; padding:1px 6px; border-radius:4px;">尚未手寫簽署</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span id="regAutoSaveIndicator" style="font-size:11px; color:var(--text-muted); font-family:monospace;"></span>
+                <span id="badgeSignStatus" style="font-size:11px; font-weight:700; color:var(--danger); background:#FEF2F2; border:1px solid #FECACA; padding:1px 6px; border-radius:4px;">尚未手寫簽署</span>
+              </div>
             </div>
 
             
@@ -2225,52 +2250,34 @@
 
               
               <div class="contract-scroll-viewport" style="max-height: 320px;">
-                
-                
                 <div style="background:#F8FAFC; border-left:3.5px solid #0F172A; padding:10px 14px; font-size:12px; line-height:1.85; color:#1E293B; border-radius: 0 6px 6px 0;">
                   <strong style="font-size:12.5px; color:#0F172A;">【妍之馨生技經銷申請契約書 前言】：</strong><br>
                   下列條款是經銷商與本公司間權利與義務之規範。凡申請為本公司經銷商之自然人或法人，均需仔細研讀下列條款，並詳細填寫。本契約書各項資料，若有遺漏不實或不清楚者，恕不予接受，並退回申請。
                 </div>
 
-                
                 <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
                   第一章 總則
                 </div>
-
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>1-1 本公司的因應市場變化</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司的因應市場變化、相關法令修改或業務之需要，事實修訂參加契約內容（含本契約書、公司營運規章等），有關修訂內容經張貼公告後，依公司公告時程到期後自動生效及實施。
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>1-1 本公司的因應市場變化</span></div>
+                  <div class="contract-clause-body">本公司的因應市場變化、相關法令修改或業務之需要，事實修訂參加契約內容（含本契約書、公司營運規章等），有關修訂內容經張貼公告後，依公司公告時程到期後自動生效及實施。</div>
                 </div>
 
-                
                 <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
                   第二章 經銷商資格與申請規範
                 </div>
-
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-1 會員申請資格</span>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-1 會員申請資格</span></div>
                   <div class="contract-clause-body">
                     1. 經銷商申請資格限於法人或年滿 18 歲，且具行為能力之成年人。未滿 18 歲者或經法院監護宣告為無行為能力人，均不得申請成為經銷商。<br>
                     2. 夫妻可以共同作為單一經銷商被推薦，或互相推薦成為上、下線關係。<br>
                     3. 以公司行號名義申請加入者，除負責人需繳交個人證件影本、經銷商申請書外，還需提供公司行號相關文件，並確保具備開立「傭金收入」發票的能力。<br>
-                    4. 非中華民國國民之申請人，若於台灣地區運作營運，需同時提供護照影本、居留證影本或以設立公司行號之相關證明文件，方可申請授權。<br>
-                    上述符合申請資格者，需自願參加，並主動向本公司提出申請，經公司核可後，方可成為經銷商。亦可經公司現經銷商推薦後，主動向公司申請並經核准，簽訂經銷申請契約書，始正式取得妍之馨事業合格經銷商資格。
+                    4. 非中華民國國民之申請人，若於台灣地區運作營運，需同時提供護照影本、居留證影本或以設立公司行號之相關證明文件，方可申請授權。上述符合申請資格者，需自願參加，並主動向本公司提出申請，經公司核可後，方可成為經銷商。亦可經公司現經銷商推薦後，主動向公司申請並經核准，簽訂經銷申請契約書，始正式取得妍之馨事業合格經銷商資格。
                   </div>
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-2 經銷商之申請義務及申請程序</span>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-2 經銷商之申請義務及申請程序</span></div>
                   <div class="contract-clause-body">
                     1. 申請人應詳細閱讀「妍之馨生技事業規則暨營運規章」，了解交易須知及經銷商管理法等相關法令，並願意遵守本公司及中華民國政府相關規定。<br>
                     2. 經銷商程序：<br>
@@ -2289,10 +2296,7 @@
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-3 特別注意事項</span>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-3 特別注意事項</span></div>
                   <div class="contract-clause-body">
                     1. 應申請書具法律效益，申請人填寫「妍之馨生技經銷商申請書」時，若因錯誤更正恕不接受塗改，需請重新填寫一份完整申請書，否則該申請書公司不予受理。<br>
                     2. 申請人完成申請加入手續後，與當月業績結算完成後，「推薦人」部分不得更改。<br>
@@ -2307,402 +2311,55 @@
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-4 經銷商之解除</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    新加入之經銷商，得以參加 30 天內，隨時以書面通知本公司，已開封過或受損之產品需以原價購買，其餘產品可退回總公司做退款手續，自願解除並終止經銷權之經銷商。違反本營運規章規定者，當然解除經銷商資格，且違反本營運規章公司得拒絕經銷商退貨申請。
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-4 經銷商之解除</span></div>
+                  <div class="contract-clause-body">新加入之經銷商，得以參加 30 天內，隨時以書面通知本公司，已開封過或受損之產品需以原價購買，其餘產品可退回總公司做退款手續，自願解除並終止經銷權之經銷商。違反本營運規章規定者，當然解除經銷商資格，且違反本營運規章公司得拒絕經銷商退貨申請。</div>
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-5 禁止申請條件</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    被解除經銷商資格者，永久不得重新申請，亦不得以他人名義經營本事業。若經發現，將終止被使用名義者之經銷商資格，並將其所發展之經銷商回歸原推薦人名下。此外，本公司保留依法追究相關民、刑事法律責任之權利。
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-5 禁止申請條件</span></div>
+                  <div class="contract-clause-body">被解除經銷商資格者，永久不得重新申請，亦不得以他人名義經營本事業。若經發現，將終止被使用名義者之經銷商資格，並將其所發展之經銷商回歸原推薦人名下。此外，本公司保留依法追究相關民、刑事法律責任之權利。</div>
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>2-6 費用之退回</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    申請終止經銷權之經銷商，於本公司受通知之日起 30 天內，公司應退還其所交之費用。
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>2-6 費用之退回</span></div>
+                  <div class="contract-clause-body">申請終止經銷權之經銷商，於本公司受通知之日起 30 天內，公司應退還其所交之費用。</div>
                 </div>
 
-                
                 <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
                   第三章 經銷營運、銷售行為與權益限制
                 </div>
+                <div class="contract-clause-item">
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>3-1 經銷商之進貨</span></div>
+                  <div class="contract-clause-body">（1）若商品外觀破損、瑕疵或與訂購產品不符，經銷商可向本公司申請退換貨，經審查後五到七天內把瑕疵品寄回總公司再補送貨品。（2）經銷商收到產品後，若發現上述問題，應於訂貨日期七天內，檢附訂貨單及原始發票向本公司申請換貨，逾期則視同承認所受領之產品。（3）更換瑕疵品運費：退回瑕疵品的運費由經銷商負擔，更換品寄出的運費則由公司支付。（4）不可換貨之商品：因人為因素造成的污損、毀壞。保存不良等商品已拆封並明顯使用之產品。</div>
+                </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-1 經銷商之進貨</span>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>3-2 經銷商之推薦</span></div>
                   <div class="contract-clause-body">
-                    （1）若商品外觀破損、瑕疵或與訂購產品不符，經銷商可向本公司申請退換貨，經審查後五到七天內把瑕疵品寄回總公司再補送貨品。<br>
-                    （2）經銷商收到產品後，若發現上述問題，應於訂貨日期七天內，檢附訂貨單及原始發票向本公司申請換貨，逾期則視同承認所受領之產品。<br>
-                    （3）更換瑕疵品運費：退回瑕疵品的運費由經銷商負擔，更換品寄出的運費則由公司支付。<br>
-                    （4）不可換貨之商品：因人為因素造成的污損、毀壞。保存不良等商品已拆封並明顯使用之產品。
+                    1. 經銷商有權推薦他人成為新經銷商，且推薦時需誠實告知被推薦人以下事項，不得有任何虛假、隱瞞或誤導，以避免產生錯誤結論：（1）資本額（2）營運計劃（3）營運規章及法規（4）義務及責任（5）獎勵辦法（6）商品資訊（7）瑕疵擔保條件（8）退會權利義務（9）其他主管機關指定事項。<br>
+                    2. 推薦人不得強制購買推薦人自訂金額產品或購買非本公司產品。
                   </div>
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-2 經銷商之推薦</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    1. 經銷商有權推薦他人成為新經銷商，且推薦時需誠實告知被推薦人以下事項，不得有任何虛假、隱瞞或誤導，以避免產生錯誤結論：<br>
-                    <div class="contract-sub-list">
-                      <div>（1）妍之馨生技有限公司的資本額。</div>
-                      <div>（2）經銷商經營及營運計劃。</div>
-                      <div>（3）事業營運規章、交易須知及消費政府相關法規。</div>
-                      <div>（4）經銷商應負擔的義務及責任。</div>
-                      <div>（5）獎勵辦法。</div>
-                      <div>（6）商品或課程的種類、性能、品質、價格、用途及其他相關資訊。</div>
-                      <div>（7）商品或課程之瑕疵擔保責任的條件、內容及範圍。</div>
-                      <div>（8）經銷商取消或退出妍之馨生技事業經銷權的權利與義務。</div>
-                      <div>（9）其他中華民國政府中央主管機關指定的事項。</div>
-                    </div>
-                    2. 推薦人除了上述應告知事項及責任外，不得向被推薦人提出以下要求：<br>
-                    <div class="contract-sub-list">
-                      <div>（1）強制購買或儲存推薦人自訂金額的產品。</div>
-                      <div>（2）購買非本公司產品。</div>
-                    </div>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>3-3 銷售行為準則</span></div>
+                  <div class="contract-clause-body">應依官方文件與標籤說明銷售，不得惡意誇大或不實渲染。不得對外宣稱擁有獨家或區域經銷權。相關稅捐由經銷商依稅法自行負擔。</div>
                 </div>
 
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-3 銷售行為準則</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    1. 經銷商在進行銷售時，應依照本公司制定之正式文件內的說明及產品標籤所載之使用方法與注意事項來銷售產品，不得偏離官方資訊。<br>
-                    2. 經銷商使用經銷權銷貨或推薦課程時，不得以惡意或誇大不實的方式說明產品功能、過度渲染或誇大獎金制度，導致他人產生錯誤認知。若經銷商因違反上述規定導致本公司聲譽受損，需承擔法律責任及賠償責任。本公司並有權利終止經銷權，並解除經銷商資格，且有權拒絕該經銷商的退貨申請。<br>
-                    3. 經銷商在銷售產品時，不得對外聲稱其擁有獨家銷售權或區域銷售權，以免誤導消費者。<br>
-                    4. 稅務責任：經銷商因購買或銷售本公司產品所產生之一切稅捐，應依中華民國稅法規定自行負擔，與本公司無涉。
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>3-4 至 3-13 經營限制、規章遵守與管轄</span></div>
+                  <div class="contract-clause-body">法人僅授權負責人本人；嚴禁借名經營、借貸集資或競業活動。任何爭議雙方同意以總公司所在地之法院為第一審管轄法院。</div>
                 </div>
 
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-4 經銷權之限制</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    1. 若以法人型態申請加入本事業，本公司經銷權僅授予該法人之負責人。該法人不得以法人名稱或其他股東私人名義擅自對外宣稱或使用「經銷權經營本事業」。違反上述規定者，本公司得立即解除並終止該法人之經銷權。<br>
-                    2. 經銷商不得以他人名義加入或經營本事業，否則需自行承擔民事及刑事法律責任。若此行為導致本公司權益及聲譽受損，本公司將：（1）依法追究相關法律責任。（2）立即終止其經銷權並解除經銷商資格。（3）拒絕該經銷商之退貨申請。（4）有權決定該經銷商下屬銷售網之歸屬，以維護市場秩序。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-5 經銷商須知</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    1. 經銷商應了解，其與公司之所有交易均以獨立個體身分進行，不具公司授權代表、委任人或受雇人之身分，亦不得代公司簽署商業契約、協商合約內容或提供任何代表公司法人立場的承諾或保證。<br>
-                    2. 經銷商的權利僅在經銷權有效期間內適用，可銷售公司產品並推薦新經銷商，並應履行應盡的責任。此外，經銷商需確保其推薦經銷商清楚認識，上下關係屬獨立經銷個體，並非僱傭或代理關係。<br>
-                    3. 經銷商對其所推薦之經銷商組織成員有加強訓練及激勵之責任。<br>
-                    4. 經銷商之間不得從事任何違反公司規章的投資或借貸行為，亦不得以經銷商組織業績成長為由，透過不正當手段違反本人意願、上下借貸，誘導他人以謀取私利進行集資、借款。若經公司查核確認違規，得以違反營運規章為由，終止其經銷權。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-6 經銷商違反義務之處置</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商應明瞭，除非事先獲得本公司書面同意，或該事項已在本公司正式文件中公布，否則不得對本公司產品提出任何請求、主張、保證或聲明。若經銷商違反上述規定，導致本公司遭受任何有形或無形損失，或需承擔法律責任，經銷商應自行負責。本公司並有權以書面通知方式終止其經銷權，並解除經銷商資格。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-7 法令之遵守</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商應遵守中華民國之一切法令規章，並保證避免妍之馨生技有限公司涉及或遭受任何訴訟行為與損害賠償。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-8 破壞權益之行為</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商在行使經銷權（如銷售、推薦、輔導等行為）時，不得從事任何損害本公司名譽、權益、影響其他經銷商的退貨申請，此外，公司亦得要求其賠償因商譽受損所造成的損害及其他相關法律責任。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-9 違反條款之處置</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    若經銷商違反上述營運規章或其他本公司明文禁止之行為，且情節嚴重者，除取消其經銷商資格外，亦將永久喪失重新申請加入妍之馨生技事業經銷商的資格。本公司並有權追究其商譽損害賠償及其他相關法律責任，且其所購買之商品將不予退換貨。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-10 營運規章之修改</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司為因應市場結構變化、業務需求或法令調整，在兼顧經銷商權益的前提下，得依中華民國政府相關規定修改營運規章。經銷商應遵守修改後並正式生效之條款規定。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-11 禁止之行為</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    若經銷商有下列任何可歸責於其自身之行為，將視為違反營運規章，本公司得逕行終止其經銷權並解除經銷商資格，並追究商譽損害賠償及其他相關法律責任：<br>
-                    <div class="contract-sub-list">
-                      <div>（1）以欺騙或引人誤解的方式推廣、銷售商品或勞務，或介紹他人加入組織。</div>
-                      <div>（2）假借發展經銷商或本公司名義向他人進行資金募集。</div>
-                      <div>（3）以違反公共秩序或善良風俗的方式從事組織發展活動。</div>
-                      <div>（4）透過不當的直接訪問買賣影響消費者權益。</div>
-                      <div>（5）從事違反刑法或其他法規的組織活動。</div>
-                      <div>（6）散布不實言論並詆毁公司。</div>
-                      <div>（7）此外，妍之馨生技經銷商，不得推薦另一名經銷商加入任何同類型競業公司，亦不得參與任何可能導致其他經銷商透過他人推薦加入同類型公司的活動，違反敬業精神情節嚴重者，亦將永久喪失重新申請加入妍之馨生技事業經銷商的資格。本公司並有權追究其商譽損害賠償及其他相關法律責任，且其所購買之商品將不予退換貨。</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-12 免責聲明</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    美容保養品使用後狀況會依個人使用方法及肌膚狀況而有所不同，並請配合正確使用方法。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>3-13 法律爭議管轄</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商與妍之馨生技有限公司若發生任何法律爭議，雙方同意以妍之馨生技有限公司總公司所在地之法院作為第一審管轄法院。
-                  </div>
-                </div>
-
-                
                 <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第四章 經銷商責任、獎金發放與稅務規範
+                  第四章 至 第九章 獎金稅務、繼承、智財與個資保護
                 </div>
-
                 <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>4-1 經銷商之責任與輔導義務</span>
-                  </div>
+                  <div class="contract-clause-tag"><i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i> <span>4-1 至 9-1 完整核心條約規範</span></div>
                   <div class="contract-clause-body">
-                    經銷商應與推薦經銷商保持經常性聯繫，並不定期舉辦會議，以協助訓練及激勵推薦成員。對於無法參加會議的經銷商，應透過各種管道加強聯繫，適時提供必要的資源，善盡輔導責任。此外，經銷商應協助並提供建議，支持推薦經銷商舉辦活動，並督導推薦經銷商確實遵守並執行本公司之營運規章，如未盡輔導責任情節嚴重者亦將永久喪失重新申請加入妍之馨生技事業經銷商的資格。本公司並有權追究其商譽損害賠償及其他相關法律責任，且其所購買之商品將不予退換貨。
+                    獎金於結算滿 45 日後第一個 20 日匯入；法人開立傭金發票，個人依法扣繳 10% 稅款及 2.11% 二代健保。商標軟硬體著作受智財權保護。客戶資料屬商業秘密，嚴禁洩漏。
                   </div>
                 </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>4-2 推薦獎金發放日期</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    當月之業績，於當月底最後一日結算；當月業績獎金則於業績結算日期，滿 45 日後之第一個 20 日發放。獎金直接匯入經銷商指定之本人帳戶；遇假日順延至工作日發放。經銷商需提供本公司所指定之銀行帳戶。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>4-3 稅務訊息與依法申報</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    <strong>1. 營業稅：</strong><br>
-                    <div class="contract-sub-list">
-                      <div>（1）中華民國之商業法人代理商或經銷事業商，均需依《公司法》規定，向妍之馨生技有限公司提交統一編號及稅籍號碼。該相關資料將用於公司申報之目的。</div>
-                      <div>（2）以法人組織型態經營妍之馨生技事業者，在獎金發放前需開立三聯式發票，發票抬頭為「妍之馨生技有限公司」，統一編號為 60559503，發票品名欄註明「傭金收入」。本公司需在收到發票後，方會發放含 5%稅款之獎金，若當期未收到發票，獎金將予以保留，待發票寄達後再行發放獎金。</div>
-                    </div>
-                    <strong>2. 所得稅：</strong><br>
-                    <div class="contract-sub-list">
-                      <div>（1）經銷事業商需自行負責其所有收入、自僱及其他相關稅金。本公司於每年會計年度結束後，將依法提供適用之稅務表格給非員工獎勵之經銷商。</div>
-                      <div>（2）本公司經銷商將以經銷申請契約書身分，被課徵個人所得稅，不被視為員工、特許經營人、合資企業或合作伙伴。經銷商須自行負責繳納其從事經銷所獲得的收入之相關稅賦。</div>
-                      <div>（3）若領取人為中華民國境內之個人，依稅法規定，發放時應按給付總額扣繳 10%所得稅款，扣繳義務人妍之馨生技有限公司向政府徵收單位繳納。公司將於次年一月底前開立扣繳憑單，納稅義務人需憑此憑單申報年度個人所得稅。</div>
-                      <div>（4）中華民國境內居住之個人，每次獎金超過新台幣 20,000 元（含）以上者，本公司將依政府二代健保補充費新制，代扣 2.11%作為二代健保補充稅。</div>
-                      <div>（5）中華民國境內居住之個人，係指在中華民國境內有住所並經常居住者，或無住所但於同一課稅年度內在境內居留累計達 183 天以上者。若領取人為非中華民國境內居住之個人，則應於每次發放時按給付總額扣繳 20%，且無論所扣取金額多寡，均需辦理扣繳。</div>
-                    </div>
-                  </div>
-                </div>
-
-                
-                <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第五章 經銷權變更與繼承
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>5-1 經銷權之變更</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    若原先以個人名義加入經銷商，後續欲變更為營利事業名義，則負責人需為原經銷商本人，不得將資格轉讓給他人（夫妻、直系血親或有其他特殊情節者除外）。此外，申請變更時，需提供完整資料並向公司提出申請，經公司核准後方可進行轉換。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>5-2 經銷繼承手續</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    擁有經營權之經銷商，如死亡或喪失行為能力，其經營權可轉移予直系血親子女繼承。繼承人需提交經營權繼承申請書、死亡證明書及戶籍謄本等相關文件，並經本公司核准後方能生效。本辦法如有未盡事宜，均依中華民國政府相關法律規範辦理。法定繼承人需於繼承開始後六個月內，備妥相關證明文件並向本公司申請經銷權繼承，經公司核准後始生效。若逾期未辦理，則視同放棄繼承權。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>5-3 以他人名義加入</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    若發現會員未經他人同意，擅自以他人名義加入本公司經營事業，本公司有權終止其經銷權並解除其經銷資格。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>5-4 變更申請程序</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商各項變更（含更名、更址）時，申請文件應由本人或以掛號郵寄至總公司辦理。
-                  </div>
-                </div>
-
-                
-                <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第六章 智慧財產權與商標保護
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>6-1 商標權宣告</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司名稱、產品商標及服務標章均已依法註冊，未經本公司書面同意，不得擅自使用或運用，否則將視為侵權行為。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>6-2 著作權保護</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司所有軟、硬體資料之著作，包括月刊、語言、文字、錄音（影）帶、美術圖形、演講內容、包裝外觀、包裝圖案、產品外觀及攝影作品等，均受中華民國智慧財產權相關法律之保障。任何人未經許可，不得複製、仿製或重製其全部或部分內容。若有違反，導致妍之馨生技有限公司權益及信譽受損，本公司將視同侵權行為，保留法律追訴權，並立即終止其經銷權及解除經銷商資格。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>6-3 資料文件引用</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司之正式文件，如經銷商因行銷業務往來之需要，需轉載使用，應事先向本公司申請許可，並依原文轉載，同時註明「妍之馨生技有限公司同意轉載」之字樣。經銷商於個人行銷網站、部落格或粉絲專頁上，若未經公司書面同意，擅自展售他人商品，將視同侵權行為。本公司將依中華民國相關法令追究法律責任，並終止其經銷權及解除經銷商資格。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>6-4 影音資料管理</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本公司主辦之任何會議、演講或說明會，需事先取得書面許可，方可進行錄影、重製、仿製或複製以供使用或運用，否則將視為侵權行為。
-                  </div>
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>6-5 輔銷品之規範</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    經銷商自行設計或製作之輔銷品，需經本公司書面同意後，方可配合銷售與使用。若該類輔銷品與本公司業務相抵觸，並導致公司信譽受損，本公司除請求賠償外，亦得終止其經銷權並解除資格。
-                  </div>
-                </div>
-
-                
-                <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第七章 瑕疵擔保
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>7-1 瑕疵擔保與換貨責任</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    1. 若商品破損、瑕疵或與訂購產品不符，經銷商可向本公司申請退換貨，經審查後五到七天內補送貨品。<br>
-                    2. 經銷商收到產品後，若發現上述問題，應於訂貨日期七天內，檢附訂貨單及原始發票向本公司申請換貨，逾期則視同承認所受領之產品。<br>
-                    3. 更換瑕疵品運費：退回瑕疵品的運費由經銷商負擔，更換品寄出的郵資則由公司支付。<br>
-                    4. 不可換貨之商品：（1）因人為因素造成的污損、毀壞。（2）保存不良等商品已拆封並明顯使用之產品。
-                  </div>
-                </div>
-
-                
-                <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第八章 契約解釋權
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>8-1 最後解釋權</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    本契約書本公司保有最後解釋權。
-                  </div>
-                </div>
-
-                
-                <div style="font-size:11px; font-weight:800; color:#0F172A; background:#F1F5F9; padding:4px 10px; border-radius:4px; letter-spacing:0.05em; margin-top:6px;">
-                  第九章 個人資料保護規範
-                </div>
-
-                <div class="contract-clause-item">
-                  <div class="contract-clause-tag">
-                    <i class="ph ph-circle" style="font-size:10px; color:var(--accent);"></i>
-                    <span>9-1 個人資料保護規範</span>
-                  </div>
-                  <div class="contract-clause-body">
-                    （1）經銷商了解並同意，自本公司所取得、收集、處理、利用及國際傳輸之任何個人資料（包括過去、現在及未來）均屬本公司專屬依據商業價值之商業秘密。經銷商應依《個人資料保護法》、《刑法》、《公平交易法》及相關法令、本公司營運規章、經銷申請契約書及其他最新修訂之規定嚴格遵守，並不得將資料用於非本公司事業經營相關之用途，亦不得轉讓或洩漏予第三人。違反者，本公司有權解除或終止其經銷商資格。<br>
-                    （2）申請人已被告知並了解，依《個人資料保護法》第三條規定，有權行使查詢、閱覽、請求複製、補充或更正、停止收集處理利用或刪除等權利，惟須以書面通知本公司，且公司得酌收必要成本費用。<br>
-                    （3）會員提供予本公司之第三人之個人資料，應在符合個人資料保護規定前提下，事先取得該第三人之充分知情、同意與授權，確保資料合法使用。如經銷商所提供資料導致本公司損害或遭第三人求償，經銷商同意承擔全部賠償責任。
-                  </div>
-                </div>
-
               </div>
 
               
@@ -2714,13 +2371,11 @@
               </div>
 
               
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px dashed #E2E8F0; flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-top:1px dashed #E2E8F0; flex-wrap:wrap; gap:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                  
                   <button type="button" class="icon-btn" onclick="openSignaturePadModal()" title="開啟全螢幕橫式手寫簽名板" style="padding:6px 12px; border-color:var(--accent); color:var(--accent);">
                     <i class="ph ph-pen-nib" style="font-size:18px;"></i>
                   </button>
-                  
                   <button type="button" class="icon-btn" id="btnOpenContractPdf" onclick="openContractPdfModal()" title="預覽經銷商申請契約書 A4 PDF" style="padding:6px 12px; display:none; background:#0F172A; color:#FFFFFF; border-color:#0F172A;">
                     <i class="ph ph-file-pdf" style="font-size:18px;"></i>
                   </button>
@@ -2729,7 +2384,7 @@
               </div>
 
               
-              <div id="signaturePreviewBox" style="display:none; margin-top:10px; padding:8px 12px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:6px; align-items:center; justify-content:space-between;">
+              <div id="signaturePreviewBox" style="display:none; margin:10px 14px 14px 14px; padding:8px 12px; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:6px; align-items:center; justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:10px;">
                   <img id="imgSignatureThumb" src="" alt="本人手寫簽名" style="height:44px; max-width:140px; object-fit:contain;">
                   <div style="font-size:11px; line-height:1.4;">
@@ -2741,29 +2396,15 @@
                   <i class="ph ph-arrow-counter-clockwise" style="font-size:16px;"></i>
                 </button>
               </div>
-
             </div>
           </div>
         </div>
 
         
-        <div class="input-row">
-          <div class="input-col">
-            <label class="form-label">推薦</label>
-            <input type="text" id="regReferrerId" class="login-input" value="TW-NAMIS" placeholder="推薦人編號 (預設 TW-NAMIS)">
-          </div>
-        </div>
-
-        
-        <div class="input-row">
-          <div class="input-col">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <label class="form-label" style="margin-bottom:0;">編號</label>
-              <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
-            </div>
-            <input type="text" id="regDistributorId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--accent);">
-          </div>
-        </div>
+        <button type="button" class="icon-btn" id="btnSendContractPdfEmail" onclick="sendContractPdfEmailAction()" title="點擊直接將 A4 合約 PDF 寄發至申請人信箱" style="width:100%; height:44px; border:1.5px solid var(--accent); color:var(--accent); background:#FFFFFF; border-radius:6px; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; cursor:pointer; transition:all 0.2s;">
+          <i class="ph ph-envelope-simple" style="font-size:19px;"></i>
+          <span>寄送合約 PDF 至申請人信箱</span>
+        </button>
 
         
         <button type="button" class="auth-submit-btn" id="btnRegSubmit" onclick="submitDistributorRegisterAction()" title="送出經銷商申請 (審核中)">
@@ -4183,28 +3824,90 @@
   
   
   const WORLD_COUNTRY_CODES = [
-    { code: "+886", name: "台灣 (TW)", iso: "TW" },
-    { code: "+86",  name: "中國 (CN)", iso: "CN" },
-    { code: "+852", name: "香港 (HK)", iso: "HK" },
-    { code: "+853", name: "澳門 (MO)", iso: "MO" },
-    { code: "+81",  name: "日本 (JP)", iso: "JP" },
-    { code: "+82",  name: "韓國 (KR)", iso: "KR" },
-    { code: "+1",   name: "美國/加拿大 (US/CA)", iso: "US" },
-    { code: "+65",  name: "新加坡 (SG)", iso: "SG" },
-    { code: "+60",  name: "馬來西亞 (MY)", iso: "MY" },
-    { code: "+44",  name: "英國 (UK)", iso: "GB" },
-    { code: "+61",  name: "澳洲 (AU)", iso: "AU" },
-    { code: "+64",  name: "紐西蘭 (NZ)", iso: "NZ" },
-    { code: "+49",  name: "德國 (DE)", iso: "DE" },
-    { code: "+33",  name: "法國 (FR)", iso: "FR" },
-    { code: "+39",  name: "義大利 (IT)", iso: "IT" },
-    { code: "+34",  name: "西班牙 (ES)", iso: "ES" },
-    { code: "+31",  name: "荷蘭 (NL)", iso: "NL" },
-    { code: "+41",  name: "瑞士 (CH)", iso: "CH" },
-    { code: "+66",  name: "泰國 (TH)", iso: "TH" },
-    { code: "+84",  name: "越南 (VN)", iso: "VN" },
-    { code: "+63",  name: "菲律賓 (PH)", iso: "PH" },
-    { code: "+62",  name: "印尼 (ID)", iso: "ID" }
+    
+    { code: "+886", name: "台灣 (Taiwan)", iso: "TW" },
+    { code: "+86",  name: "中國 (China)", iso: "CN" },
+    { code: "+852", name: "香港 (Hong Kong)", iso: "HK" },
+    { code: "+853", name: "澳門 (Macau)", iso: "MO" },
+    { code: "+81",  name: "日本 (Japan)", iso: "JP" },
+    { code: "+82",  name: "韓國 (South Korea)", iso: "KR" },
+    { code: "+1",   name: "美國 (United States)", iso: "US" },
+    { code: "+1",   name: "加拿大 (Canada)", iso: "CA" },
+    { code: "+65",  name: "新加坡 (Singapore)", iso: "SG" },
+    { code: "+60",  name: "馬來西亞 (Malaysia)", iso: "MY" },
+    { code: "+84",  name: "越南 (Vietnam)", iso: "VN" },
+    { code: "+66",  name: "泰國 (Thailand)", iso: "TH" },
+    { code: "+62",  name: "印尼 (Indonesia)", iso: "ID" },
+    { code: "+63",  name: "菲律賓 (Philippines)", iso: "PH" },
+    { code: "+44",  name: "英國 (United Kingdom)", iso: "GB" },
+    { code: "+61",  name: "澳洲 (Australia)", iso: "AU" },
+    { code: "+64",  name: "紐西蘭 (New Zealand)", iso: "NZ" },
+    { code: "+49",  name: "德國 (Germany)", iso: "DE" },
+    { code: "+33",  name: "法國 (France)", iso: "FR" },
+    { code: "+39",  name: "義大利 (Italy)", iso: "IT" },
+    { code: "+34",  name: "西班牙 (Spain)", iso: "ES" },
+    { code: "+31",  name: "荷蘭 (Netherlands)", iso: "NL" },
+    { code: "+41",  name: "瑞士 (Switzerland)", iso: "CH" },
+    { code: "+46",  name: "瑞典 (Sweden)", iso: "SE" },
+    { code: "+47",  name: "挪威 (Norway)", iso: "NO" },
+    { code: "+45",  name: "丹麥 (Denmark)", iso: "DK" },
+    { code: "+358", name: "芬蘭 (Finland)", iso: "FI" },
+    { code: "+353", name: "愛爾蘭 (Ireland)", iso: "IE" },
+    { code: "+32",  name: "比利時 (Belgium)", iso: "BE" },
+    { code: "+43",  name: "奧地利 (Austria)", iso: "AT" },
+    { code: "+351", name: "葡萄牙 (Portugal)", iso: "PT" },
+    { code: "+30",  name: "希臘 (Greece)", iso: "GR" },
+    { code: "+48",  name: "波蘭 (Poland)", iso: "PL" },
+    { code: "+420", name: "捷克 (Czech Republic)", iso: "CZ" },
+    { code: "+36",  name: "匈牙利 (Hungary)", iso: "HU" },
+    { code: "+40",  name: "羅馬尼亞 (Romania)", iso: "RO" },
+    { code: "+90",  name: "土耳其 (Turkey)", iso: "TR" },
+    { code: "+91",  name: "印度 (India)", iso: "IN" },
+    { code: "+971", name: "阿拉伯聯合大公國 (UAE)", iso: "AE" },
+    { code: "+966", name: "沙烏地阿拉伯 (Saudi Arabia)", iso: "SA" },
+    { code: "+972", name: "以色列 (Israel)", iso: "IL" },
+    { code: "+55",  name: "巴西 (Brazil)", iso: "BR" },
+    { code: "+52",  name: "墨西哥 (Mexico)", iso: "MX" },
+    { code: "+54",  name: "阿根廷 (Argentina)", iso: "AR" },
+    { code: "+56",  name: "智利 (Chile)", iso: "CL" },
+    { code: "+57",  name: "哥倫比亞 (Colombia)", iso: "CO" },
+    { code: "+51",  name: "秘魯 (Peru)", iso: "PE" },
+    { code: "+27",  name: "南非 (South Africa)", iso: "ZA" },
+    { code: "+20",  name: "埃及 (Egypt)", iso: "EG" },
+    { code: "+855", name: "柬埔寨 (Cambodia)", iso: "KH" },
+    { code: "+95",  name: "緬甸 (Myanmar)", iso: "MM" },
+    { code: "+856", name: "寮國 (Laos)", iso: "LA" },
+    { code: "+673", name: "汶萊 (Brunei)", iso: "BN" },
+    { code: "+976", name: "蒙古 (Mongolia)", iso: "MN" },
+    { code: "+977", name: "尼泊爾 (Nepal)", iso: "NP" },
+    { code: "+880", name: "孟加拉 (Bangladesh)", iso: "BD" },
+    { code: "+94",  name: "斯里蘭卡 (Sri Lanka)", iso: "LK" },
+    { code: "+92",  name: "巴基斯坦 (Pakistan)", iso: "PK" },
+    { code: "+7",   name: "哈薩克 (Kazakhstan)", iso: "KZ" },
+    { code: "+998", name: "烏茲別克 (Uzbekistan)", iso: "UZ" },
+    { code: "+354", name: "冰島 (Iceland)", iso: "IS" },
+    { code: "+352", name: "盧森堡 (Luxembourg)", iso: "LU" },
+    { code: "+385", name: "克羅埃西亞 (Croatia)", iso: "HR" },
+    { code: "+381", name: "塞爾維亞 (Serbia)", iso: "RS" },
+    { code: "+359", name: "保加利亞 (Bulgaria)", iso: "BG" },
+    { code: "+421", name: "斯洛伐克 (Slovakia)", iso: "SK" },
+    { code: "+386", name: "斯洛維尼亞 (Slovenia)", iso: "SI" },
+    { code: "+372", name: "愛沙尼亞 (Estonia)", iso: "EE" },
+    { code: "+371", name: "拉脫維亞 (Latvia)", iso: "LV" },
+    { code: "+370", name: "立陶宛 (Lithuania)", iso: "LT" },
+    { code: "+357", name: "賽普勒斯 (Cyprus)", iso: "CY" },
+    { code: "+356", name: "馬爾他 (Malta)", iso: "MT" },
+    { code: "+506", name: "哥斯大黎加 (Costa Rica)", iso: "CR" },
+    { code: "+507", name: "巴拿馬 (Panama)", iso: "PA" },
+    { code: "+593", name: "厄瓜多 (Ecuador)", iso: "EC" },
+    { code: "+598", name: "烏拉圭 (Uruguay)", iso: "UY" },
+    { code: "+595", name: "巴拉圭 (Paraguay)", iso: "PY" },
+    { code: "+591", name: "玻利維亞 (Bolivia)", iso: "BO" },
+    { code: "+212", name: "摩洛哥 (Morocco)", iso: "MA" },
+    { code: "+254", name: "肯亞 (Kenya)", iso: "KE" },
+    { code: "+234", name: "奈及利亞 (Nigeria)", iso: "NG" },
+    { code: "+230", name: "模里西斯 (Mauritius)", iso: "MU" },
+    { code: "+679", name: "斐濟 (Fiji)", iso: "FJ" }
   ];
 
   
@@ -4443,12 +4146,27 @@
             經銷商申請人基本資料
           </div>
 
+          <!-- 動態抓取完整國家名稱與電話國碼 -->
+          ${(() => {
+            const selEl = document.getElementById('regCountryCode');
+            const selectedOpt = selEl ? selEl.selectedOptions[0] : null;
+            // 完整國家名稱 (如: 台灣 (Taiwan) (+886))
+            window._pdfCountryDisplay = selectedOpt ? `${selectedOpt.getAttribute('data-name') || selectedOpt.text} (${selectedOpt.value})` : '台灣 (Taiwan) (+886)';
+            return '';
+          })()}
+
           <table class="contract-table">
             <tr>
               <th>申請日期</th>
               <td>${nowYMD}</td>
               <th>身分別</th>
               <td>${identityType === '公司' ? '☑ 公司法人戶 ☐ 自然人' : '☐ 公司法人戶 ☑ 自然人'}</td>
+            </tr>
+            <tr>
+              <th>經銷商編號</th>
+              <td style="font-family:monospace; font-weight:800; color:#0F172A; background:#F8FAFC;">${distId}</td>
+              <th>推薦人編號</th>
+              <td style="font-family:monospace; font-weight:800; color:#0F172A; background:#F8FAFC;">${referrerId || 'TW-NAMIS'}</td>
             </tr>
             <tr>
               <th>申請人姓名</th>
@@ -4460,7 +4178,7 @@
               <th>出生年月日</th>
               <td>${birthday || '-'}</td>
               <th>所屬國籍</th>
-              <td>${countryCode}</td>
+              <td style="font-weight:700; color:#0F172A;">${window._pdfCountryDisplay}</td>
             </tr>
             <tr>
               <th>公司戶名稱</th>
@@ -4471,8 +4189,8 @@
             <tr>
               <th>負責人姓名</th>
               <td>${compOwner || memberName}</td>
-              <th>推薦經銷商</th>
-              <td style="font-family:monospace; font-weight:700;">${referrerId}</td>
+              <th>推薦人編號</th>
+              <td style="font-family:monospace; font-weight:800;">${referrerId || 'TW-NAMIS'}</td>
             </tr>
             <tr>
               <th>聯絡電話</th>
@@ -4906,13 +4624,21 @@
   }
   let sendCodeCountdownTimer = null;
 
+  // ==========================================
+  
+  
   function initCountryCodeDropdowns() {
     ['loginCountryCode', 'regCountryCode'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel) return;
-      sel.innerHTML = WORLD_COUNTRY_CODES.map(c => `
-        <option value="${c.code}" data-iso="${c.iso}" ${c.iso === 'TW' ? 'selected' : ''}>${c.name} ${c.code}</option>
-      `).join('');
+      sel.innerHTML = WORLD_COUNTRY_CODES.map(c => {
+        
+        const pureName = c.name.split(' (')[0] || c.name;
+        const isSelected = c.iso === 'TW';
+        return `
+          <option value="${c.code}" data-iso="${c.iso}" data-name="${c.name}" ${isSelected ? 'selected' : ''}>${pureName} (${c.code})</option>
+        `;
+      }).join('');
     });
   }
 
@@ -4982,6 +4708,8 @@
     autoComputeDistributorId();
   }
 
+  // ============================================================
+  
   
   async function autoComputeDistributorId() {
     const sel = document.getElementById('regCountryCode');
@@ -4992,15 +4720,40 @@
     const pad = (n) => String(n).padStart(2, '0');
     const yy = String(now.getFullYear()).slice(-2);
     const mmdd = pad(now.getMonth() + 1) + pad(now.getDate());
-    const fallbackId = `${iso}-${yy}-${mmdd}-001`;
+
+    
+    let localMaxSeq = 0;
+    let localCount = 0;
+    if (typeof memberCache !== 'undefined' && Array.isArray(memberCache)) {
+      memberCache.forEach(m => {
+        const id = String(m.memberId || '').trim().toUpperCase();
+        if (id.startsWith(iso + '-')) {
+          const match = id.match(/-(\d+)$/);
+          if (match && match[1]) {
+            const seq = parseInt(match[1], 10);
+            if (!isNaN(seq)) {
+              if (seq > localMaxSeq) localMaxSeq = seq;
+              localCount++;
+            }
+          }
+        }
+      });
+    }
+
+    const optimisticSeqNum = Math.max(localMaxSeq + 1, localCount + 1);
+    const optimisticSeq = String(optimisticSeqNum).padStart(3, '0');
+    const optimisticId = `${iso}-${yy}-${mmdd}-${optimisticSeq}`;
 
     const distIdInput = document.getElementById('regDistributorId');
-    if (distIdInput) distIdInput.value = fallbackId;
+    if (distIdInput) distIdInput.value = optimisticId;
 
+    
     try {
       const res = await apiCall('getDistributorIdPreview', { countryCode: iso });
       if (res && res.status === 'success' && res.data && res.data.distId) {
-        if (distIdInput) distIdInput.value = res.data.distId;
+        if (distIdInput && distIdInput.value !== res.data.distId) {
+          distIdInput.value = res.data.distId;
+        }
       }
     } catch(e) {}
   }
@@ -5168,6 +4921,150 @@
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<i class="ph ph-arrow-right" style="font-size:22px;"></i>';
+      }
+    }
+  }
+
+  
+  
+  
+  let regAutoSaveTimer = null;
+  let regCurrentDraftRowId = null;
+
+  function triggerRegAutoSaveDebounced() {
+    const indicator = document.getElementById('regAutoSaveIndicator');
+    if (indicator) {
+      indicator.innerHTML = '<span style="color:var(--text-muted);"><i class="ph ph-circle-notch ph-spin"></i> 輸入中...</span>';
+    }
+    if (regAutoSaveTimer) clearTimeout(regAutoSaveTimer);
+    regAutoSaveTimer = setTimeout(performSilentRegAutoSave, 1000);
+  }
+
+  async function performSilentRegAutoSave() {
+    const email = (document.getElementById('regEmail')?.value || '').trim();
+    const phone = (document.getElementById('regPhone')?.value || '').trim();
+    const memberName = (document.getElementById('regMemberName')?.value || '').trim();
+    const distId = document.getElementById('regDistributorId')?.value || '';
+    const indicator = document.getElementById('regAutoSaveIndicator');
+
+    
+    if (!email && !phone && !memberName) {
+      if (indicator) indicator.innerHTML = '';
+      return;
+    }
+
+    const countryCode = document.getElementById('regCountryCode')?.value || '+886';
+    const selCountryOpt = document.getElementById('regCountryCode')?.selectedOptions[0];
+    const iso = selCountryOpt ? selCountryOpt.getAttribute('data-iso') : 'TW';
+
+    const payload = {
+      _rowId: regCurrentDraftRowId,
+      identityType: document.getElementById('regIdentityType')?.value || '個人',
+      memberName: memberName,
+      countryCode: iso,
+      phone: phone ? `(${countryCode})${phone}` : '',
+      email: email,
+      address: (document.getElementById('regAddress')?.value || '').trim(),
+      birthday: (document.getElementById('regBirthday')?.value || '').trim().replace(/-/g, '/'),
+      idOrPassportNumber: (document.getElementById('regIdOrPassportNumber')?.value || '').trim().toUpperCase(),
+      companyTitle: (document.getElementById('regCompanyTitle')?.value || '').trim(),
+      companyTaxId: (document.getElementById('regCompanyTaxId')?.value || '').trim(),
+      companyOwner: (document.getElementById('regCompanyOwner')?.value || '').trim(),
+      referrerId: (document.getElementById('regReferrerId')?.value || 'TW-NAMIS').trim(),
+      distId: distId,
+      contractSigned: document.getElementById('regContractAgreement')?.checked || false,
+      signatureImage: regSignatureImageBase64 || '',
+      idCardFrontImage: regIdCardFrontImage || '',
+      idCardBackImage: regIdCardBackImage || '',
+      licenseImages: regLicenseImages || [],
+      bankImages: regBankImages || [],
+      photoImage: regSelfieImage || '',
+      isAutoSave: true
+    };
+
+    if (indicator) {
+      indicator.innerHTML = '<span style="color:var(--accent);"><i class="ph ph-circle-notch ph-spin"></i> 自動儲存中...</span>';
+    }
+
+    try {
+      const res = await apiCall('autoSaveDistributorDraft', payload);
+      if (res && res.status === 'success' && res.data) {
+        if (res.data._rowId) regCurrentDraftRowId = res.data._rowId;
+        if (indicator) {
+          indicator.innerHTML = '<span style="color:var(--success); font-weight:700;"><i class="ph ph-check-circle"></i> 已自動同步</span>';
+          setTimeout(() => { if (indicator) indicator.innerHTML = ''; }, 3000);
+        }
+      }
+    } catch (e) {
+      if (indicator) indicator.innerHTML = '<span style="color:var(--text-muted);">本機已暫存</span>';
+    }
+  }
+
+  
+  function bindRegistrationAutoSaveEvents() {
+    const panel = document.getElementById('authRegisterPanel');
+    if (!panel) return;
+    const inputs = panel.querySelectorAll('input:not([type="file"]), textarea, select');
+    inputs.forEach(el => {
+      el.addEventListener('input', triggerRegAutoSaveDebounced);
+      el.addEventListener('change', triggerRegAutoSaveDebounced);
+    });
+  }
+  setTimeout(bindRegistrationAutoSaveEvents, 300);
+
+  
+  
+  
+  async function sendContractPdfEmailAction() {
+    const email = (document.getElementById('regEmail')?.value || '').trim();
+    const memberName = (document.getElementById('regMemberName')?.value || '經銷商夥伴').trim();
+    const distId = document.getElementById('regDistributorId')?.value || 'TW-26-1102-001';
+    const btn = document.getElementById('btnSendContractPdfEmail');
+
+    if (!email || !email.includes('@')) {
+      showToast('請先填寫正確有效的電子信箱！');
+      document.getElementById('regEmail')?.focus();
+      return;
+    }
+
+    
+    const printArea = document.getElementById('contractPrintArea');
+    if (!printArea || !printArea.innerHTML.trim()) {
+      openContractPdfModal();
+      closeContractPdfModal();
+    }
+    const htmlSnapshot = printArea ? printArea.innerHTML : '';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i> <span>正在封裝並寄送 PDF...</span>';
+    }
+
+    try {
+      const res = await apiCall('sendContractPdfEmail', {
+        email: email,
+        memberName: memberName,
+        distId: distId,
+        contractHtml: htmlSnapshot
+      });
+
+      if (res && res.status === 'success') {
+        showToast(res.data?.message || `合約 PDF 已成功寄達至 ${email}！`);
+        if (btn) {
+          btn.innerHTML = '<i class="ph ph-check" style="font-size:18px; color:var(--success);"></i> <span>已發送至信箱</span>';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ph ph-envelope-simple" style="font-size:19px;"></i> <span>再次寄送合約 PDF</span>';
+          }, 4000);
+        }
+      } else {
+        throw new Error(res?.data?.message || '發送失敗');
+      }
+    } catch (e) {
+      showToast('寄送失敗：' + (e.message || e.toString()));
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph ph-envelope-simple" style="font-size:19px;"></i> <span>寄送合約 PDF 至申請人信箱</span>';
       }
     }
   }
