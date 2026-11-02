@@ -5175,8 +5175,9 @@
   }
 
   
+  
+  
   function logoutDistributorAction() {
-    if (!confirm('確定要登出經銷商管理系統嗎？')) return;
     localStorage.removeItem('YCH_DISTRIBUTOR_SESSION');
     const authScreen = document.getElementById('authScreen');
     const appShell = document.getElementById('authenticatedAppShell');
