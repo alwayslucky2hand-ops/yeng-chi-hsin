@@ -1943,6 +1943,144 @@
       gap: 5px;
     }
 
+     
+     
+     
+    .dist-tree-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    .dist-node-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--accent-line);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 14px rgba(44, 82, 130, 0.05);
+      transition: all 0.2s ease;
+    }
+    .dist-node-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 6px 18px rgba(44, 82, 130, 0.1);
+    }
+    .dist-avatar-head {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+    .dist-avatar-head:hover {
+      background: var(--accent);
+      color: #FFFFFF;
+      transform: scale(1.05);
+    }
+    .dist-avatar-head.open {
+      background: var(--accent);
+      color: #FFFFFF;
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .dist-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .dist-level-badge[data-gen="0"] { background: #0F172A; color: #FFFFFF; }
+    .dist-level-badge[data-gen="1"] { background: rgba(44, 82, 130, 0.12); color: var(--accent); border: 1px solid var(--accent); }
+    .dist-level-badge[data-gen="2"] { background: rgba(124, 58, 237, 0.1); color: #7C3AED; border: 1px solid #DDD6FE; }
+
+    .dist-sales-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .dist-sales-tile {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .dist-sales-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .dist-sales-val {
+      font-size: 15px;
+      font-weight: 800;
+      font-family: monospace;
+      color: var(--text);
+    }
+
+     
+    .dist-tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .dist-tier-card {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+    .dist-tier-card[data-tier="self"] { border-top: 3.5px solid #0F172A; }
+    .dist-tier-card[data-tier="gen1"] { border-top: 3.5px solid var(--accent); }
+    .dist-tier-card[data-tier="gen2"] { border-top: 3.5px solid #7C3AED; }
+
+    .dist-ratio-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #F1F5F9;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      margin: 12px 0 6px 0;
+    }
+    .dist-ratio-fill-self { background: #0F172A; transition: width 0.3s ease; }
+    .dist-ratio-fill-gen1 { background: var(--accent); transition: width 0.3s ease; }
+    .dist-ratio-fill-gen2 { background: #7C3AED; transition: width 0.3s ease; }
+
+     
+    @media (max-width: 768px) {
+      .dist-sales-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+      }
+      .dist-tier-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+      .dist-node-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+      }
+    }
+
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Material&#43;Symbols&#43;Outlined" rel="stylesheet" />
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -2438,6 +2576,10 @@
         <i class="ph ph-chart-line-up" style="font-size: 18px; vertical-align: middle;"></i> 總覽
       </button>
       
+      <button class="tab-btn" onclick="switchTab('tab7', this)" title="經銷商檔案與兩代組織圖">
+        <i class="ph ph-tree-structure" style="font-size: 18px; vertical-align: middle;"></i> 經銷
+      </button>
+      
       <button type="button" class="tab-btn" onclick="logoutDistributorAction()" title="登出經銷商後台" style="margin-left: auto; color: var(--danger);">
         <i class="ph ph-sign-out" style="font-size: 18px; vertical-align: middle;"></i>
       </button>
@@ -2844,19 +2986,20 @@
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label class="form-label" style="margin-bottom: 0;">編號</label>
-                <button type="button" onclick="generateMemId()" class="icon-btn" style="border:none; padding:2px; color:var(--accent);" title="自動產生編號">
-                  <i class="ph ph-magic-wand" style="font-size: 18px;"></i>
-                </button>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
               </div>
-              <input type="text" id="memId" class="login-input" placeholder="MEM- 或 DIS-yyyymmddhhmmss">
+              <input type="text" id="memId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--text-muted); cursor:not-allowed;">
             </div>
           </div>
 
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">類型</label>
-              <select id="memType" class="login-input" onchange="handleMemTypeChange()">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">類型</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <select id="memType" class="login-input" disabled style="background:var(--bg) !important; color:var(--text-muted); cursor:not-allowed;" onchange="handleMemTypeChange()">
                 <option value="一般會員">一般會員</option>
                 <option value="VIP會員">VIP會員</option>
                 <option value="經銷會員">經銷會員</option>
@@ -2883,8 +3026,11 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">推薦</label>
-              <input type="text" id="memLineId" class="login-input" placeholder="推薦人編號或 LINE ID (留白代表無)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">推薦人代碼</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="memLineId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--text-muted); cursor:not-allowed;" placeholder="無">
             </div>
           </div>
 
@@ -2899,8 +3045,11 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">生日</label>
-              <input type="text" id="memBirthday" class="login-input" placeholder="yyyy/mm/dd (例如: 1991/08/14)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">生日</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="memBirthday" class="login-input" disabled style="background:var(--bg) !important; color:var(--text-muted); cursor:not-allowed;" placeholder="未填寫">
             </div>
           </div>
 
@@ -2908,12 +3057,10 @@
           <div class="input-row">
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label class="form-label" id="lblMemRegTime" style="margin-bottom: 0;">註冊</label>
-                <button type="button" onclick="fillMemTime('memRegTime')" class="icon-btn" style="border:none; padding:2px; color:var(--accent);" title="帶入現在時間">
-                  <i class="ph ph-clock" style="font-size: 18px;"></i>
-                </button>
+                <label class="form-label" id="lblMemRegTime" style="margin-bottom: 0;">註冊日期</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
               </div>
-              <input type="text" id="memRegTime" class="login-input" placeholder="時間 (yyyy/MM/dd-HH:mm:ss)">
+              <input type="text" id="memRegTime" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--text-muted); cursor:not-allowed;">
             </div>
           </div>
 
@@ -2921,20 +3068,21 @@
           <div class="input-row" id="rowMemVipTime" style="display: none !important;">
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label class="form-label" style="margin-bottom: 0;">晉升</label>
-                <button type="button" onclick="fillMemTime('memVipTime')" class="icon-btn" style="border:none; padding:2px; color:var(--accent);" title="帶入現在時間">
-                  <i class="ph ph-clock" style="font-size: 18px;"></i>
-                </button>
+                <label class="form-label" style="margin-bottom: 0;">晉升 VIP 時間</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
               </div>
-              <input type="text" id="memVipTime" class="login-input" placeholder="晉升 VIP 時間 (無則留白)">
+              <input type="text" id="memVipTime" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--text-muted); cursor:not-allowed;">
             </div>
           </div>
 
           
           <div class="input-row" id="rowMemExpiry" style="display: none !important;">
             <div class="input-col">
-              <label class="form-label">到期日</label>
-              <input type="text" id="memExpiryDate" class="login-input" placeholder="有效到期日 (例如: 2027/01/31 或 2027/10/30-15:57:48)">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">到期日</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="memExpiryDate" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:#7C3AED; font-weight:700; cursor:not-allowed;">
             </div>
           </div>
 
@@ -2943,6 +3091,7 @@
             <div class="input-col">
               <label class="form-label">狀態</label>
               <select id="memStatus" class="login-input">
+                <option value="審核中">審核中</option>
                 <option value="有效">有效</option>
                 <option value="失效">失效</option>
               </select>
@@ -3485,6 +3634,270 @@
         
         <div id="dashOrderListContainer" style="display:flex; flex-direction:column; gap:10px;">
           <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">資料載入中...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  
+  <div id="tab7" class="tab-content">
+    <div class="settings-section">
+
+      
+      <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i class="ph ph-tree-structure" style="font-size: 22px; color: var(--accent);"></i>
+          <span style="font-weight: 800; font-size: 17px;">經銷總覽與組織圖譜</span>
+          <span id="distRefreshStatus" style="font-size: 12px; color: var(--text-muted); margin-left: 6px;"></span>
+        </div>
+        <button type="button" class="icon-btn" onclick="loadDistributorTab(true)" title="重新整理經銷與組織數據">
+          <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
+        </button>
+      </div>
+
+      
+      <div class="order-sub-section" id="secDistSelfProfile" style="margin-bottom: 18px; border: 1.5px solid var(--accent-line); border-radius: 8px;">
+        <div class="order-sub-header" onclick="toggleGenericSubSection('secDistSelfProfile')" style="background: #FFFFFF; padding: 12px 14px;">
+          
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; min-width:0;">
+            <i class="ph ph-user-circle" style="font-size:20px; color:var(--accent); flex-shrink:0;"></i>
+            <span id="lblDistSelfHeaderName" style="font-weight:800; font-size:15px; color:var(--text); letter-spacing:0.3px;">經銷夥伴</span>
+            <span class="id-chip" id="lblDistSelfHeaderId" style="font-size:11px; font-weight:700;"><i class="ph ph-identification-card"></i> -</span>
+            <span id="badgeDistStatusChip" style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #ECFDF5; color: #059669; font-weight: 700; border: 1px solid #A7F3D0;">有效</span>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+            <span id="distProfileSaveTip" style="font-size:11px; color:var(--text-muted); font-family:monospace;"></span>
+            <i class="ph ph-caret-down" id="iconSecDistSelfProfile" style="font-size:18px;"></i>
+          </div>
+        </div>
+        <div class="order-sub-body" style="padding: 16px;">
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">經銷商編號</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="distSelfId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--accent);">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">註冊日期</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="distSelfRegTime" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--text-muted);">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">推薦人代碼</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="distSelfReferrer" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:700;">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">到期日</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+              </div>
+              <input type="text" id="distSelfExpiry" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:#7C3AED; font-weight:700;">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">姓名</label>
+              <input type="text" id="distSelfName" class="login-input" placeholder="經銷夥伴姓名" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">電話</label>
+              <input type="text" id="distSelfPhone" class="login-input" placeholder="例如: 0912345678" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">信箱</label>
+              <input type="email" id="distSelfEmail" class="login-input" placeholder="電子信箱" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">地址</label>
+              <textarea id="distSelfAddress" class="login-input" style="height: 60px; resize: vertical;" placeholder="商品與合約寄送地址..." oninput="triggerDistSelfAutoSave()"></textarea>
+            </div>
+          </div>
+
+          
+          <div class="input-row">
+            <div class="input-col">
+              <label class="form-label">生日</label>
+              <input type="text" id="distSelfBirthday" class="login-input" placeholder="yyyy/mm/dd" oninput="triggerDistSelfAutoSave()">
+            </div>
+          </div>
+
+          
+          <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:14px; padding-top:12px; border-top:1px dashed #E2E8F0; gap:8px;">
+            <button type="button" class="icon-btn" onclick="saveDistSelfProfileManual()" id="btnSaveDistSelf" title="儲存經銷個人檔案" style="background:var(--accent); color:#FFFFFF; border-color:var(--accent); width:38px; height:38px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+              <i class="ph ph-floppy-disk" style="font-size:20px;"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:16px; margin-bottom:18px;">
+        
+        
+        <div style="border-bottom:1px dashed #E2E8F0; padding-bottom:12px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <i class="ph ph-calendar" style="font-size:18px; color:var(--accent);"></i>
+              <span style="font-size:13px; font-weight:800; color:var(--text);">業績過篩區間</span>
+              
+              <div style="display:flex; gap:4px; margin-left:4px; flex-wrap:wrap;">
+                <button type="button" class="icon-btn" onclick="setDistDateRange('thisMonth')" title="篩選本月" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">本月</button>
+                <button type="button" class="icon-btn" onclick="setDistDateRange('lastMonth')" title="篩選上月" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">上月</button>
+                <button type="button" class="icon-btn" onclick="setDistDateRange('thisYear')" title="篩選本年度" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">年度</button>
+                <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="篩選累積總額" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">全部</button>
+              </div>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted);">
+              區間體系總業績：<strong id="valDistGrandTotalSales" style="font-size:15px; font-family:monospace; color:var(--text);">NT$ 0</strong>
+            </div>
+          </div>
+
+          
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
+              <input type="date" id="distStartDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDistDateFilter()">
+            </div>
+            <span style="color:var(--text-muted); font-size:12px;">至</span>
+            <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
+              <input type="date" id="distEndDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDistDateFilter()">
+            </div>
+            <button type="button" class="icon-btn" onclick="applyDistDateFilter()" title="執行過篩" style="padding:6px 12px; background:var(--accent); color:#FFFFFF; border-color:var(--accent);">
+              <i class="ph ph-funnel" style="font-size:16px;"></i>
+            </button>
+          </div>
+        </div>
+
+        
+        <div style="font-size:13px; font-weight:800; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <i class="ph ph-chart-donut" style="font-size:18px; color:var(--accent);"></i>
+          <span>三代業績貢獻度與佔比分析</span>
+        </div>
+
+        
+        <div class="dist-ratio-bar-bg" title="本人 (深黑) ｜ 一代 (冰藍) ｜ 二代 (紫羅蘭)">
+          <div class="dist-ratio-fill-self" id="barFillSelf" style="width: 0%;"></div>
+          <div class="dist-ratio-fill-gen1" id="barFillGen1" style="width: 0%;"></div>
+          <div class="dist-ratio-fill-gen2" id="barFillGen2" style="width: 0%;"></div>
+        </div>
+
+        
+        <div class="dist-tier-grid">
+          
+          
+          <div class="dist-tier-card" data-tier="self">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="dist-sales-label" style="color:#0F172A; font-weight:800;">本人業績</span>
+              <span id="pctDistTierSelf" style="font-size:11px; font-family:monospace; font-weight:800; background:#0F172A; color:#FFFFFF; padding:1px 6px; border-radius:4px;">0.0%</span>
+            </div>
+            <div class="dist-sales-val" id="valDistTierSelf" style="font-size:16px; margin-top:2px;">NT$ 0</div>
+            <span style="font-size:10px; color:var(--text-muted);">個人與直屬消費者訂單</span>
+          </div>
+
+          
+          <div class="dist-tier-card" data-tier="gen1">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="dist-sales-label" style="color:var(--accent); font-weight:800;">第一代總業績</span>
+              <span id="pctDistTierGen1" style="font-size:11px; font-family:monospace; font-weight:800; background:rgba(44,82,130,0.12); color:var(--accent); border:1px solid var(--accent); padding:1px 6px; border-radius:4px;">0.0%</span>
+            </div>
+            <div class="dist-sales-val" id="valDistTierGen1" style="font-size:16px; margin-top:2px; color:var(--accent);">NT$ 0</div>
+            <span style="font-size:10px; color:var(--text-muted);">所有直推一代經銷商團隊</span>
+          </div>
+
+          
+          <div class="dist-tier-card" data-tier="gen2">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="dist-sales-label" style="color:#7C3AED; font-weight:800;">第二代總業績</span>
+              <span id="pctDistTierGen2" style="font-size:11px; font-family:monospace; font-weight:800; background:rgba(124,58,237,0.1); color:#7C3AED; border:1px solid #DDD6FE; padding:1px 6px; border-radius:4px;">0.0%</span>
+            </div>
+            <div class="dist-sales-val" id="valDistTierGen2" style="font-size:16px; margin-top:2px; color:#7C3AED;">NT$ 0</div>
+            <span style="font-size:10px; color:var(--text-muted);">所有推薦二代經銷商團隊</span>
+          </div>
+
+        </div>
+
+        
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin:14px 0 6px 0; display:flex; align-items:center; gap:6px;">
+          <i class="ph ph-clock-counter-clockwise"></i> 本人與直屬體系四大週期統計：
+        </div>
+        <div class="dist-sales-grid" id="distSelfSalesDashboard">
+          <div class="dist-sales-tile">
+            <span class="dist-sales-label">本月銷售額</span>
+            <span class="dist-sales-val" id="valDistSelfThisMonth">NT$ 0</span>
+          </div>
+          <div class="dist-sales-tile">
+            <span class="dist-sales-label">上月銷售額</span>
+            <span class="dist-sales-val" id="valDistSelfLastMonth">NT$ 0</span>
+          </div>
+          <div class="dist-sales-tile">
+            <span class="dist-sales-label">本年度總銷售額</span>
+            <span class="dist-sales-val" id="valDistSelfThisYear">NT$ 0</span>
+          </div>
+          <div class="dist-sales-tile">
+            <span class="dist-sales-label">累計總銷售額</span>
+            <span class="dist-sales-val" id="valDistSelfLifetime">NT$ 0</span>
+          </div>
+        </div>
+
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:10px; padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ph ph-users-three" style="font-size:20px; color:var(--accent);"></i>
+            <span style="font-size:15px; font-weight:800; color:var(--text);">所屬下兩代經銷組織族譜</span>
+          </div>
+          <span style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+            一代: <strong id="cntGen1" style="color:var(--accent);">0</strong> 位 ｜ 二代: <strong id="cntGen2" style="color:#7C3AED;">0</strong> 位
+          </span>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
+          <i class="ph ph-cursor-click" style="font-size:15px; color:var(--accent);"></i>
+          <span>點選圓頭頭像圖示即可往下展開該經銷商詳細資料、加入到期資訊與四大業績。</span>
+        </div>
+
+        
+        <div class="dist-tree-wrapper" id="distTreeContainer">
+          <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">組織族譜資料載入中...</div>
         </div>
       </div>
 
@@ -5196,11 +5609,31 @@
     if (sessionStr) {
       try {
         const session = JSON.parse(sessionStr);
+        const memId = String(session.memberId || '').trim();
+        const memType = String(session.memberType || '').trim();
+
+        
+        
+        const isCustomerMem = memId.startsWith('MEM-') || memType.includes('一般') || (memType.includes('VIP') && memType !== '經銷會員');
+        if (isCustomerMem) {
+          console.warn('偵測到非經銷商之顧客 Session，已自動清理重置：', memId, memType);
+          localStorage.removeItem('YCH_DISTRIBUTOR_SESSION');
+          const authScreen = document.getElementById('authScreen');
+          const appShell = document.getElementById('authenticatedAppShell');
+          if (appShell) appShell.style.display = 'none';
+          if (authScreen) authScreen.style.display = 'flex';
+          switchAuthMode('login');
+          showToast('本系統僅限經銷會員登入，已為您自動導回登入頁');
+          return;
+        }
+
         if (session && session.memberId) {
           unlockMainApplication(session);
           return;
         }
-      } catch(e) {}
+      } catch(e) {
+        localStorage.removeItem('YCH_DISTRIBUTOR_SESSION');
+      }
     }
     
   }
@@ -5285,6 +5718,8 @@
       } else {
         computeAndRenderDashboard();
       }
+    } else if (tabId === 'tab7') {
+      loadDistributorTab();
     }
   }
 
@@ -5831,6 +6266,21 @@
   document.addEventListener('input', function(e) {
     if (e.target && SUGGESTION_MAP[e.target.id]) {
       showFieldSuggestions(e.target);
+    }
+  });
+
+  
+  document.addEventListener('click', function(e) {
+    const memForm = document.getElementById('memAddFormContainer');
+    if (memForm && memForm.style.display !== 'none') {
+      const activeCard = document.querySelector('#memberListContainer .inv-card.editing');
+      const isInsideForm = memForm.contains(e.target);
+      const isInsideCard = activeCard && activeCard.contains(e.target);
+      const isTopAddBtn = e.target.closest && e.target.closest("button[onclick*=\"openNewForm('mem')\"]");
+
+      if (!isInsideForm && !isInsideCard && !isTopAddBtn) {
+        closeForm('mem');
+      }
     }
   });
 
@@ -7881,10 +8331,16 @@
         badgeIcon = '<i class="ph ph-user" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
       }
 
-      // 2. 有效 / 失效極簡線條膠囊標籤
-      const statusBadgeHtml = isActive
-        ? `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`
-        : `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
+      // 2. 有效 / 審核中 / 失效 三態極簡線條膠囊標籤
+      const rawStatus = String(item.status || '有效').trim();
+      let statusBadgeHtml = '';
+      if (rawStatus === '審核中') {
+        statusBadgeHtml = `<span style="border: 1px solid #FDE68A; background: #FFFBEB; color: #D97706; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">審核中</span>`;
+      } else if (rawStatus === '失效') {
+        statusBadgeHtml = `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
+      } else {
+        statusBadgeHtml = `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`;
+      }
 
       // 3. 容錯讀取真實試算表欄位，杜絕出現「-」缺漏
       const bday = item.birthday || item.birth || '-';
@@ -12171,6 +12627,582 @@
 
     if (modal) modal.classList.add('active');
   };
+
+  // ============================================================
+  // 分頁 7：經銷商管理、兩代組織族譜與四大銷售額演算法
+  // ============================================================
+  let distExpandedNodes = new Set(); // 記錄當前已點選展開圓頭的經銷商 ID
+  let distSelfDebounceTimer = null;
+
+  async function loadDistributorTab(forceReload = false) {
+    const statusEl = document.getElementById('distRefreshStatus');
+    if (statusEl) statusEl.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> 同步中...';
+
+    // 🔒 確保個人帳號檔案卡片預設維持收合狀態
+    const secProfile = document.getElementById('secDistSelfProfile');
+    const iconProfile = document.getElementById('iconSecDistSelfProfile');
+    if (secProfile) secProfile.classList.remove('open');
+    if (iconProfile) iconProfile.className = 'ph ph-caret-down';
+
+    // 確保會員與訂單快取就緒
+    if (!isMemberLoaded || forceReload) await loadMemberList(forceReload);
+    if (!isOrderLoaded || forceReload) await loadOrderList(forceReload);
+
+    renderDistributorSelfProfile();
+    renderDistributorGenealogy();
+
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="ph ph-check" style="color:var(--success);"></i> 已更新';
+      setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 2000);
+    }
+  }
+
+  // 1. 渲染自己的經銷商資訊（封印四大核心欄位，強制只讀取經銷會員資料）
+  function renderDistributorSelfProfile() {
+    let session = getActiveDistributorSession();
+    let myId = String(session.memberId || '').trim();
+    if (!myId) return;
+
+    // 💥 智慧對位修正：若當前 Session 還是舊的 MEM-，自動依 Email/電話在 memberCache 尋找真正的經銷會員
+    const isMemCustomer = myId.startsWith('MEM-');
+    if (isMemCustomer && typeof memberCache !== 'undefined') {
+      const realDist = (memberCache || []).find(m => {
+        const isDistType = (String(m.memberType).trim() === '經銷會員') || String(m.memberId).startsWith('DIS-') || (!String(m.memberId).startsWith('MEM-') && String(m.memberId).includes('-'));
+        const sameEmail = session.email && String(m.email).trim().toLowerCase() === String(session.email).trim().toLowerCase();
+        const samePhone = session.phone && String(m.phone).replace(/\D/g, '') === String(session.phone).replace(/\D/g, '');
+        return isDistType && (sameEmail || samePhone);
+      });
+      if (realDist) {
+        session = realDist;
+        myId = String(realDist.memberId).trim();
+        localStorage.setItem('YCH_DISTRIBUTOR_SESSION', JSON.stringify(realDist));
+      }
+    }
+
+    // 自會員快取中撈取正牌經銷商最新資料
+    const me = (memberCache || []).find(m => String(m.memberId).trim() === myId) || session;
+
+    // 💥 收合條直覺動態回填：姓名 ＆ 經銷商編號晶片
+    const headerNameEl = document.getElementById('lblDistSelfHeaderName');
+    const headerIdEl = document.getElementById('lblDistSelfHeaderId');
+    if (headerNameEl) headerNameEl.innerText = me.memberName || '經銷夥伴';
+    if (headerIdEl) headerIdEl.innerHTML = `<i class="ph ph-identification-card"></i> ${me.memberId || myId}`;
+
+    const setDisabledVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '-';
+    };
+
+    // 封印四大欄位（不可編輯）
+    setDisabledVal('distSelfId', me.memberId);
+    setDisabledVal('distSelfRegTime', me.registerTime || me.timestamp || '-');
+    setDisabledVal('distSelfReferrer', me.lineId || me.referrerId || 'TW-NAMIS (總部)');
+    setDisabledVal('distSelfExpiry', me.distExpiry || me.vipExpiry || '常態有效');
+
+    // 可編輯欄位
+    const setEditableVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && !el.matches(':focus')) el.value = val || '';
+    };
+
+    setEditableVal('distSelfName', me.memberName);
+    setEditableVal('distSelfPhone', me.phone);
+    setEditableVal('distSelfEmail', me.email);
+    setEditableVal('distSelfAddress', me.address);
+    setEditableVal('distSelfBirthday', me.birthday);
+
+    // 狀態徽章
+    const badgeStatus = document.getElementById('badgeDistStatusChip');
+    if (badgeStatus) {
+      const st = me.status || '有效';
+      badgeStatus.innerText = st;
+      if (st === '有效') {
+        badgeStatus.style.background = '#ECFDF5';
+        badgeStatus.style.color = '#059669';
+        badgeStatus.style.borderColor = '#A7F3D0';
+      } else {
+        badgeStatus.style.background = '#FEF2F2';
+        badgeStatus.style.color = '#EF4444';
+        badgeStatus.style.borderColor = '#FECACA';
+      }
+    }
+
+    // 計算本人的四大銷售額
+    const mySales = calculateSalesForDistributor(myId);
+    const fmtMoney = (n) => `NT$ ${Number(n || 0).toLocaleString()}`;
+    const elThisM = document.getElementById('valDistSelfThisMonth');
+    const elLastM = document.getElementById('valDistSelfLastMonth');
+    const elThisY = document.getElementById('valDistSelfThisYear');
+    const elLife = document.getElementById('valDistSelfLifetime');
+
+    if (elThisM) elThisM.innerText = fmtMoney(mySales.thisMonth);
+    if (elLastM) elLastM.innerText = fmtMoney(mySales.lastMonth);
+    if (elThisY) elThisY.innerText = fmtMoney(mySales.thisYear);
+    if (elLife) elLife.innerText = fmtMoney(mySales.lifetime);
+
+    // 💥 初始化並執行三代業績佔比精算
+    computeDistributorTierAnalysis(myId);
+  }
+
+  // ==========================================
+  // 經銷頁專屬日期範圍控制器與三代業績百分比精算引擎
+  // ==========================================
+  function initDistDatePickers() {
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    if (!sInput || !eInput) return;
+    if (!sInput.value || !eInput.value) {
+      setDistDateRange('thisMonth', false);
+    }
+  }
+
+  function setDistDateRange(type, triggerCompute = true) {
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    if (!sInput || !eInput) return;
+
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    if (type === 'thisMonth') {
+      sInput.value = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+      eInput.value = fmt(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+    } else if (type === 'lastMonth') {
+      sInput.value = fmt(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      eInput.value = fmt(new Date(now.getFullYear(), now.getMonth(), 0));
+    } else if (type === 'thisYear') {
+      sInput.value = fmt(new Date(now.getFullYear(), 0, 1));
+      eInput.value = fmt(new Date(now.getFullYear(), 11, 31));
+    } else if (type === 'all') {
+      sInput.value = '2020-01-01';
+      eInput.value = '2035-12-31';
+    }
+
+    if (triggerCompute) {
+      applyDistDateFilter();
+    }
+  }
+
+  function applyDistDateFilter() {
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim();
+    if (myId) {
+      computeDistributorTierAnalysis(myId);
+      showToast('三代業績與百分比已依所選區間重新計算！');
+    }
+  }
+
+  // 三代業績（本人業績 vs 第一代總業績 vs 第二代總業績）及百分比佔比運算
+  function computeDistributorTierAnalysis(myId) {
+    if (!myId) return;
+    initDistDatePickers();
+
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    const startDate = sInput && sInput.value ? new Date(sInput.value + 'T00:00:00') : null;
+    const endDate = eInput && eInput.value ? new Date(eInput.value + 'T23:59:59') : null;
+
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const orders = Array.isArray(orderCache) ? orderCache : [];
+
+    // 1. 拆解組織層級架構
+    // 第一代經銷商集合
+    const gen1Members = members.filter(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
+      return (ref === myId) && isDist && (String(m.memberId).trim() !== myId);
+    });
+    const gen1Ids = new Set(gen1Members.map(m => String(m.memberId).trim()));
+
+    // 第二代經銷商集合
+    const gen2Members = members.filter(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
+      return gen1Ids.has(ref) && isDist && (String(m.memberId).trim() !== myId);
+    });
+    const gen2Ids = new Set(gen2Members.map(m => String(m.memberId).trim()));
+
+    // 第一代經銷商所屬直屬消費者群
+    const gen1CustomerIds = new Set();
+    // 第二代經銷商所屬直屬消費者群
+    const gen2CustomerIds = new Set();
+    // 本人直屬消費者群 (非經銷商)
+    const selfCustomerIds = new Set();
+    selfCustomerIds.add(myId);
+
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const isDist = String(m.memberType || '').trim() === '經銷會員' || mId.startsWith('DIS-');
+
+      if (!isDist) {
+        if (ref === myId) selfCustomerIds.add(mId);
+        else if (gen1Ids.has(ref)) gen1CustomerIds.add(mId);
+        else if (gen2Ids.has(ref)) gen2CustomerIds.add(mId);
+      }
+    });
+
+    // 2. 累計各層級業績
+    let selfSales = 0;
+    let gen1Sales = 0;
+    let gen2Sales = 0;
+
+    const parseNum = (v) => {
+      const n = Number(String(v || 0).replace(/[^\d.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    };
+
+    orders.forEach(o => {
+      if (String(o.status || '').trim() === '取消') return;
+
+      const od = parseOrderDateString(o.orderTime);
+      if (od) {
+        if (startDate && od < startDate) return;
+        if (endDate && od > endDate) return;
+      }
+
+      const orderMemId = String(o.memberId || '').trim();
+      const orderRef = String(o.referrerId || '').trim();
+      const amount = parseNum(o.totalAmount);
+
+      if (selfCustomerIds.has(orderMemId) || (orderRef === myId && !gen1Ids.has(orderMemId) && !gen2Ids.has(orderMemId))) {
+        selfSales += amount;
+      } else if (gen1Ids.has(orderMemId) || gen1CustomerIds.has(orderMemId) || gen1Ids.has(orderRef)) {
+        gen1Sales += amount;
+      } else if (gen2Ids.has(orderMemId) || gen2CustomerIds.has(orderMemId) || gen2Ids.has(orderRef)) {
+        gen2Sales += amount;
+      }
+    });
+
+    const grandTotal = selfSales + gen1Sales + gen2Sales;
+
+    // 3. 計算百分比佔比 (精確到小數點第一位)
+    const selfPct = grandTotal > 0 ? ((selfSales / grandTotal) * 100).toFixed(1) : '0.0';
+    const gen1Pct = grandTotal > 0 ? ((gen1Sales / grandTotal) * 100).toFixed(1) : '0.0';
+    const gen2Pct = grandTotal > 0 ? ((gen2Sales / grandTotal) * 100).toFixed(1) : '0.0';
+
+    const fmtMoney = (n) => `NT$ ${Number(n || 0).toLocaleString()}`;
+
+    // 4. 回填至畫面
+    const elGrandTotal = document.getElementById('valDistGrandTotalSales');
+    const elSelf = document.getElementById('valDistTierSelf');
+    const elGen1 = document.getElementById('valDistTierGen1');
+    const elGen2 = document.getElementById('valDistTierGen2');
+
+    const elSelfPct = document.getElementById('pctDistTierSelf');
+    const elGen1Pct = document.getElementById('pctDistTierGen1');
+    const elGen2Pct = document.getElementById('pctDistTierGen2');
+
+    const barSelf = document.getElementById('barFillSelf');
+    const barGen1 = document.getElementById('barFillGen1');
+    const barGen2 = document.getElementById('barFillGen2');
+
+    if (elGrandTotal) elGrandTotal.innerText = fmtMoney(grandTotal);
+    if (elSelf) elSelf.innerText = fmtMoney(selfSales);
+    if (elGen1) elGen1.innerText = fmtMoney(gen1Sales);
+    if (elGen2) elGen2.innerText = fmtMoney(gen2Sales);
+
+    if (elSelfPct) elSelfPct.innerText = `${selfPct}%`;
+    if (elGen1Pct) elGen1Pct.innerText = `${gen1Pct}%`;
+    if (elGen2Pct) elGen2Pct.innerText = `${gen2Pct}%`;
+
+    // 堆疊長條寬度動態響應
+    if (barSelf) barSelf.style.width = `${selfPct}%`;
+    if (barGen1) barGen1.style.width = `${gen1Pct}%`;
+    if (barGen2) barGen2.style.width = `${gen2Pct}%`;
+  }
+
+  // 2. 四大銷售額精算核心 (本月、上月、今年度、累積總額)
+  function calculateSalesForDistributor(distributorId) {
+    if (!distributorId) return { thisMonth: 0, lastMonth: 0, thisYear: 0, lifetime: 0 };
+
+    const cleanDistId = String(distributorId).trim();
+    const orders = Array.isArray(orderCache) ? orderCache : [];
+
+    // 找出所有推薦人為該經銷商的會員（以及該經銷商自己的帳號）
+    const targetMemberIds = new Set();
+    targetMemberIds.add(cleanDistId);
+
+    (memberCache || []).forEach(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      if (ref === cleanDistId && m.memberId) {
+        targetMemberIds.add(String(m.memberId).trim());
+      }
+    });
+
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth(); // 0-based
+    const lastMonthYear = curMonth === 0 ? curYear - 1 : curYear;
+    const lastMonth = curMonth === 0 ? 11 : curMonth - 1;
+
+    let thisMonth = 0;
+    let lastMonthSales = 0;
+    let thisYear = 0;
+    let lifetime = 0;
+
+    const parseNum = (v) => {
+      const n = Number(String(v || 0).replace(/[^\d.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    };
+
+    orders.forEach(o => {
+      // 排除取消訂單
+      if (String(o.status || '').trim() === '取消') return;
+
+      const orderMemId = String(o.memberId || '').trim();
+      const orderRef = String(o.referrerId || '').trim();
+
+      // 判定業績歸屬：購物人是該經銷商自身/其推薦客戶，或訂單明記推薦人為該經銷商
+      const isBelongsToDist = targetMemberIds.has(orderMemId) || (orderRef === cleanDistId);
+      if (!isBelongsToDist) return;
+
+      const amount = parseNum(o.totalAmount);
+      lifetime += amount;
+
+      const d = parseOrderDateString(o.orderTime);
+      if (d) {
+        const y = d.getFullYear();
+        const m = d.getMonth();
+
+        if (y === curYear) {
+          thisYear += amount;
+          if (m === curMonth) {
+            thisMonth += amount;
+          }
+        }
+        if (y === lastMonthYear && m === lastMonth) {
+          lastMonthSales += amount;
+        }
+      }
+    });
+
+    return { thisMonth, lastMonth: lastMonthSales, thisYear, lifetime };
+  }
+
+  // 3. 渲染兩代組織族譜（直屬一代 ＆ 推薦二代）
+  function renderDistributorGenealogy() {
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim();
+    const container = document.getElementById('distTreeContainer');
+    const cnt1El = document.getElementById('cntGen1');
+    const cnt2El = document.getElementById('cntGen2');
+    if (!container) return;
+
+    if (!myId) {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">尚未登入經銷商帳號</div>';
+      return;
+    }
+
+    const members = Array.isArray(memberCache) ? memberCache : [];
+
+    // 找出第一代直屬下線經銷商 (推薦人為本人，且身分為經銷會員)
+    const gen1List = members.filter(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
+      return (ref === myId) && isDist && (String(m.memberId).trim() !== myId);
+    });
+
+    // 找出第二代間接下線經銷商 (推薦人為第一代經銷商)
+    const gen1IdSet = new Set(gen1List.map(m => String(m.memberId).trim()));
+    const gen2Map = {}; // { gen1Id: [gen2Members] }
+
+    let totalGen2Count = 0;
+    gen1List.forEach(g1 => {
+      const g1Id = String(g1.memberId).trim();
+      const g2Children = members.filter(m => {
+        const ref = String(m.lineId || m.referrerId || '').trim();
+        const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
+        return (ref === g1Id) && isDist && (String(m.memberId).trim() !== g1Id);
+      });
+      gen2Map[g1Id] = g2Children;
+      totalGen2Count += g2Children.length;
+    });
+
+    if (cnt1El) cnt1El.innerText = gen1List.length;
+    if (cnt2El) cnt2El.innerText = totalGen2Count;
+
+    if (gen1List.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:13px; line-height:1.8; border:1px dashed #CBD5E1; border-radius:8px;">
+          <i class="ph ph-tree" style="font-size:32px; color:var(--accent-line); margin-bottom:8px;"></i><br>
+          目前您名下尚無第一代經銷夥伴。<br>
+          當新經銷夥伴在註冊時填寫您的推薦人編號 <strong>${myId}</strong>，將自動在此連動呈現兩代組織圖！
+        </div>
+      `;
+      return;
+    }
+
+    const fmtMoney = (n) => `NT$ ${Number(n || 0).toLocaleString()}`;
+
+    // 渲染卡片輔助器
+    const renderNodeHtml = (m, genLevel) => {
+      const mId = String(m.memberId).trim();
+      const isExpanded = distExpandedNodes.has(mId);
+      const sales = calculateSalesForDistributor(mId);
+      const joinDate = m.registerTime || m.timestamp || '-';
+      const expDate = m.distExpiry || m.vipExpiry || '常態有效';
+      const statusText = m.status || '有效';
+
+      return `
+        <div class="dist-node-card" style="${genLevel === 2 ? 'margin-left: 20px; border-left: 3px solid #7C3AED; background: #FAF5FF;' : 'background: #FFFFFF;'}">
+          <div class="dist-node-header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;">
+            
+            <!-- 左側：圓頭點擊展開按鈕 ＋ 姓名 ＋ 代數標籤 -->
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="dist-avatar-head ${isExpanded ? 'open' : ''}" onclick="toggleDistNodeExpand('${mId}')" title="點擊${isExpanded ? '收合' : '展開'}此經銷商詳細資料">
+                <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-user'}" style="font-size: 20px;"></i>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <strong style="font-size: 15px; color: var(--text);">${m.memberName || '經銷夥伴'}</strong>
+                  <span class="dist-level-badge" data-gen="${genLevel}">
+                    ${genLevel === 1 ? '直推一代' : '推薦二代'}
+                  </span>
+                  <span class="id-chip" style="font-size: 11px;"><i class="ph ph-identification-card"></i> ${mId}</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                  電話: <span style="font-family: monospace;">${m.phone || '-'}</span> ｜ 狀態: <strong style="color:${statusText === '有效' ? 'var(--success)' : 'var(--danger)'};">${statusText}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右側：展開箭頭純 Icon 按鈕 -->
+            <button type="button" class="icon-btn" onclick="toggleDistNodeExpand('${mId}')" title="${isExpanded ? '收合' : '展開'}" style="border: none; padding: 6px;">
+              <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size: 18px;"></i>
+            </button>
+          </div>
+
+          <!-- 圓頭點擊展開的詳細內容：加入到期資訊 ＋ 四大銷售額面盤 -->
+          ${isExpanded ? `
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-subtle); animation: fadeIn 0.15s ease;">
+              
+              <!-- 加入與到期資訊 (單行完整顯示不擠壓) -->
+              <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; padding: 4px 0; border-bottom: 1px dashed #F1F5F9; flex-wrap: wrap; gap: 6px;">
+                <span style="color: var(--text-muted);"><i class="ph ph-calendar-plus" style="vertical-align:middle;"></i> 加入註冊：<strong style="color: var(--text); font-family: monospace;">${joinDate}</strong></span>
+                <span style="color: var(--text-muted);"><i class="ph ph-calendar-check" style="vertical-align:middle;"></i> 有效到期：<strong style="color: #7C3AED; font-family: monospace;">${expDate}</strong></span>
+              </div>
+
+              <!-- 四大銷售額即時數據面盤 -->
+              <div class="dist-sales-grid">
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">本月銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.thisMonth)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">上月銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.lastMonth)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">本年度總銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.thisYear)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">累積總銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.lifetime)}</span>
+                </div>
+              </div>
+
+            </div>
+          ` : ''}
+        </div>
+      `;
+    };
+
+    // 依一代 ➔ 其所屬二代循序巢狀排版
+    container.innerHTML = gen1List.map(g1 => {
+      const g1Id = String(g1.memberId).trim();
+      const g2List = gen2Map[g1Id] || [];
+
+      return `
+        <div style="display:flex; flex-direction:column; gap:10px; border-bottom:1.5px dashed #CBD5E1; padding-bottom:16px;">
+          ${renderNodeHtml(g1, 1)}
+          ${g2List.length > 0 ? `
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
+              ${g2List.map(g2 => renderNodeHtml(g2, 2)).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleDistNodeExpand(memberId) {
+    if (distExpandedNodes.has(memberId)) {
+      distExpandedNodes.delete(memberId);
+    } else {
+      distExpandedNodes.add(memberId);
+    }
+    renderDistributorGenealogy();
+  }
+
+  // 4. 個人檔案編輯與自動儲存回寫試算表
+  function triggerDistSelfAutoSave() {
+    // 輸入時即時同步收合條的姓名標題
+    const curInputName = document.getElementById('distSelfName')?.value;
+    const headerNameEl = document.getElementById('lblDistSelfHeaderName');
+    if (headerNameEl && curInputName) headerNameEl.innerText = curInputName;
+
+    const tip = document.getElementById('distProfileSaveTip');
+    if (tip) tip.innerHTML = '<span style="color:var(--text-muted);"><i class="ph ph-circle-notch ph-spin"></i> 輸入中...</span>';
+    if (distSelfDebounceTimer) clearTimeout(distSelfDebounceTimer);
+    distSelfDebounceTimer = setTimeout(saveDistSelfProfileManual, 1200);
+  }
+
+  async function saveDistSelfProfileManual() {
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim();
+    if (!myId) {
+      showToast('尚未登入經銷商帳號！');
+      return;
+    }
+
+    const tip = document.getElementById('distProfileSaveTip');
+    const btn = document.getElementById('btnSaveDistSelf');
+
+    const payload = {
+      memberId: myId,
+      memberName: (document.getElementById('distSelfName')?.value || '').trim(),
+      phone: (document.getElementById('distSelfPhone')?.value || '').trim(),
+      email: (document.getElementById('distSelfEmail')?.value || '').trim(),
+      address: (document.getElementById('distSelfAddress')?.value || '').trim(),
+      birthday: (document.getElementById('distSelfBirthday')?.value || '').trim()
+    };
+
+    if (tip) tip.innerHTML = '<span style="color:var(--accent);"><i class="ph ph-circle-notch ph-spin"></i> 同步試算表中...</span>';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i>';
+    }
+
+    // 0ms 樂觀更新前端快取
+    const idx = (memberCache || []).findIndex(m => String(m.memberId).trim() === myId);
+    if (idx !== -1) {
+      memberCache[idx] = { ...memberCache[idx], ...payload };
+    }
+
+    try {
+      const res = await apiCall('updateDistributorProfile', payload);
+      if (res && res.status === 'success') {
+        if (tip) {
+          tip.innerHTML = '<span style="color:var(--success); font-weight:700;"><i class="ph ph-check-circle"></i> 資料已儲存</span>';
+          setTimeout(() => { if (tip) tip.innerHTML = ''; }, 3000);
+        }
+        showToast('經銷個人資料已同步寫入試算表！');
+      } else {
+        throw new Error(res?.data?.message || '後端同步未完成');
+      }
+    } catch (err) {
+      if (tip) tip.innerHTML = '<span style="color:var(--danger); font-weight:700;">同步失敗</span>';
+      showToast('儲存失敗：' + (err.message || err.toString()));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph ph-floppy-disk" style="font-size:20px;"></i>';
+      }
+    }
+  }
 
 </script>
 
