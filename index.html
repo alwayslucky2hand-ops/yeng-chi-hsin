@@ -3765,12 +3765,14 @@
         </div>
 
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
-            <input type="date" id="dashStartDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDashboardDateFilter()">
+          <div style="position:relative; display:inline-flex; align-items:center; flex:1; min-width:130px;">
+            <input type="text" id="dashStartDateDisplay" readonly class="login-input" style="padding:6px 10px; font-size:12px; font-family:monospace; font-weight:700; width:100%; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+            <input type="date" id="dashStartDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncDashDateChange('start', this.value)">
           </div>
           <span style="color:var(--text-muted); font-size:12px;">至</span>
-          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
-            <input type="date" id="dashEndDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDashboardDateFilter()">
+          <div style="position:relative; display:inline-flex; align-items:center; flex:1; min-width:130px;">
+            <input type="text" id="dashEndDateDisplay" readonly class="login-input" style="padding:6px 10px; font-size:12px; font-family:monospace; font-weight:700; width:100%; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+            <input type="date" id="dashEndDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncDashDateChange('end', this.value)">
           </div>
           <button type="button" class="icon-btn" onclick="applyDashboardDateFilter()" title="執行篩選" style="padding:6px 12px; background:var(--accent); color:#fff; border-color:var(--accent);">
             <i class="ph ph-funnel" style="font-size:16px;"></i>
@@ -6170,6 +6172,8 @@
 
     if (!startInput.value || !endInput.value) {
       setDashboardDateRange('thisMonth', false);
+    } else {
+      syncDashDateDisplay();
     }
   }
 
@@ -6197,9 +6201,41 @@
       endInput.value = '2030-12-31';
     }
 
+    
+    syncDashDateDisplay();
+
     if (triggerRefresh) {
       applyDashboardDateFilter();
     }
+  }
+
+  
+  function syncDashDateDisplay() {
+    const sInput = document.getElementById('dashStartDate');
+    const eInput = document.getElementById('dashEndDate');
+    const sDisplay = document.getElementById('dashStartDateDisplay');
+    const eDisplay = document.getElementById('dashEndDateDisplay');
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatTo8Slash = (str) => {
+      if (!str) return '';
+      const parts = str.split(/[-/]/);
+      if (parts.length >= 3) {
+        return `${parts[0]}/${pad(parts[1])}/${pad(parts[2])}`;
+      }
+      return str.replace(/-/g, '/');
+    };
+    if (sInput && sDisplay) sDisplay.value = formatTo8Slash(sInput.value);
+    if (eInput && eDisplay) eDisplay.value = formatTo8Slash(eInput.value);
+  }
+
+  function syncDashDateChange(type, val) {
+    if (!val) return;
+    const pad = (n) => String(n).padStart(2, '0');
+    const parts = val.split(/[-/]/);
+    const slashVal = parts.length >= 3 ? `${parts[0]}/${pad(parts[1])}/${pad(parts[2])}` : val.replace(/-/g, '/');
+    const displayEl = document.getElementById(type === 'start' ? 'dashStartDateDisplay' : 'dashEndDateDisplay');
+    if (displayEl) displayEl.value = slashVal;
+    applyDashboardDateFilter();
   }
 
   function applyDashboardDateFilter() {
