@@ -4051,10 +4051,16 @@
               <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="篩選全部" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">全部</button>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
-              <input type="date" id="distStartDate" class="login-input" style="padding:4px 6px; font-size:11px; width:118px;" onchange="applyDistCustomDateFilter()">
+              <div style="position:relative; display:inline-flex; align-items:center;">
+                <input type="text" id="distStartDateDisplay" readonly class="login-input" style="padding:5px 6px; font-size:12px; font-family:monospace; font-weight:700; width:96px; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+                <input type="date" id="distStartDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncDistDateChange('start', this.value)">
+              </div>
               <span style="font-size:11px; color:var(--text-muted);">至</span>
-              <input type="date" id="distEndDate" class="login-input" style="padding:4px 6px; font-size:11px; width:118px;" onchange="applyDistCustomDateFilter()">
-              <button type="button" class="icon-btn" onclick="applyDistCustomDateFilter()" title="篩選" style="padding:5px 8px; background:var(--accent); color:#fff; border-color:var(--accent);">
+              <div style="position:relative; display:inline-flex; align-items:center;">
+                <input type="text" id="distEndDateDisplay" readonly class="login-input" style="padding:5px 6px; font-size:12px; font-family:monospace; font-weight:700; width:96px; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+                <input type="date" id="distEndDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncDistDateChange('end', this.value)">
+              </div>
+              <button type="button" class="icon-btn" onclick="applyDistCustomDateFilter()" title="執行過篩" style="padding:5px 8px; background:var(--accent); color:#fff; border-color:var(--accent);">
                 <i class="ph ph-funnel" style="font-size:14px;"></i>
               </button>
             </div>
@@ -6283,8 +6289,10 @@
     const currentMonth = now.getMonth();
     let monthTotalSales = 0;
 
+    const isPaidOrder = (st) => ['收款', '出貨', '配送', '到貨', '收貨'].includes(String(st || '').trim());
+
     orders.forEach(o => {
-      if (String(o.status || '').trim() === '取消') return;
+      if (!isPaidOrder(o.status)) return;
       const od = parseOrderDateString(o.orderTime);
       if (od && od.getFullYear() === currentYear && od.getMonth() === currentMonth) {
         monthTotalSales += parseNum(o.totalAmount);
@@ -13253,15 +13261,32 @@
     computeDistributorTierAnalysis(myId);
   }
 
-  // ==========================================
-  // 經銷頁專屬日期範圍控制器與三代業績百分比精算引擎
-  // ==========================================
+  // 經銷頁斜線日期畫面同步器
+  function syncDistDateDisplay() {
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    const sDisplay = document.getElementById('distStartDateDisplay');
+    const eDisplay = document.getElementById('distEndDateDisplay');
+    if (sInput && sDisplay) sDisplay.value = (sInput.value || '').replace(/-/g, '/');
+    if (eInput && eDisplay) eDisplay.value = (eInput.value || '').replace(/-/g, '/');
+  }
+
+  function syncDistDateChange(type, val) {
+    if (!val) return;
+    const slashVal = val.replace(/-/g, '/');
+    const displayEl = document.getElementById(type === 'start' ? 'distStartDateDisplay' : 'distEndDateDisplay');
+    if (displayEl) displayEl.value = slashVal;
+    applyDistCustomDateFilter();
+  }
+
   function initDistDatePickers() {
     const sInput = document.getElementById('distStartDate');
     const eInput = document.getElementById('distEndDate');
     if (!sInput || !eInput) return;
     if (!sInput.value || !eInput.value) {
       setDistDateRange('thisMonth', false);
+    } else {
+      syncDistDateDisplay();
     }
   }
 
@@ -13288,6 +13313,8 @@
       eInput.value = '2035-12-31';
     }
 
+    syncDistDateDisplay();
+
     if (triggerCompute) {
       applyDistDateFilter();
     }
@@ -13296,8 +13323,8 @@
   function applyDistDateFilter() {
     const sInput = document.getElementById('distStartDate');
     const eInput = document.getElementById('distEndDate');
-    const sDate = (sInput && sInput.value) ? new Date(sInput.value + 'T00:00:00') : null;
-    const eDate = (eInput && eInput.value) ? new Date(eInput.value + 'T23:59:59') : null;
+    const sDate = (sInput && sInput.value) ? new Date(sInput.value.replace(/\//g, '-') + 'T00:00:00') : null;
+    const eDate = (eInput && eInput.value) ? new Date(eInput.value.replace(/\//g, '-') + 'T23:59:59') : null;
 
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim();
@@ -13464,9 +13491,11 @@
       return isNaN(n) ? 0 : n;
     };
 
+    // 🔒 經銷鐵律：僅採計已付款完成之訂單 (嚴格排除選購、下訂與取消)
+    const isPaidOrder = (st) => ['收款', '出貨', '配送', '到貨', '收貨'].includes(String(st || '').trim());
+
     orders.forEach(o => {
-      // 排除取消訂單
-      if (String(o.status || '').trim() === '取消') return;
+      if (!isPaidOrder(o.status)) return;
 
       const orderMemId = String(o.memberId || '').trim();
       const orderRef = String(o.referrerId || '').trim();
@@ -13746,6 +13775,8 @@
     if (sInput) sInput.value = fmt(firstDay);
     if (eInput) eInput.value = fmt(lastDay);
 
+    syncDistDateDisplay();
+
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim();
     if (myId) {
@@ -13758,18 +13789,21 @@
     const eInput = document.getElementById('distEndDate');
     if (!sInput || !eInput || !sInput.value || !eInput.value) return;
 
-    const sDate = new Date(sInput.value + 'T00:00:00');
-    const eDate = new Date(eInput.value + 'T23:59:59');
+    const sDate = new Date(sInput.value.replace(/\//g, '-') + 'T00:00:00');
+    const eDate = new Date(eInput.value.replace(/\//g, '-') + 'T23:59:59');
 
     const lbl = document.getElementById('lblDistSelectedMonth');
     if (lbl) {
-      lbl.innerText = `${sInput.value} ~ ${eInput.value}`;
+      const sVal = sInput.value.replace(/-/g, '/');
+      const eVal = eInput.value.replace(/-/g, '/');
+      lbl.innerText = `${sVal} ~ ${eVal}`;
     }
 
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim();
     if (myId) {
       computeComprehensiveProfitReport(myId, sDate, eDate);
+      computeDistributorTierAnalysis(myId);
       showToast('已依自訂起訖區間重新計算獲利與獎金！');
     }
   }
@@ -13831,9 +13865,12 @@
     const gen2Ids = new Set(gen2Members.map(m => String(m.memberId).trim()));
 
     // 2. 區塊二：個人採購與商城銷貨盤點 (零售差額直接賺走，不進總部獎金池)
+    // 🔒 經銷鐵律：僅採計已付款完成之訂單 (嚴格排除選購、下訂與取消)
+    const isPaidOrder = (st) => ['收款', '出貨', '配送', '到貨', '收貨'].includes(String(st || '').trim());
+
     let myCustomerOrdersAmt = 0;
     orders.forEach(o => {
-      if (String(o.status || '').trim() === '取消') return;
+      if (!isPaidOrder(o.status)) return;
       const od = parseOrderDateString(o.orderTime);
       if (od && startDate && endDate && (od < startDate || od > endDate)) return;
 
@@ -13878,7 +13915,7 @@
 
         // 🌟 海外會員回溯判定：若該一代下線為海外籍，其首購與補貨業績 100% 依然歸台灣 A 計算
         const g1Orders = orders.filter(o => {
-          if (String(o.status || '').trim() === '取消') return false;
+          if (!isPaidOrder(o.status)) return false;
           const od = parseOrderDateString(o.orderTime);
           if (!od || od < mStart || od > mEnd) return false;
           return (String(o.memberId).trim() === g1Id || String(o.referrerId).trim() === g1Id);
@@ -13903,7 +13940,7 @@
         if (isNewInM) g2NewNum++;
 
         const g2Orders = orders.filter(o => {
-          if (String(o.status || '').trim() === '取消') return false;
+          if (!isPaidOrder(o.status)) return false;
           const od = parseOrderDateString(o.orderTime);
           if (!od || od < mStart || od > mEnd) return false;
           return (String(o.memberId).trim() === g2Id || String(o.referrerId).trim() === g2Id);
