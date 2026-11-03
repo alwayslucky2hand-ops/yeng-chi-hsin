@@ -2065,6 +2065,201 @@
     .dist-ratio-fill-gen2 { background: #7C3AED; transition: width 0.3s ease; }
 
      
+     
+     
+    .profit-section-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--accent-line);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(44, 82, 130, 0.04);
+    }
+    .profit-section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px dashed #E2E8F0;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .profit-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .profit-stat-grid.two-cols {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+     
+    .dist-circle-incentive-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .circle-chart-svg {
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+      transform: rotate(-90deg);
+    }
+    .circle-bg {
+      fill: none;
+      stroke: #E2E8F0;
+      stroke-width: 5;
+    }
+    .circle-progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 188.5;
+      stroke-dashoffset: 188.5;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .circle-text-center {
+      transform: rotate(90deg);
+      transform-origin: 35px 35px;
+      font-size: 11px;
+      font-weight: 800;
+      font-family: monospace;
+      fill: var(--text);
+    }
+    .ladder-step-strip {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .ladder-chip {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .ladder-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+     
+    .dist-explain-drawer {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #FFFFFF;
+      margin-top: 10px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .dist-explain-header {
+      padding: 8px 12px;
+      background: #F8FAFC;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .dist-explain-header:hover {
+      color: var(--text);
+      background: #F1F5F9;
+    }
+    .dist-explain-body {
+      display: none;
+      padding: 12px 14px;
+      font-size: 11.5px;
+      line-height: 1.75;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border-subtle);
+      background: #FFFFFF;
+    }
+    .dist-explain-drawer.open .dist-explain-body {
+      display: block;
+    }
+    .profit-stat-tile {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profit-ladder-box {
+      background: #FAF5FF;
+      border: 1px solid #E9D5FF;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profit-tax-alert {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #92400E;
+    }
+    .profit-timeline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      gap: 6px;
+    }
+    .profit-timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2px;
+      font-size: 10.5px;
+      color: #64748B;
+      flex: 1;
+    }
+    .profit-timeline-step.active {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+     
+    @media (max-width: 768px) {
+      .profit-stat-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+      .profit-timeline {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+    }
     @media (max-width: 768px) {
       .dist-sales-grid {
         grid-template-columns: 1fr !important;
@@ -2130,7 +2325,7 @@
         
         <div class="input-row">
           <div class="input-col">
-            <label class="form-label">信箱</label>
+            <label class="form-label">Email</label>
             <input type="email" id="loginEmail" class="login-input" placeholder="經銷商註冊 Email">
           </div>
         </div>
@@ -2191,7 +2386,7 @@
         
         <div class="input-row">
           <div class="input-col">
-            <label class="form-label">信箱</label>
+            <label class="form-label">Email</label>
             <input type="email" id="regEmail" class="login-input" placeholder="用以接收通知與登入驗證">
           </div>
         </div>
@@ -2555,9 +2750,8 @@
         </div>
 
         
-        <button type="button" class="icon-btn" id="btnSendContractPdfEmail" onclick="sendContractPdfEmailAction()" title="點擊直接將 A4 合約 PDF 寄發至申請人信箱" style="width:100%; height:44px; border:1.5px solid var(--accent); color:var(--accent); background:#FFFFFF; border-radius:6px; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; cursor:pointer; transition:all 0.2s;">
-          <i class="ph ph-envelope-simple" style="font-size:19px;"></i>
-          <span>寄送合約 PDF 至申請人信箱</span>
+        <button type="button" class="icon-btn" id="btnSendContractPdfEmail" onclick="sendContractPdfEmailAction()" title="寄送合約 PDF 至申請人 Email" style="width:100%; height:44px; border:1.5px solid var(--accent); color:var(--accent); background:#FFFFFF; border-radius:6px; display:flex; align-items:center; justify-content:center; margin-top:14px; cursor:pointer; transition:all 0.2s;">
+          <i class="ph ph-envelope-simple" style="font-size:20px;"></i>
         </button>
 
         
@@ -3105,7 +3299,10 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">狀態</label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">狀態</label>
+                <span class="sealed-badge" id="badgeMemStatusLock" style="display:none;"><i class="ph ph-lock-key"></i> 總部審核權限封印</span>
+              </div>
               <select id="memStatus" class="login-input">
                 <option value="審核中">審核中</option>
                 <option value="有效">有效</option>
@@ -3664,25 +3861,23 @@
       <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:8px;">
           <i class="ph ph-tree-structure" style="font-size: 22px; color: var(--accent);"></i>
-          <span style="font-weight: 800; font-size: 17px;">經銷總覽與組織圖譜</span>
+          <span style="font-weight: 800; font-size: 17px;">經銷總覽</span>
           <span id="distRefreshStatus" style="font-size: 12px; color: var(--text-muted); margin-left: 6px;"></span>
         </div>
-        <button type="button" class="icon-btn" onclick="loadDistributorTab(true)" title="重新整理經銷與組織數據">
+        <button type="button" class="icon-btn" onclick="loadDistributorTab(true)" title="重新整理">
           <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
         </button>
       </div>
 
       
-      <div class="order-sub-section" id="secDistSelfProfile" style="margin-bottom: 18px; border: 1.5px solid var(--accent-line); border-radius: 8px;">
+      <div class="order-sub-section dist-collapsible-zone" id="secDistSelfProfile" style="margin-bottom: 16px; border: 1.5px solid var(--accent-line); border-radius: 8px;">
         <div class="order-sub-header" onclick="toggleGenericSubSection('secDistSelfProfile')" style="background: #FFFFFF; padding: 12px 14px;">
-          
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; min-width:0;">
             <i class="ph ph-user-circle" style="font-size:20px; color:var(--accent); flex-shrink:0;"></i>
-            <span id="lblDistSelfHeaderName" style="font-weight:800; font-size:15px; color:var(--text); letter-spacing:0.3px;">經銷夥伴</span>
+            <span id="lblDistSelfHeaderName" style="font-weight:800; font-size:15px; color:var(--text); letter-spacing:0.3px;">個人檔案</span>
             <span class="id-chip" id="lblDistSelfHeaderId" style="font-size:11px; font-weight:700;"><i class="ph ph-identification-card"></i> -</span>
             <span id="badgeDistStatusChip" style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #ECFDF5; color: #059669; font-weight: 700; border: 1px solid #A7F3D0;">有效</span>
           </div>
-          
           <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
             <span id="distProfileSaveTip" style="font-size:11px; color:var(--text-muted); font-family:monospace;"></span>
             <i class="ph ph-caret-down" id="iconSecDistSelfProfile" style="font-size:18px;"></i>
@@ -3690,83 +3885,88 @@
         </div>
         <div class="order-sub-body" style="padding: 16px;">
 
-          
           <div class="input-row">
             <div class="input-col">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">經銷商編號</label>
-                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+                <label class="form-label" style="margin-bottom:0;">經銷編號</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印鎖定</span>
               </div>
               <input type="text" id="distSelfId" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--accent);">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <label class="form-label" style="margin-bottom:0;">註冊日期</label>
-                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印鎖定</span>
               </div>
               <input type="text" id="distSelfRegTime" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--text-muted);">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">推薦人代碼</label>
-                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+                <label class="form-label" style="margin-bottom:0;">推薦編號</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印鎖定</span>
               </div>
               <input type="text" id="distSelfReferrer" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; font-weight:700;">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">到期日</label>
-                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+                <label class="form-label" style="margin-bottom:0;">有效到期</label>
+                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印鎖定</span>
               </div>
-              <input type="text" id="distSelfExpiry" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:#7C3AED; font-weight:700;">
+              <input type="text" id="distSelfExpiry" class="login-input" disabled style="background:var(--bg) !important; font-family:monospace; color:var(--accent); font-weight:700;">
             </div>
           </div>
 
-          
+          <div class="input-row">
+            <div class="input-col">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">經銷狀態</label>
+                <span class="sealed-badge" id="badgeDistSelfStatusLock"><i class="ph ph-lock-key"></i> 總部權限</span>
+              </div>
+              <select id="distSelfStatusSelect" class="login-input" disabled style="background:var(--bg) !important; font-weight:700; cursor:not-allowed;" onchange="triggerDistSelfAutoSave()">
+                <option value="審核中">審核中</option>
+                <option value="有效">有效</option>
+                <option value="失效">失效</option>
+              </select>
+            </div>
+          </div>
+
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">姓名</label>
-              <input type="text" id="distSelfName" class="login-input" placeholder="經銷夥伴姓名" oninput="triggerDistSelfAutoSave()">
+              <input type="text" id="distSelfName" class="login-input" placeholder="姓名" oninput="triggerDistSelfAutoSave()">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">電話</label>
-              <input type="text" id="distSelfPhone" class="login-input" placeholder="例如: 0912345678" oninput="triggerDistSelfAutoSave()">
+              <input type="text" id="distSelfPhone" class="login-input" placeholder="聯絡電話" oninput="triggerDistSelfAutoSave()">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">信箱</label>
-              <input type="email" id="distSelfEmail" class="login-input" placeholder="電子信箱" oninput="triggerDistSelfAutoSave()">
+              <label class="form-label">Email</label>
+              <input type="email" id="distSelfEmail" class="login-input" placeholder="Email" oninput="triggerDistSelfAutoSave()">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">地址</label>
-              <textarea id="distSelfAddress" class="login-input" style="height: 60px; resize: vertical;" placeholder="商品與合約寄送地址..." oninput="triggerDistSelfAutoSave()"></textarea>
+              <textarea id="distSelfAddress" class="login-input" style="height: 60px; resize: vertical;" placeholder="寄送地址..." oninput="triggerDistSelfAutoSave()"></textarea>
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">生日</label>
@@ -3774,32 +3974,29 @@
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">銀行代碼</label>
-              <input type="text" id="distSelfBankCode" class="login-input" placeholder="例如: 012、822、700" oninput="triggerDistSelfAutoSave()">
+              <input type="text" id="distSelfBankCode" class="login-input" placeholder="3 碼金融機構代碼" oninput="triggerDistSelfAutoSave()">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">銀行帳號</label>
-              <input type="text" id="distSelfBankAccount" class="login-input" placeholder="請輸入撥款金融機構帳號" oninput="triggerDistSelfAutoSave()">
+              <input type="text" id="distSelfBankAccount" class="login-input" placeholder="金融機構帳號" oninput="triggerDistSelfAutoSave()">
             </div>
           </div>
 
-          
           <div class="input-row">
             <div class="input-col">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">存摺照片</label>
+                <label class="form-label" style="margin-bottom:0;">存摺封面</label>
                 <div style="display:flex; gap:6px;">
-                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraDistSelfBank').click()" title="拍照新存摺">
+                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraDistSelfBank').click()" title="拍照">
                     <i class="ph ph-camera" style="font-size:16px;"></i>
                   </button>
-                  <button type="button" class="icon-btn" onclick="document.getElementById('fileDistSelfBank').click()" title="上傳新存摺">
+                  <button type="button" class="icon-btn" onclick="document.getElementById('fileDistSelfBank').click()" title="上傳">
                     <i class="ph ph-upload-simple" style="font-size:16px;"></i>
                   </button>
                 </div>
@@ -3808,29 +4005,27 @@
               <input type="file" id="fileDistSelfBank" accept="image/*" multiple style="display:none;" onchange="handleDistSelfBankPhoto(this)">
               <div class="auth-file-box" style="background:#FAFBFD;">
                 <div id="previewDistSelfBank" class="auth-file-preview-strip">
-                  <span style="font-size:11px; color:var(--text-muted); padding:6px 0;">尚無存摺照片</span>
+                  <span style="font-size:11px; color:var(--text-muted); padding:6px 0;">尚無照片</span>
                 </div>
               </div>
             </div>
           </div>
 
-          
-          <div class="order-sub-section" id="subSecDistSelfLogs" style="margin-top: 14px; border: 1px solid #E2E8F0; border-radius: 6px;">
+          <div class="order-sub-section dist-collapsible-zone" id="subSecDistSelfLogs" style="margin-top: 14px; border: 1px solid #E2E8F0; border-radius: 6px;">
             <div class="order-sub-header" onclick="toggleGenericSubSection('subSecDistSelfLogs')" style="padding: 10px 12px; background: #F8FAFC;">
               <div style="display:flex; align-items:center; gap:6px;">
                 <i class="ph ph-clock-counter-clockwise" style="font-size:16px; color:var(--accent);"></i>
-                <span style="font-size:12.5px; font-weight:700;">個人檔案變更歷程日誌</span>
+                <span style="font-size:12px; font-weight:700;">變更日誌</span>
               </div>
               <i class="ph ph-caret-down" id="iconSubSecDistSelfLogs" style="font-size:16px;"></i>
             </div>
             <div class="order-sub-body" style="padding: 12px;">
-              <div id="distSelfLogView" class="log-box" style="font-size:12px; max-height:180px;">尚無變更紀錄</div>
+              <div id="distSelfLogView" class="log-box" style="font-size:12px; max-height:180px;">尚無紀錄</div>
             </div>
           </div>
 
-          
           <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:14px; padding-top:12px; border-top:1px dashed #E2E8F0; gap:8px;">
-            <button type="button" class="icon-btn" onclick="saveDistSelfProfileManual()" id="btnSaveDistSelf" title="儲存經銷個人檔案" style="background:var(--accent); color:#FFFFFF; border-color:var(--accent); width:38px; height:38px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+            <button type="button" class="icon-btn" onclick="saveDistSelfProfileManual()" id="btnSaveDistSelf" title="儲存" style="background:var(--accent); color:#FFFFFF; border-color:var(--accent); width:38px; height:38px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
               <i class="ph ph-floppy-disk" style="font-size:20px;"></i>
             </button>
           </div>
@@ -3839,142 +4034,308 @@
       </div>
 
       
-      <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:16px; margin-bottom:18px;">
-        
-        
-        <div style="border-bottom:1px dashed #E2E8F0; padding-bottom:12px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <i class="ph ph-calendar" style="font-size:18px; color:var(--accent);"></i>
-              <span style="font-size:13px; font-weight:800; color:var(--text);">業績過篩區間</span>
-              
-              <div style="display:flex; gap:4px; margin-left:4px; flex-wrap:wrap;">
-                <button type="button" class="icon-btn" onclick="setDistDateRange('thisMonth')" title="篩選本月" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">本月</button>
-                <button type="button" class="icon-btn" onclick="setDistDateRange('lastMonth')" title="篩選上月" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">上月</button>
-                <button type="button" class="icon-btn" onclick="setDistDateRange('thisYear')" title="篩選本年度" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">年度</button>
-                <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="篩選累積總額" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">全部</button>
-              </div>
-            </div>
-            <div style="font-size:12px; color:var(--text-muted);">
-              區間體系總業績：<strong id="valDistGrandTotalSales" style="font-size:15px; font-family:monospace; color:var(--text);">NT$ 0</strong>
-            </div>
-          </div>
-
-          
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
-              <input type="date" id="distStartDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDistDateFilter()">
-            </div>
-            <span style="color:var(--text-muted); font-size:12px;">至</span>
-            <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:130px;">
-              <input type="date" id="distEndDate" class="login-input" style="padding:6px 10px; font-size:12px;" onchange="applyDistDateFilter()">
-            </div>
-            <button type="button" class="icon-btn" onclick="applyDistDateFilter()" title="執行過篩" style="padding:6px 12px; background:var(--accent); color:#FFFFFF; border-color:var(--accent);">
-              <i class="ph ph-funnel" style="font-size:16px;"></i>
+      <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="icon-btn" onclick="stepDistMonth(-1)" title="上月" style="padding:5px 8px;">
+              <i class="ph ph-caret-left" style="font-size:16px;"></i>
+            </button>
+            <span id="lblDistSelectedMonth" style="font-size:14px; font-weight:800; color:var(--text); font-family:monospace; min-width:110px; text-align:center;">2026 年 11 月</span>
+            <button type="button" class="icon-btn" onclick="stepDistMonth(1)" title="下月" style="padding:5px 8px;">
+              <i class="ph ph-caret-right" style="font-size:16px;"></i>
+            </button>
+            <button type="button" class="icon-btn" onclick="resetDistCurrentMonth()" title="回當月" style="padding:5px 8px;">
+              <i class="ph ph-calendar-blank" style="font-size:16px;"></i>
             </button>
           </div>
-        </div>
 
-        
-        <div style="font-size:13px; font-weight:800; color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-          <i class="ph ph-chart-donut" style="font-size:18px; color:var(--accent);"></i>
-          <span>三代業績貢獻度與佔比分析</span>
-        </div>
-
-        
-        <div class="dist-ratio-bar-bg" title="本人 (深黑) ｜ 一代 (冰藍) ｜ 二代 (紫羅蘭)">
-          <div class="dist-ratio-fill-self" id="barFillSelf" style="width: 0%;"></div>
-          <div class="dist-ratio-fill-gen1" id="barFillGen1" style="width: 0%;"></div>
-          <div class="dist-ratio-fill-gen2" id="barFillGen2" style="width: 0%;"></div>
-        </div>
-
-        
-        <div class="dist-tier-grid">
-          
-          
-          <div class="dist-tier-card" data-tier="self">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="dist-sales-label" style="color:#0F172A; font-weight:800;">本人業績</span>
-              <span id="pctDistTierSelf" style="font-size:11px; font-family:monospace; font-weight:800; background:#0F172A; color:#FFFFFF; padding:1px 6px; border-radius:4px;">0.0%</span>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="icon-btn" onclick="setDistDateRange('thisMonth')" title="月度" style="padding:5px 8px;">
+                <i class="ph ph-calendar" style="font-size:16px;"></i>
+              </button>
+              <button type="button" class="icon-btn" onclick="setDistDateRange('thisYear')" title="年度" style="padding:5px 8px;">
+                <i class="ph ph-calendar-star" style="font-size:16px;"></i>
+              </button>
+              <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="全部" style="padding:5px 8px;">
+                <i class="ph ph-infinity" style="font-size:16px;"></i>
+              </button>
             </div>
-            <div class="dist-sales-val" id="valDistTierSelf" style="font-size:16px; margin-top:2px;">NT$ 0</div>
-            <span style="font-size:10px; color:var(--text-muted);">個人與直屬消費者訂單</span>
-          </div>
-
-          
-          <div class="dist-tier-card" data-tier="gen1">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="dist-sales-label" style="color:var(--accent); font-weight:800;">第一代總業績</span>
-              <span id="pctDistTierGen1" style="font-size:11px; font-family:monospace; font-weight:800; background:rgba(44,82,130,0.12); color:var(--accent); border:1px solid var(--accent); padding:1px 6px; border-radius:4px;">0.0%</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <input type="date" id="distStartDate" class="login-input" style="padding:4px 6px; font-size:11px; width:118px;" onchange="applyDistCustomDateFilter()">
+              <span style="font-size:11px; color:var(--text-muted);">至</span>
+              <input type="date" id="distEndDate" class="login-input" style="padding:4px 6px; font-size:11px; width:118px;" onchange="applyDistCustomDateFilter()">
+              <button type="button" class="icon-btn" onclick="applyDistCustomDateFilter()" title="篩選" style="padding:5px 8px; background:var(--accent); color:#fff; border-color:var(--accent);">
+                <i class="ph ph-funnel" style="font-size:14px;"></i>
+              </button>
             </div>
-            <div class="dist-sales-val" id="valDistTierGen1" style="font-size:16px; margin-top:2px; color:var(--accent);">NT$ 0</div>
-            <span style="font-size:10px; color:var(--text-muted);">所有直推一代經銷商團隊</span>
-          </div>
-
-          
-          <div class="dist-tier-card" data-tier="gen2">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="dist-sales-label" style="color:#7C3AED; font-weight:800;">第二代總業績</span>
-              <span id="pctDistTierGen2" style="font-size:11px; font-family:monospace; font-weight:800; background:rgba(124,58,237,0.1); color:#7C3AED; border:1px solid #DDD6FE; padding:1px 6px; border-radius:4px;">0.0%</span>
-            </div>
-            <div class="dist-sales-val" id="valDistTierGen2" style="font-size:16px; margin-top:2px; color:#7C3AED;">NT$ 0</div>
-            <span style="font-size:10px; color:var(--text-muted);">所有推薦二代經銷商團隊</span>
-          </div>
-
-        </div>
-
-        
-        <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin:14px 0 6px 0; display:flex; align-items:center; gap:6px;">
-          <i class="ph ph-clock-counter-clockwise"></i> 本人與直屬體系四大週期統計：
-        </div>
-        <div class="dist-sales-grid" id="distSelfSalesDashboard">
-          <div class="dist-sales-tile">
-            <span class="dist-sales-label">本月銷售額</span>
-            <span class="dist-sales-val" id="valDistSelfThisMonth">NT$ 0</span>
-          </div>
-          <div class="dist-sales-tile">
-            <span class="dist-sales-label">上月銷售額</span>
-            <span class="dist-sales-val" id="valDistSelfLastMonth">NT$ 0</span>
-          </div>
-          <div class="dist-sales-tile">
-            <span class="dist-sales-label">本年度總銷售額</span>
-            <span class="dist-sales-val" id="valDistSelfThisYear">NT$ 0</span>
-          </div>
-          <div class="dist-sales-tile">
-            <span class="dist-sales-label">累計總銷售額</span>
-            <span class="dist-sales-val" id="valDistSelfLifetime">NT$ 0</span>
           </div>
         </div>
-
       </div>
 
       
-      <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:10px; padding:18px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <i class="ph ph-users-three" style="font-size:20px; color:var(--accent);"></i>
-            <span style="font-size:15px; font-weight:800; color:var(--text);">所屬下兩代經銷組織族譜</span>
+      <div class="profit-section-card">
+        <div class="profit-section-title">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="ph ph-wallet" style="font-size:19px; color:var(--accent);"></i>
+            <span>收益總覽</span>
           </div>
-          <span style="font-size:12px; color:var(--text-muted); font-family:monospace;">
-            一代: <strong id="cntGen1" style="color:var(--accent);">0</strong> 位 ｜ 二代: <strong id="cntGen2" style="color:#7C3AED;">0</strong> 位
-          </span>
+          <button type="button" class="icon-btn" onclick="toggleGenericSubSection('drawerProfitExplain')" title="細則" style="border:none; padding:2px 4px; color:var(--text-muted);">
+            <i class="ph ph-info" style="font-size:16px;"></i>
+          </button>
         </div>
 
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
-          <i class="ph ph-cursor-click" style="font-size:15px; color:var(--accent);"></i>
-          <span>點選圓頭頭像圖示即可往下展開該經銷商詳細資料、加入到期資訊與四大業績。</span>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:12px;">
+          <div style="background:#0F172A; color:#FFFFFF; border-radius:8px; padding:14px 16px;">
+            <div style="font-size:11.5px; opacity:0.85; margin-bottom:4px;">預估總淨收益</div>
+            <div id="statTotalNetEarnings" style="font-size:22px; font-weight:900; font-family:monospace; color:#90BEE0;">NT$ 0</div>
+          </div>
+          <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:8px; padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">商城零售利潤</div>
+            <div id="statRetailGrossProfit" style="font-size:22px; font-weight:800; font-family:monospace; color:var(--accent);">NT$ 0</div>
+          </div>
+          <div style="background:#F8FAFC; border:1.5px solid var(--border); border-radius:8px; padding:14px 16px;">
+            <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:4px;">預計撥發獎金</div>
+            <div id="statPayoutEstimatedNet" style="font-size:22px; font-weight:800; font-family:monospace; color:var(--text);">NT$ 0</div>
+          </div>
+        </div>
+
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+            <span style="font-weight:700; color:var(--text);">撥款狀態：</span>
+            <span id="badgePayoutStatusChip" style="font-size:11px; padding:2px 8px; border-radius:12px; background:#ECFDF5; color:#059669; font-weight:800; border:1px solid #A7F3D0;">待核算</span>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); font-family:monospace;" id="txtPayoutNotice">
+            總部每月 20 號撥付
+          </div>
         </div>
 
         
+        <div class="dist-explain-drawer dist-collapsible-zone" id="drawerProfitExplain">
+          <div class="dist-explain-header" onclick="toggleGenericSubSection('drawerProfitExplain')">
+            <span>收益計算說明</span>
+            <i class="ph ph-caret-down" id="icondrawerProfitExplain"></i>
+          </div>
+          <div class="dist-explain-body">
+            1. 預估總淨收益＝商城自出貨零售毛利 ＋ 總部撥發實領獎金。<br>
+            2. 商城零售利潤為客戶下單總額扣減 5 折批發成本之現差。<br>
+            3. 次期撥發獎金包含上月補貨獎金與上上月首購推薦獎金，已扣除 5% 營業稅核算。
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="profit-section-card">
+        <div class="profit-section-title">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="ph ph-shopping-cart" style="font-size:19px; color:var(--accent);"></i>
+            <span>營運盤點</span>
+          </div>
+        </div>
+        <div class="profit-stat-grid">
+          <div class="profit-stat-tile">
+            <span class="dist-sales-label">進貨成本 (5折)</span>
+            <span class="dist-sales-val" id="statSelfWholesaleCost">NT$ 0</span>
+          </div>
+          <div class="profit-stat-tile">
+            <span class="dist-sales-label">銷貨總額</span>
+            <span class="dist-sales-val" id="statCustomerSalesRevenue" style="color:var(--accent);">NT$ 0</span>
+          </div>
+          <div class="profit-stat-tile">
+            <span class="dist-sales-label">零售毛利</span>
+            <span class="dist-sales-val" id="statRealizedProfit" style="color:#059669;">NT$ 0</span>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="profit-section-card">
+        <div class="profit-section-title">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="ph ph-users" style="font-size:19px; color:var(--accent);"></i>
+            <span>直推獎金</span>
+          </div>
+          <span style="font-size:11px; color:var(--accent); font-weight:800;">首購 8%~13.8% ｜ 補貨 3%</span>
+        </div>
+
+        
+        <div class="dist-circle-incentive-box">
+          <svg class="circle-chart-svg" viewBox="0 0 70 70">
+            <circle class="circle-bg" cx="35" cy="35" r="30"></circle>
+            <circle class="circle-progress" id="circleProgressRing" cx="35" cy="35" r="30"></circle>
+            <text class="circle-text-center" id="circleRateText" x="35" y="39" text-anchor="middle">8.0%</text>
+          </svg>
+          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+              <span style="font-weight:800; font-size:13px; color:var(--text);" id="txtGen1NextGoalTitle">推薦升階進度</span>
+              <span style="font-size:11.5px; color:var(--text-muted);">已推薦：<strong id="statGen1NewCount" style="color:var(--text);">0</strong> 人</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--accent);" id="txtGen1LadderIncentive">
+              再推薦 3 人，獎金升至 11.8%
+            </div>
+            <div class="ladder-step-strip">
+              <span class="ladder-chip active" id="chipTier8">8.0% (0人)</span>
+              <span class="ladder-chip" id="chipTier11">11.8% (3人)</span>
+              <span class="ladder-chip" id="chipTier13">13.8% (5人)</span>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="dist-explain-drawer dist-collapsible-zone" id="drawerGen1Detail">
+          <div class="dist-explain-header" onclick="toggleGenericSubSection('drawerGen1Detail')">
+            <span>獎金明細</span>
+            <i class="ph ph-caret-down" id="icondrawerGen1Detail"></i>
+          </div>
+          <div class="dist-explain-body">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span>一代首購額 (5折)：<strong id="statGen1FirstOrderAmt" style="font-family:monospace;">NT$ 0</strong></span>
+              <span>推薦獎金：<strong id="statGen1ReferralBonus" style="color:var(--accent); font-family:monospace;">NT$ 0</strong></span>
+            </div>
+            <div style="font-size:10.5px; color:var(--text-muted); text-align:right; margin-bottom:8px;">
+              扣除5%營業稅淨額: <span id="statGen1ReferralNet" style="font-family:monospace;">NT$ 0</span> (次次月20號入帳)
+            </div>
+            <div style="border-top:1px dashed var(--border-subtle); padding-top:8px; display:flex; justify-content:space-between;">
+              <span>夥伴補貨額 (固定3%)：<strong id="statGen1RestockAmt" style="font-family:monospace;">NT$ 0</strong> (<span id="statGen1RestockCount">0</span>單)</span>
+              <span>補貨獎金：<strong id="statGen1RestockBonus" style="color:var(--accent); font-family:monospace;">NT$ 0</strong></span>
+            </div>
+            <div style="font-size:10.5px; color:var(--text-muted); text-align:right; margin-top:4px;">
+              扣除5%營業稅淨額: <span id="statGen1RestockNet" style="font-family:monospace;">NT$ 0</span> (次月20號入帳)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="profit-section-card">
+        <div class="profit-section-title">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="ph ph-users-three" style="font-size:19px; color:var(--accent);"></i>
+            <span>間接獎金</span>
+          </div>
+          <span style="font-size:11px; color:var(--accent); font-weight:800;">首購 3% ｜ 補貨 2%</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:10px 14px; font-size:12.5px;">
+          <span>二代新人數：<strong id="statGen2NewCount">0</strong> 人</span>
+          <span>二代補貨數：<strong id="statGen2RestockCount">0</strong> 單</span>
+        </div>
+
+        
+        <div class="dist-explain-drawer dist-collapsible-zone" id="drawerGen2Detail">
+          <div class="dist-explain-header" onclick="toggleGenericSubSection('drawerGen2Detail')">
+            <span>獎金明細</span>
+            <i class="ph ph-caret-down" id="icondrawerGen2Detail"></i>
+          </div>
+          <div class="dist-explain-body">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span>二代首購額 (5折)：<strong id="statGen2FirstOrderAmt" style="font-family:monospace;">NT$ 0</strong></span>
+              <span>推薦獎金(3%)：<strong id="statGen2ReferralBonus" style="color:var(--accent); font-family:monospace;">NT$ 0</strong></span>
+            </div>
+            <div style="font-size:10.5px; color:var(--text-muted); text-align:right; margin-bottom:8px;">
+              扣除5%營業稅淨額: <span id="statGen2ReferralNet" style="font-family:monospace;">NT$ 0</span> (次次月20號入帳)
+            </div>
+            <div style="border-top:1px dashed var(--border-subtle); padding-top:8px; display:flex; justify-content:space-between;">
+              <span>二代補貨額 (5折)：<strong id="statGen2RestockAmt" style="font-family:monospace;">NT$ 0</strong></span>
+              <span>補貨獎金(2%)：<strong id="statGen2RestockBonus" style="color:var(--accent); font-family:monospace;">NT$ 0</strong></span>
+            </div>
+            <div style="font-size:10.5px; color:var(--text-muted); text-align:right; margin-top:4px;">
+              扣除5%營業稅淨額: <span id="statGen2RestockNet" style="font-family:monospace;">NT$ 0</span> (次月20號入帳)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="profit-section-card">
+        <div class="profit-section-title">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i class="ph ph-receipt" style="font-size:19px; color:var(--accent);"></i>
+            <span>撥款時程</span>
+          </div>
+          <span id="badgeDistIdentityTag" style="font-size:11px; padding:2px 8px; border-radius:4px; background:var(--accent); color:#fff; font-weight:700;">個人經銷</span>
+        </div>
+
+        <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:8px; padding:12px 14px; margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:13px; font-weight:800; color:var(--text);">
+              <i class="ph ph-calendar-check" style="color:var(--accent);"></i>
+              <span id="txtPayoutScheduleTitle">發放日：2026/11/20</span>
+            </div>
+            <span style="font-size:11px; background:#EFF6FF; border:1px solid #BFDBFE; color:var(--accent); padding:1px 6px; border-radius:4px; font-weight:700;">核算中</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:5px; font-size:12px; line-height:1.6;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #E2E8F0; padding-bottom:3px;">
+              <span style="color:var(--text-muted);" id="lblPayoutItemReferral">推薦獎金：</span>
+              <strong id="valPayoutItemReferral" style="font-family:monospace;">NT$ 0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #E2E8F0; padding-bottom:3px;">
+              <span style="color:var(--text-muted);" id="lblPayoutItemRestock">補貨獎金：</span>
+              <strong id="valPayoutItemRestock" style="font-family:monospace;">NT$ 0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding-top:2px;">
+              <span>應領未稅：</span>
+              <strong id="valPayoutTotalUntaxed" style="font-family:monospace; color:var(--text);">NT$ 0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#DC2626; background:#FEF2F2; padding:2px 6px; border-radius:4px;">
+              <span>5% 營業稅：</span>
+              <strong id="valPayoutTax5Percent" style="font-family:monospace;">- NT$ 0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1.5px solid #0F172A; padding-top:5px; font-size:13.5px; font-weight:800;">
+              <span>實領請款：</span>
+              <strong id="valPayoutNetOrInvoice" style="font-size:16px; font-family:monospace; color:var(--accent);">NT$ 0</strong>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="dist-explain-drawer dist-collapsible-zone" id="drawerTaxInstruction">
+          <div class="dist-explain-header" onclick="toggleGenericSubSection('drawerTaxInstruction')">
+            <span>撥款規範</span>
+            <i class="ph ph-caret-down" id="icondrawerTaxInstruction"></i>
+          </div>
+          <div class="dist-explain-body">
+            <div id="boxIdentityTaxInstruction" style="margin-bottom:8px;"></div>
+            <div class="profit-timeline">
+              <div class="profit-timeline-step active" id="stepInvoice1">
+                <i class="ph ph-envelope-simple" style="font-size:16px;"></i>
+                <span>每月1~10號寄發票</span>
+              </div>
+              <i class="ph ph-arrow-right" style="color:#CBD5E1;"></i>
+              <div class="profit-timeline-step" id="stepInvoice2">
+                <i class="ph ph-check-circle" style="font-size:16px;"></i>
+                <span>總部審核收迄</span>
+              </div>
+              <i class="ph ph-arrow-right" style="color:#CBD5E1;"></i>
+              <div class="profit-timeline-step" id="stepInvoice3">
+                <i class="ph ph-bank" style="font-size:16px;"></i>
+                <span>20號撥入帳戶</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:10px; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="ph ph-users-three" style="font-size:20px; color:var(--accent);"></i>
+            <span style="font-size:15px; font-weight:800; color:var(--text);">組織圖</span>
+          </div>
+          <span style="font-size:12px; color:var(--text-muted); font-family:monospace;">
+            一代: <strong id="cntGen1" style="color:var(--accent);">0</strong> 位 ｜ 二代: <strong id="cntGen2" style="color:var(--text);">0</strong> 位
+          </span>
+        </div>
+
         <div class="dist-tree-wrapper" id="distTreeContainer">
-          <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">組織族譜資料載入中...</div>
+          <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">組織資料載入中...</div>
         </div>
       </div>
 
     </div>
   </div>
-
-</div>
 
 <div id="toast" class="toast">訊息通知</div>
 
@@ -5306,7 +5667,7 @@
     const btn = document.getElementById('btnSendLoginCode');
 
     if (!email || !email.includes('@')) {
-      showToast('請填寫正確有效的電子信箱！');
+      showToast('請填寫正確有效的 Email！');
       return;
     }
     if (!phone) {
@@ -5534,13 +5895,13 @@
       });
 
       if (res && res.status === 'success') {
-        showToast(res.data?.message || `合約 PDF 已成功寄達至 ${email}！`);
+        showToast(res.data?.message || `合約 PDF 已寄達至 ${email}！`);
         if (btn) {
-          btn.innerHTML = '<i class="ph ph-check" style="font-size:18px; color:var(--success);"></i> <span>已發送至信箱</span>';
+          btn.innerHTML = '<i class="ph ph-check" style="font-size:20px; color:var(--success);"></i>';
           setTimeout(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="ph ph-envelope-simple" style="font-size:19px;"></i> <span>再次寄送合約 PDF</span>';
-          }, 4000);
+            btn.innerHTML = '<i class="ph ph-envelope-simple" style="font-size:20px;"></i>';
+          }, 3000);
         }
       } else {
         throw new Error(res?.data?.message || '發送失敗');
@@ -6356,6 +6717,15 @@
         closeForm('mem');
       }
     }
+
+    
+    document.querySelectorAll('.dist-collapsible-zone.open').forEach(drawer => {
+      if (!drawer.contains(e.target)) {
+        drawer.classList.remove('open');
+        const icon = drawer.querySelector('.ph-caret-up');
+        if (icon) icon.className = 'ph ph-caret-down';
+      }
+    });
   });
 
   function toggleGenericSubSection(secId) {
@@ -8596,7 +8966,27 @@
       if (expiryInput) {
         expiryInput.value = isDist ? (item.distExpiry || '') : (item.vipExpiry || '');
       }
-      document.getElementById('memStatus').value = item.status || '有效';
+      const memStatusEl = document.getElementById('memStatus');
+      const memStatusLockBadge = document.getElementById('badgeMemStatusLock');
+      const isDistMember = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-') || String(item.memberId || '').startsWith('TW-'));
+      const isHQ = isHeadquartersUser();
+
+      if (memStatusEl) {
+        memStatusEl.value = item.status || (isDistMember ? '審核中' : '有效');
+
+        // 🔒 若為經銷會員且非總部帳號，狀態下拉選單強制封印不可編輯！
+        if (isDistMember && !isHQ) {
+          memStatusEl.disabled = true;
+          memStatusEl.style.setProperty('background', 'var(--bg)', 'important');
+          memStatusEl.style.cursor = 'not-allowed';
+          if (memStatusLockBadge) memStatusLockBadge.style.display = 'inline-flex';
+        } else {
+          memStatusEl.disabled = false;
+          memStatusEl.style.background = '#FFFFFF';
+          memStatusEl.style.cursor = 'pointer';
+          if (memStatusLockBadge) memStatusLockBadge.style.display = 'none';
+        }
+      }
 
       // 觸發自適應欄位顯示與標題切換（強制加權隱藏晉升）
       handleMemTypeChange();
@@ -12616,7 +13006,7 @@
   window.openShippingLabelModal = function(orderId) {
     const order = orderCache.find(o => String(o.orderId) === String(orderId));
     if (!order) {
-      alert("查無訂單資料: " + orderId);
+      showToast("查無訂單資料: " + orderId);
       return;
     }
 
@@ -12725,13 +13115,24 @@
     renderDistributorSelfProfile();
     renderDistributorGenealogy();
 
+    // 💥 啟動當月五大獲利戰報與 5% 營業稅精算
+    resetDistCurrentMonth();
+
     if (statusEl) {
       statusEl.innerHTML = '<i class="ph ph-check" style="color:var(--success);"></i> 已更新';
       setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 2000);
     }
   }
 
-  // 1. 渲染自己的經銷商資訊（封印四大核心欄位，強制只讀取經銷會員資料）
+  // 🔒 總部權限鑑別：僅有總部指定帳號 (TW-NAMIS / HQ / 總部信箱) 具備核准修改經銷狀態特權
+  function isHeadquartersUser() {
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim().toUpperCase();
+    const email = String(session.email || '').trim().toLowerCase();
+    return (myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN' || email.includes('alwayslucky2hand') || session.isHQ === true);
+  }
+
+  // 1. 渲染自己的經銷商資訊（展開內容完整呈現經銷狀態・總部權限封印）
   function renderDistributorSelfProfile() {
     let session = getActiveDistributorSession();
     let myId = String(session.memberId || '').trim();
@@ -12808,6 +13209,40 @@
         badgeStatus.style.background = '#FEF2F2';
         badgeStatus.style.color = '#EF4444';
         badgeStatus.style.borderColor = '#FECACA';
+      }
+    }
+
+    // 💥 經銷專頁展開內容：回填經銷狀態，並依總部權限執行封印
+    const distStatusSelect = document.getElementById('distSelfStatusSelect');
+    const distStatusLockBadge = document.getElementById('badgeDistSelfStatusLock');
+    const currentStatus = me.status || '審核中';
+
+    if (distStatusSelect) {
+      distStatusSelect.value = currentStatus;
+      const isHQ = isHeadquartersUser();
+
+      if (isHQ) {
+        // 總部特權帳號登入：開放修改審核狀態
+        distStatusSelect.disabled = false;
+        distStatusSelect.style.background = '#FFFFFF';
+        distStatusSelect.style.cursor = 'pointer';
+        if (distStatusLockBadge) {
+          distStatusLockBadge.innerHTML = '<i class="ph ph-shield-check" style="color:var(--success);"></i> 總部特權可編輯';
+          distStatusLockBadge.style.color = 'var(--success)';
+          distStatusLockBadge.style.borderColor = '#A7F3D0';
+          distStatusLockBadge.style.background = '#ECFDF5';
+        }
+      } else {
+        // 普通經銷商本人：嚴格封印鎖定不可改
+        distStatusSelect.disabled = true;
+        distStatusSelect.style.setProperty('background', 'var(--bg)', 'important');
+        distStatusSelect.style.cursor = 'not-allowed';
+        if (distStatusLockBadge) {
+          distStatusLockBadge.innerHTML = '<i class="ph ph-lock-key"></i> 總部審核權限封印';
+          distStatusLockBadge.style.color = '#64748B';
+          distStatusLockBadge.style.borderColor = '#CBD5E1';
+          distStatusLockBadge.style.background = '#F1F5F9';
+        }
       }
     }
 
@@ -13271,6 +13706,441 @@
     distSelfBankImagesWorkingArray.splice(idx, 1);
     renderDistSelfBankPhotos();
     triggerDistSelfAutoSave();
+  }
+
+  // ============================================================
+  // 經銷頁全套核心演算法：五大區塊收益戰報、5%營業稅切分、月份切換
+  // ============================================================
+  let distActiveYear = new Date().getFullYear();
+  let distActiveMonth = new Date().getMonth(); // 0-based
+
+  function stepDistMonth(delta) {
+    distActiveMonth += delta;
+    if (distActiveMonth < 0) {
+      distActiveMonth = 11;
+      distActiveYear -= 1;
+    } else if (distActiveMonth > 11) {
+      distActiveMonth = 0;
+      distActiveYear += 1;
+    }
+    updateDistMonthDisplayAndCompute();
+  }
+
+  function resetDistCurrentMonth() {
+    const now = new Date();
+    distActiveYear = now.getFullYear();
+    distActiveMonth = now.getMonth();
+    updateDistMonthDisplayAndCompute();
+  }
+
+  function updateDistMonthDisplayAndCompute() {
+    const lbl = document.getElementById('lblDistSelectedMonth');
+    if (lbl) {
+      lbl.innerText = `${distActiveYear} 年 ${distActiveMonth + 1} 月`;
+    }
+    const pad = (n) => String(n).padStart(2, '0');
+    const firstDay = new Date(distActiveYear, distActiveMonth, 1);
+    const lastDay = new Date(distActiveYear, distActiveMonth + 1, 0);
+    const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    if (sInput) sInput.value = fmt(firstDay);
+    if (eInput) eInput.value = fmt(lastDay);
+
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim();
+    if (myId) {
+      computeComprehensiveProfitReport(myId, firstDay, new Date(distActiveYear, distActiveMonth + 1, 0, 23, 59, 59));
+    }
+  }
+
+  function applyDistCustomDateFilter() {
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    if (!sInput || !eInput || !sInput.value || !eInput.value) return;
+
+    const sDate = new Date(sInput.value + 'T00:00:00');
+    const eDate = new Date(eInput.value + 'T23:59:59');
+
+    const lbl = document.getElementById('lblDistSelectedMonth');
+    if (lbl) {
+      lbl.innerText = `${sInput.value} ~ ${eInput.value}`;
+    }
+
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim();
+    if (myId) {
+      computeComprehensiveProfitReport(myId, sDate, eDate);
+      showToast('已依自訂起訖區間重新計算獲利與獎金！');
+    }
+  }
+
+  // 核心主運算引擎：全面對位 T+1 補貨 / T+2 推薦、海外回溯、公司外加5%營業稅
+  function computeComprehensiveProfitReport(myId, startDate, endDate) {
+    if (!myId) return;
+
+    const session = getActiveDistributorSession();
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const orders = Array.isArray(orderCache) ? orderCache : [];
+    const inventory = Array.isArray(inventoryCache) ? inventoryCache : [];
+
+    const parseNum = (v) => {
+      const n = Number(String(v || 0).replace(/[^\d.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    };
+    const fmtMoney = (n) => `NT$ ${Math.round(n || 0).toLocaleString()}`;
+
+    // 🔒 經銷商判斷器
+    const isDistributor = (m) => {
+      const type = String(m.memberType || '').trim();
+      const id = String(m.memberId || '').trim();
+      return (type === '經銷會員') || id.startsWith('DIS-') || (id.startsWith('TW-') && id !== 'TW-NAMIS');
+    };
+
+    // 🔒 台灣經銷商判定 (國籍為 TW 或編號為 TW- 開頭)
+    const isTaiwanMember = (m) => {
+      const id = String(m.memberId || '').trim();
+      const country = String(m.countryCode || '').trim().toUpperCase();
+      return country === 'TW' || id.startsWith('TW-');
+    };
+
+    // 本人帳號集合
+    const mySelfAccountIds = new Set([myId]);
+    const cleanMyPhone = session.phone ? String(session.phone).replace(/\D/g, '') : '';
+    const cleanMyEmail = session.email ? String(session.email).trim().toLowerCase() : '';
+
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const mPhone = String(m.phone || '').replace(/\D/g, '');
+      const mEmail = String(m.email || '').trim().toLowerCase();
+      if ((cleanMyPhone && mPhone && cleanMyPhone.endsWith(mPhone.slice(-8))) || (cleanMyEmail && mEmail && mEmail === cleanMyEmail)) {
+        if (!mId.startsWith('TW-') && !mId.startsWith('DIS-')) mySelfAccountIds.add(mId);
+      }
+    });
+
+    // 1. 兩代組織名單界定
+    const gen1Members = members.filter(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      return (ref === myId || mySelfAccountIds.has(ref)) && isDistributor(m) && !mySelfAccountIds.has(String(m.memberId).trim());
+    });
+    const gen1Ids = new Set(gen1Members.map(m => String(m.memberId).trim()));
+
+    const gen2Members = members.filter(m => {
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      return gen1Ids.has(ref) && isDistributor(m) && !mySelfAccountIds.has(String(m.memberId).trim());
+    });
+    const gen2Ids = new Set(gen2Members.map(m => String(m.memberId).trim()));
+
+    // 2. 區塊二：個人採購與商城銷貨盤點 (零售差額直接賺走，不進總部獎金池)
+    let myCustomerOrdersAmt = 0;
+    orders.forEach(o => {
+      if (String(o.status || '').trim() === '取消') return;
+      const od = parseOrderDateString(o.orderTime);
+      if (od && startDate && endDate && (od < startDate || od > endDate)) return;
+
+      const oMemId = String(o.memberId || '').trim();
+      const oRef = String(o.referrerId || o.memberLineId || '').trim();
+      const isMyCust = (oRef === myId || mySelfAccountIds.has(oRef)) && !gen1Ids.has(oMemId) && !gen2Ids.has(oMemId);
+      if (isMyCust || mySelfAccountIds.has(oMemId)) {
+        myCustomerOrdersAmt += parseNum(o.totalAmount);
+      }
+    });
+
+    const wholesaleCost = myCustomerOrdersAmt * 0.5; // 1/2 批發價成本
+    const retailGrossProfit = myCustomerOrdersAmt - wholesaleCost; // 35%~50% 自行現賺價差
+
+    let currentStockTotalQty = 0;
+    inventory.forEach(inv => {
+      currentStockTotalQty += Number(inv.availableStock || inv.stockQty || 0);
+    });
+    const currentStockWholesaleVal = currentStockTotalQty * 500;
+
+    // 輔助函式：計算某特定月份下線團隊的「首購總額」與「補貨總額」
+    const computeTeamWholesaleForMonth = (targetYear, targetMonth) => {
+      const mStart = new Date(targetYear, targetMonth, 1);
+      const mEnd = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+
+      let g1NewNum = 0;
+      let g1FirstWholesale = 0;
+      let g1RestockNum = 0;
+      let g1RestockWholesale = 0;
+
+      let g2NewNum = 0;
+      let g2FirstWholesale = 0;
+      let g2RestockNum = 0;
+      let g2RestockWholesale = 0;
+
+      // 一代團隊
+      gen1Members.forEach(g1 => {
+        const g1Id = String(g1.memberId).trim();
+        const joinD = parseOrderDateString(g1.registerTime || g1.timestamp);
+        const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
+        if (isNewInM) g1NewNum++;
+
+        // 🌟 海外會員回溯判定：若該一代下線為海外籍，其首購與補貨業績 100% 依然歸台灣 A 計算
+        const g1Orders = orders.filter(o => {
+          if (String(o.status || '').trim() === '取消') return false;
+          const od = parseOrderDateString(o.orderTime);
+          if (!od || od < mStart || od > mEnd) return false;
+          return (String(o.memberId).trim() === g1Id || String(o.referrerId).trim() === g1Id);
+        });
+
+        g1Orders.forEach((ord, oIdx) => {
+          const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
+          if (isNewInM && oIdx === 0) {
+            g1FirstWholesale += wholesaleAmt;
+          } else {
+            g1RestockNum++;
+            g1RestockWholesale += wholesaleAmt;
+          }
+        });
+      });
+
+      // 二代團隊
+      gen2Members.forEach(g2 => {
+        const g2Id = String(g2.memberId).trim();
+        const joinD = parseOrderDateString(g2.registerTime || g2.timestamp);
+        const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
+        if (isNewInM) g2NewNum++;
+
+        const g2Orders = orders.filter(o => {
+          if (String(o.status || '').trim() === '取消') return false;
+          const od = parseOrderDateString(o.orderTime);
+          if (!od || od < mStart || od > mEnd) return false;
+          return (String(o.memberId).trim() === g2Id || String(o.referrerId).trim() === g2Id);
+        });
+
+        g2Orders.forEach((ord, oIdx) => {
+          const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
+          if (isNewInM && oIdx === 0) {
+            g2FirstWholesale += wholesaleAmt;
+          } else {
+            g2RestockNum++;
+            g2RestockWholesale += wholesaleAmt;
+          }
+        });
+      });
+
+      // 當月推薦階梯趴數判定 (單月累計人數，跨月歸零)
+      let g1Ladder = 0.08;
+      if (g1NewNum >= 5) g1Ladder = 0.138;
+      else if (g1NewNum >= 3) g1Ladder = 0.118;
+
+      const g1RefBonus = g1FirstWholesale * g1Ladder;
+      const g2RefBonus = g2FirstWholesale * 0.03;      // 二代固定 3%
+      const totalRefBonus = g1RefBonus + g2RefBonus;
+
+      const g1ReBonus = g1RestockWholesale * 0.03;     // 一代補貨固定 3%
+      const g2ReBonus = g2RestockWholesale * 0.02;     // 二代補貨固定 2%
+      const totalReBonus = g1ReBonus + g2ReBonus;
+
+      return {
+        g1NewNum, g1FirstWholesale, g1Ladder, g1RefBonus,
+        g1RestockNum, g1RestockWholesale, g1ReBonus,
+        g2NewNum, g2FirstWholesale, g2RefBonus,
+        g2RestockNum, g2RestockWholesale, g2ReBonus,
+        totalRefBonus, totalReBonus
+      };
+    };
+
+    // 3. 計算當前選擇月份 (M) 產生的業績
+    const curMonthStats = computeTeamWholesaleForMonth(distActiveYear, distActiveMonth);
+
+    // 圓餅圖 % 數進度條計算與激勵文字 (無任何 Emoji，極簡質感線條)
+    let ladderIncentiveText = "推薦新夥伴享專屬首購獎金";
+    let circleRateDisplay = "8.0%";
+    let progressPercent = 0;
+    const count = curMonthStats.g1NewNum || 0;
+
+    const chip8 = document.getElementById('chipTier8');
+    const chip11 = document.getElementById('chipTier11');
+    const chip13 = document.getElementById('chipTier13');
+    if (chip8) chip8.classList.remove('active');
+    if (chip11) chip11.classList.remove('active');
+    if (chip13) chip13.classList.remove('active');
+
+    if (count >= 5) {
+      circleRateDisplay = "13.8%";
+      progressPercent = 100;
+      ladderIncentiveText = `本月推薦 ${count} 人，已晉升 13.8% 頂級獎金階梯`;
+      if (chip13) chip13.classList.add('active');
+    } else if (count >= 3) {
+      circleRateDisplay = "11.8%";
+      progressPercent = Math.round(60 + ((count - 3) / 2) * 40);
+      const diff = 5 - count;
+      ladderIncentiveText = `再推薦 ${diff} 人，立即享有 13.8% 獎金`;
+      if (chip11) chip11.classList.add('active');
+    } else {
+      circleRateDisplay = "8.0%";
+      progressPercent = Math.round((count / 3) * 60);
+      const diff = 3 - count;
+      ladderIncentiveText = `再推薦 ${diff} 人，立即享有 11.8% 獎金`;
+      if (chip8) chip8.classList.add('active');
+    }
+
+    // 更新 SVG 圓形進度條 (圓周長 2 * PI * 30 ≈ 188.5)
+    const ring = document.getElementById('circleProgressRing');
+    const ringText = document.getElementById('circleRateText');
+    if (ring) {
+      const circumference = 188.5;
+      const offset = circumference - (circumference * progressPercent / 100);
+      ring.style.strokeDashoffset = offset;
+    }
+    if (ringText) {
+      ringText.textContent = circleRateDisplay;
+    }
+
+    // 4. 💥 核心突破：計算在該月 20 號實際會撥款入帳的總部獎金！
+    // 依合約規定：
+    // · 補貨獎金為次月 (T-1 月) 發放
+    // · 推薦獎金為次次月 (T-2 月) 發放
+    let mMinus1Year = distActiveYear;
+    let mMinus1Month = distActiveMonth - 1;
+    if (mMinus1Month < 0) { mMinus1Month = 11; mMinus1Year -= 1; }
+
+    let mMinus2Year = distActiveYear;
+    let mMinus2Month = distActiveMonth - 2;
+    if (mMinus2Month < 0) { mMinus2Month += 12; mMinus2Year -= 1; }
+
+    // 上月 (T-1) 補貨獎金
+    const statsMinus1 = computeTeamWholesaleForMonth(mMinus1Year, mMinus1Month);
+    const payoutRestockUntaxed = statsMinus1.totalReBonus;
+
+    // 上上月 (T-2) 推薦獎金
+    const statsMinus2 = computeTeamWholesaleForMonth(mMinus2Year, mMinus2Month);
+    const payoutReferralUntaxed = statsMinus2.totalRefBonus;
+
+    // 該月 20 號應發未稅總獎金
+    const scheduledPayoutUntaxed = payoutReferralUntaxed + payoutRestockUntaxed;
+
+    // 5. 身分判定與 5% 營業稅精算 (公司行號外加5%開立發票 ｜ 自然人未稅扣繳)
+    const isCompany = (session.identityType === '公司') || (session.companyTitle && session.companyTaxId);
+    const tax5Percent = scheduledPayoutUntaxed * 0.05;
+
+    // 公司法人應開立含稅發票金額 = 未稅總額 × 1.05
+    const companyInvoiceAmount = scheduledPayoutUntaxed * 1.05;
+    // 自然人實領金額 = 未稅總額 (依法扣繳 10% 所得稅與 2.11% 二代健保)
+    const personalNetCash = scheduledPayoutUntaxed;
+
+    // 當月預估總淨收益 = 零售差價毛利 + 總部實領獎金
+    const totalEstimatedEarnings = retailGrossProfit + (isCompany ? scheduledPayoutUntaxed : personalNetCash);
+
+    // ==========================================
+    // 6. 前端 UI 賦值渲染
+    // ==========================================
+    const elNetEarn = document.getElementById('statTotalNetEarnings');
+    const elRetailProfit = document.getElementById('statRetailGrossProfit');
+    const elPayoutNet = document.getElementById('statPayoutEstimatedNet');
+    if (elNetEarn) elNetEarn.innerText = fmtMoney(totalEstimatedEarnings);
+    if (elRetailProfit) elRetailProfit.innerText = fmtMoney(retailGrossProfit);
+    if (elPayoutNet) elPayoutNet.innerText = fmtMoney(isCompany ? companyInvoiceAmount : scheduledPayoutUntaxed);
+
+    // 區塊二：營運盤點 (已移除庫存水位)
+    const elSelfCost = document.getElementById('statSelfWholesaleCost');
+    const elCustSales = document.getElementById('statCustomerSalesRevenue');
+    const elRealized = document.getElementById('statRealizedProfit');
+    if (elSelfCost) elSelfCost.innerText = fmtMoney(wholesaleCost);
+    if (elCustSales) elCustSales.innerText = fmtMoney(myCustomerOrdersAmt);
+    if (elRealized) elRealized.innerText = fmtMoney(retailGrossProfit);
+
+    // 區塊三：一代團隊
+    const elG1Rate = document.getElementById('badgeGen1LadderRate');
+    const elG1Count = document.getElementById('statGen1NewCount');
+    const elG1Incentive = document.getElementById('txtGen1LadderIncentive');
+    const elG1FirstAmt = document.getElementById('statGen1FirstOrderAmt');
+    const elG1RefBonus = document.getElementById('statGen1ReferralBonus');
+    const elG1RefNet = document.getElementById('statGen1ReferralNet');
+
+    if (elG1Rate) elG1Rate.innerText = `${(curMonthStats.g1Ladder * 100).toFixed(1)}%`;
+    if (elG1Count) elG1Count.innerText = curMonthStats.g1NewNum;
+    if (elG1Incentive) elG1Incentive.innerText = ladderIncentiveText;
+    if (elG1FirstAmt) elG1FirstAmt.innerText = fmtMoney(curMonthStats.g1FirstWholesale);
+    if (elG1RefBonus) elG1RefBonus.innerText = fmtMoney(curMonthStats.g1RefBonus);
+    if (elG1RefNet) elG1RefNet.innerText = fmtMoney(curMonthStats.g1RefBonus);
+
+    const elG1ReCount = document.getElementById('statGen1RestockCount');
+    const elG1ReAmt = document.getElementById('statGen1RestockAmt');
+    const elG1ReBonus = document.getElementById('statGen1RestockBonus');
+    const elG1ReNet = document.getElementById('statGen1RestockNet');
+    if (elG1ReCount) elG1ReCount.innerText = curMonthStats.g1RestockNum;
+    if (elG1ReAmt) elG1ReAmt.innerText = fmtMoney(curMonthStats.g1RestockWholesale);
+    if (elG1ReBonus) elG1ReBonus.innerText = fmtMoney(curMonthStats.g1ReBonus);
+    if (elG1ReNet) elG1ReNet.innerText = fmtMoney(curMonthStats.g1ReBonus);
+
+    // 區塊四：二代團隊
+    const elG2NewCount = document.getElementById('statGen2NewCount');
+    const elG2FirstAmt = document.getElementById('statGen2FirstOrderAmt');
+    const elG2RefBonus = document.getElementById('statGen2ReferralBonus');
+    const elG2RefNet = document.getElementById('statGen2ReferralNet');
+    if (elG2NewCount) elG2NewCount.innerText = curMonthStats.g2NewNum;
+    if (elG2FirstAmt) elG2FirstAmt.innerText = fmtMoney(curMonthStats.g2FirstWholesale);
+    if (elG2RefBonus) elG2RefBonus.innerText = fmtMoney(curMonthStats.g2RefBonus);
+    if (elG2RefNet) elG2RefNet.innerText = fmtMoney(curMonthStats.g2RefBonus);
+
+    const elG2ReCount = document.getElementById('statGen2RestockCount');
+    const elG2ReAmt = document.getElementById('statGen2RestockAmt');
+    const elG2ReBonus = document.getElementById('statGen2RestockBonus');
+    const elG2ReNet = document.getElementById('statGen2RestockNet');
+    if (elG2ReCount) elG2ReCount.innerText = curMonthStats.g2RestockNum;
+    if (elG2ReAmt) elG2ReAmt.innerText = fmtMoney(curMonthStats.g2RestockWholesale);
+    if (elG2ReBonus) elG2ReBonus.innerText = fmtMoney(curMonthStats.g2ReBonus);
+    if (elG2ReNet) elG2ReNet.innerText = fmtMoney(curMonthStats.g2ReBonus);
+
+    // 區塊五：撥款行事曆與憑證
+    const badgeIdTag = document.getElementById('badgeDistIdentityTag');
+    if (badgeIdTag) {
+      badgeIdTag.innerText = isCompany ? '公司法人 (外加5%發票)' : '自然人 (未稅撥款)';
+      badgeIdTag.style.background = isCompany ? 'var(--accent)' : '#0F172A';
+    }
+
+    const titleSched = document.getElementById('txtPayoutScheduleTitle');
+    if (titleSched) {
+      titleSched.innerText = `預計撥款發放日：${distActiveYear}/${String(distActiveMonth + 1).padStart(2, '0')}/20`;
+    }
+
+    const lblRef = document.getElementById('lblPayoutItemReferral');
+    const lblRe = document.getElementById('lblPayoutItemRestock');
+    if (lblRef) lblRef.innerText = `上上月 (${mMinus2Month + 1}月) 推薦獎金合計：`;
+    if (lblRe) lblRe.innerText = `上月 (${mMinus1Month + 1}月) 補貨獎金合計：`;
+
+    const elRefSum = document.getElementById('valPayoutItemReferral');
+    const elReSum = document.getElementById('valPayoutItemRestock');
+    const elUntaxed = document.getElementById('valPayoutTotalUntaxed');
+    const elTax5 = document.getElementById('valPayoutTax5Percent');
+    const elNetOrInv = document.getElementById('valPayoutNetOrInvoice');
+
+    if (elRefSum) elRefSum.innerText = fmtMoney(payoutReferralUntaxed);
+    if (elReSum) elReSum.innerText = fmtMoney(payoutRestockUntaxed);
+    if (elUntaxed) elUntaxed.innerText = fmtMoney(scheduledPayoutUntaxed);
+
+    if (isCompany) {
+      if (elTax5) elTax5.innerText = `+ ${fmtMoney(tax5Percent)} (外加 5% 營業稅)`;
+      if (elNetOrInv) elNetOrInv.innerText = `${fmtMoney(companyInvoiceAmount)} (應開立三聯發票金額)`;
+    } else {
+      if (elTax5) elTax5.innerText = `依法免開營業稅發票 (未稅核發)`;
+      if (elNetOrInv) elNetOrInv.innerText = `${fmtMoney(personalNetCash)} (未稅應發總額)`;
+    }
+
+    // 憑證法規文字
+    const instructionBox = document.getElementById('boxIdentityTaxInstruction');
+    if (instructionBox) {
+      if (isCompany) {
+        instructionBox.innerHTML = `
+          <strong>【公司法人戶發票請款規定 (外加 5% 營業稅)】：</strong><br>
+          1. 應開立三聯式統一發票，買受人抬頭「<strong>妍之馨生技有限公司</strong>」，統一編號「<strong>60559503</strong>」，品名載明「<strong>傭金收入</strong>」。<br>
+          2. 未稅總額為 <strong>${fmtMoney(scheduledPayoutUntaxed)}</strong>，外加 5% 營業稅 <strong>${fmtMoney(tax5Percent)}</strong>，應開立發票總額為：<strong style="font-size:14px; color:#92400E;">${fmtMoney(companyInvoiceAmount)}</strong>。<br>
+          3. 請於每月 10 號前寄達紙本發票至台中總公司會計部，核對無誤後於 20 號全額撥付 ${fmtMoney(companyInvoiceAmount)}。
+        `;
+      } else {
+        instructionBox.innerHTML = `
+          <strong>【自然人領取獎金規定 (依法未稅核算與扣繳)】：</strong><br>
+          1. 自然人經銷商不需開立發票，總部核發未稅金額 <strong>${fmtMoney(personalNetCash)}</strong>。<br>
+          2. 單筆撥付金額達 NT$ 20,000 元（含）以上者，總部將依法代扣 10% 個人所得稅及 2.11% 二代健保補充保費，於次年開立扣繳憑單。<br>
+          3. 若下線為海外經銷商，因其本人無法領取獎金，該筆組織獎金已 100% 回溯歸屬於您的獎金池中。
+        `;
+      }
+    }
   }
 
   // 4. 個人檔案編輯與自動儲存回寫試算表
