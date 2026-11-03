@@ -4040,26 +4040,15 @@
             <button type="button" class="icon-btn" onclick="stepDistMonth(-1)" title="上月" style="padding:5px 8px;">
               <i class="ph ph-caret-left" style="font-size:16px;"></i>
             </button>
-            <span id="lblDistSelectedMonth" style="font-size:14px; font-weight:800; color:var(--text); font-family:monospace; min-width:110px; text-align:center;">2026 年 11 月</span>
+            <span id="lblDistSelectedMonth" style="font-size:15px; font-weight:800; color:var(--text); font-family:monospace; letter-spacing:0.5px;">-- 年 -- 月</span>
             <button type="button" class="icon-btn" onclick="stepDistMonth(1)" title="下月" style="padding:5px 8px;">
               <i class="ph ph-caret-right" style="font-size:16px;"></i>
-            </button>
-            <button type="button" class="icon-btn" onclick="resetDistCurrentMonth()" title="回當月" style="padding:5px 8px;">
-              <i class="ph ph-calendar-blank" style="font-size:16px;"></i>
-            </button>
           </div>
 
           <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <div style="display:flex; gap:4px;">
-              <button type="button" class="icon-btn" onclick="setDistDateRange('thisMonth')" title="月度" style="padding:5px 8px;">
-                <i class="ph ph-calendar" style="font-size:16px;"></i>
-              </button>
-              <button type="button" class="icon-btn" onclick="setDistDateRange('thisYear')" title="年度" style="padding:5px 8px;">
-                <i class="ph ph-calendar-star" style="font-size:16px;"></i>
-              </button>
-              <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="全部" style="padding:5px 8px;">
-                <i class="ph ph-infinity" style="font-size:16px;"></i>
-              </button>
+              <button type="button" class="icon-btn" onclick="setDistDateRange('thisYear')" title="篩選年度" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">年度</button>
+              <button type="button" class="icon-btn" onclick="setDistDateRange('all')" title="篩選全部" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">全部</button>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
               <input type="date" id="distStartDate" class="login-input" style="padding:4px 6px; font-size:11px; width:118px;" onchange="applyDistCustomDateFilter()">
@@ -6094,6 +6083,7 @@
 
   window.addEventListener('DOMContentLoaded', function() {
     checkExistingSession();
+    resetDistCurrentMonth(); 
     loadInventoryDropdown(true);
     loadMallList(true);
     loadMemberList(true);
@@ -13304,11 +13294,19 @@
   }
 
   function applyDistDateFilter() {
+    const sInput = document.getElementById('distStartDate');
+    const eInput = document.getElementById('distEndDate');
+    const sDate = (sInput && sInput.value) ? new Date(sInput.value + 'T00:00:00') : null;
+    const eDate = (eInput && eInput.value) ? new Date(eInput.value + 'T23:59:59') : null;
+
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim();
     if (myId) {
       computeDistributorTierAnalysis(myId);
-      showToast('三代業績與百分比已依所選區間重新計算！');
+      if (sDate && eDate) {
+        computeComprehensiveProfitReport(myId, sDate, eDate);
+      }
+      showToast('數據已依所選區間重新計算！');
     }
   }
 
