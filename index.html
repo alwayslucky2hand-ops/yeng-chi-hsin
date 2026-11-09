@@ -3883,6 +3883,14 @@
       </div>
 
       
+      <div class="filter-bar" style="margin-bottom: 16px;">
+        <div style="position:relative; width:100%;">
+          <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:18px;"></i>
+          <input type="text" id="filterDistKeyword" class="filter-input" style="width:100%; padding-left:36px; border-radius:20px;" placeholder="全欄位模糊搜尋 (輸入經銷商編號、姓名、電話、地址、公司統編、銀行帳號、訂單或備註)..." oninput="renderDistributorGenealogy()">
+        </div>
+      </div>
+
+      
       <div class="order-sub-section dist-collapsible-zone" id="secDistSelfProfile" style="margin-bottom: 16px; border: 1.5px solid var(--accent-line); border-radius: 8px;">
         <div class="order-sub-header" onclick="toggleGenericSubSection('secDistSelfProfile')" style="background: #FFFFFF; padding: 12px 14px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; min-width:0;">
@@ -6487,9 +6495,16 @@
     const filtered = (baseOrders || []).filter(o => {
       if (dashSelectedStatus && String(o.status || '').trim() !== dashSelectedStatus) return false;
       if (kw) {
-        const itemsText = (o.items || []).map(it => `${it.productName || ''} ${it.productId || ''}`).join(' ');
-        const searchBlob = `${o.orderId || ''} ${o.memberName || ''} ${o.receiverName || ''} ${o.receiverPhone || ''} ${itemsText}`.toLowerCase();
-        if (!searchBlob.includes(kw)) return false;
+        
+        let rowText = o._raw || '';
+        if (!rowText) {
+          const oVals = Object.values(o).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ');
+          const iVals = (o.items || []).map(it => it._raw || Object.values(it).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).join(' ');
+          rowText = `${oVals} ${iVals}`;
+        }
+        rowText = rowText.toLowerCase();
+        const words = kw.split(/\s+/).filter(Boolean);
+        if (!words.every(w => rowText.includes(w))) return false;
       }
       return true;
     });
@@ -7275,7 +7290,7 @@
 
     const bloodline = getDistributorBloodline();
     const kwElement = document.getElementById('filterKeyword');
-    const kw = kwElement ? kwElement.value.toLowerCase() : '';
+    const kw = kwElement ? kwElement.value.trim().toLowerCase() : '';
     const filtered = inventoryCache.filter(item => {
       
       if (!bloodline.isHQ) {
@@ -7285,12 +7300,10 @@
         if (!isMyInv) return false;
       }
       if (!kw) return true;
-      const allText = Object.values(item)
-        .filter(val => val !== null && val !== undefined)
-        .map(String)
-        .join(' ')
-        .toLowerCase();
-      return allText.includes(kw);
+      
+      const rowText = (item._raw || Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => rowText.includes(w));
     });
 
     const container = document.getElementById('inventoryListContainer');
@@ -8372,7 +8385,7 @@
 
     const bloodline = getDistributorBloodline();
     const kwElement = document.getElementById('filterMallKeyword');
-    const kw = kwElement ? kwElement.value.toLowerCase() : '';
+    const kw = kwElement ? kwElement.value.trim().toLowerCase() : '';
 
     const filtered = mallCache.filter(item => {
       // 🌟 血緣隔離：總部看全表；經銷商看自己架位或全館公開展售品
@@ -8382,12 +8395,10 @@
         if (!isMyMall && item.visibility !== '公開展售') return false;
       }
       if (!kw) return true;
-      const allText = Object.values(item)
-        .filter(val => val !== null && val !== undefined)
-        .map(String)
-        .join(' ')
-        .toLowerCase();
-      return allText.includes(kw);
+      // 完整比對「商城上下架」工作表該列所有欄位
+      const rowText = (item._raw || Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => rowText.includes(w));
     });
 
     const container = document.getElementById('mallListContainer');
@@ -8931,12 +8942,10 @@
 
     const filtered = deduplicatedList.filter(item => {
       if (!kw) return true;
-      const allText = Object.values(item)
-        .filter(val => val !== null && val !== undefined)
-        .map(String)
-        .join(' ')
-        .toLowerCase();
-      return allText.includes(kw);
+      // 完整比對「會員管理」工作表該列所有欄位 (包含身分證字號、營登統編、銀行代碼帳號等)
+      const rowText = (item._raw || Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => rowText.includes(w));
     });
 
     const container = document.getElementById('memberListContainer');
@@ -9487,9 +9496,16 @@
       if (targetStatus && item.status !== targetStatus) return false;
       if (!kw) return true;
 
-      const itemsText = (item.items || []).map(it => `${it.productName} ${it.productId} ${it.mallPrdId} ${it.spec}`).join(' ');
-      const searchBlob = `${item.orderId} ${item.memberId} ${item.memberName} ${item.receiverName} ${item.receiverPhone} ${item.receiverAddress} ${item.notes} ${item.status} ${itemsText} ${item.orderLog || ''}`.toLowerCase();
-      return searchBlob.includes(kw);
+      // 完整比對「訂單管理」工作表該訂單所有列的 34 欄所有內容 (含金額、時段、成份、地址、商品、日誌等)
+      let rowText = item._raw || '';
+      if (!rowText) {
+        const orderValues = Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ');
+        const itemsValues = (item.items || []).map(it => it._raw || Object.values(it).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).join(' ');
+        rowText = `${orderValues} ${itemsValues}`;
+      }
+      rowText = rowText.toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => rowText.includes(w));
     });
 
     const container = document.getElementById('orderListContainer');
@@ -12582,8 +12598,10 @@
     const orderKeys = Object.keys(groupedByOrder).filter(oId => {
       if (!kw) return true;
       const items = groupedByOrder[oId];
-      const blob = items.map(it => `${it.orderId} ${it.outId} ${it.memberId} ${it.memberName} ${it.productId} ${it.mallPrdId} ${it.dispatchRecord}`).join(' ').toLowerCase();
-      return blob.includes(kw);
+      // 完整比對「物流管理」工作表該單據所有列的所有欄位
+      const blob = items.map(it => it._raw || Object.values(it).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).join(' ').toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => blob.includes(w));
     });
 
     const container = document.getElementById('logisticsListContainer');
@@ -13898,15 +13916,42 @@
       totalGen2Count += g2Children.length;
     });
 
-    if (cnt1El) cnt1El.innerText = gen1List.length;
+    // 讀取經銷頁搜尋關鍵字，並比對其「會員管理」全欄位與其「訂單管理」全欄位
+    const distKwEl = document.getElementById('filterDistKeyword');
+    const distKw = distKwEl ? distKwEl.value.trim().toLowerCase() : '';
+    const distWords = distKw ? distKw.split(/\s+/).filter(Boolean) : [];
+
+    const isDistMatch = (m) => {
+      if (distWords.length === 0) return true;
+      const mId = String(m.memberId || '').trim();
+      // 1. 會員管理全列資訊
+      const memRaw = (m._raw || Object.values(m).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
+      // 2. 訂單管理關聯業績資訊
+      const relatedOrders = (orderCache || []).filter(o => String(o.memberId).trim() === mId || String(o.referrerId).trim() === mId);
+      const ordersRaw = relatedOrders.map(o => o._raw || Object.values(o).join(' ')).join(' ').toLowerCase();
+      const combinedText = `${memRaw} ${ordersRaw}`;
+      return distWords.every(w => combinedText.includes(w));
+    };
+
+    // 依關鍵字過篩組織樹，若一代命中或其二代下線命中即保留並自動展開
+    const filteredGen1List = gen1List.filter(g1 => {
+      const g1Id = String(g1.memberId).trim();
+      const g1Match = isDistMatch(g1);
+      const g2MatchedChildren = (gen2Map[g1Id] || []).filter(g2 => isDistMatch(g2));
+      if (distWords.length > 0 && (g1Match || g2MatchedChildren.length > 0)) {
+        distExpandedNodes.add(g1Id);
+      }
+      return g1Match || g2MatchedChildren.length > 0;
+    });
+
+    if (cnt1El) cnt1El.innerText = filteredGen1List.length;
     if (cnt2El) cnt2El.innerText = totalGen2Count;
 
-    if (gen1List.length === 0) {
+    if (filteredGen1List.length === 0) {
       container.innerHTML = `
         <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:13px; line-height:1.8; border:1px dashed #CBD5E1; border-radius:8px;">
           <i class="ph ph-tree" style="font-size:32px; color:var(--accent-line); margin-bottom:8px;"></i><br>
-          目前您名下尚無第一代經銷夥伴。<br>
-          當新經銷夥伴在註冊時填寫您的推薦人編號 <strong>${myId}</strong>，將自動在此連動呈現兩代組織圖！
+          ${distWords.length > 0 ? `查無符合「${distKw}」的經銷商組織資料` : `目前您名下尚無第一代經銷夥伴。<br>當新經銷夥伴在註冊時填寫您的推薦人編號 <strong>${myId}</strong>，將自動在此連動呈現兩代組織圖！`}
         </div>
       `;
       return;
@@ -13988,10 +14033,10 @@
       `;
     };
 
-    // 依一代 ➔ 其所屬二代循序巢狀排版
-    container.innerHTML = gen1List.map(g1 => {
+    // 依一代 ➔ 其所屬二代循序巢狀排版 (採用過篩後名單)
+    container.innerHTML = filteredGen1List.map(g1 => {
       const g1Id = String(g1.memberId).trim();
-      const g2List = gen2Map[g1Id] || [];
+      const g2List = (gen2Map[g1Id] || []).filter(g2 => isDistMatch(g2));
 
       return `
         <div style="display:flex; flex-direction:column; gap:10px; border-bottom:1.5px dashed #CBD5E1; padding-bottom:16px;">
