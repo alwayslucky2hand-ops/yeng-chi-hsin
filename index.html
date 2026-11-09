@@ -3083,8 +3083,16 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">特價</label>
-              <input type="number" id="mallVipPrice" class="login-input" placeholder="系統自動計算 85 折" disabled>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">特價</label>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button type="button" onclick="calcVipPrice(true)" class="icon-btn" style="border: none; padding: 0 4px; color: var(--accent); font-size: 11px;" title="依原價重新計算 85 折預設值">
+                    <i class="ph ph-arrow-counter-clockwise"></i> 85折
+                  </button>
+                  <span id="badgeMallVipLock" class="sealed-badge" style="display: none;"><i class="ph ph-lock-key"></i> 僅總部可自訂</span>
+                </div>
+              </div>
+              <input type="number" id="mallVipPrice" class="login-input" placeholder="預設 85 折，總部可自由編輯金額">
             </div>
           </div>
 
@@ -7453,7 +7461,12 @@
       document.getElementById('mallShelfQty').value = item.shelfQty || 0;
       document.getElementById('mallVisibility').value = item.visibility || '公開展售';
       document.getElementById('mallPrice').value = item.price || 0;
-      calcVipPrice();
+      // 優先回填試算表已儲存之特價；若為空才帶入 85 折，並同步判斷總部編輯權限
+      const vipFld = document.getElementById('mallVipPrice');
+      if (vipFld) {
+        vipFld.value = (item.vipPrice !== undefined && item.vipPrice !== '') ? item.vipPrice : Math.round(Number(item.price || 0) * 0.85);
+      }
+      calcVipPrice(false);
       const fmtDate = (dStr) => { try { return dStr ? dStr.split(' ')[0].replace(/\//g, '-') : ""; } catch(e) { return dStr; } };
       const startEl = document.getElementById('mallStartDate');
       if (startEl) startEl.value = fmtDate(item.startDate);
@@ -8483,9 +8496,33 @@
     return newId;
   }
 
-  function calcVipPrice() {
-    const p = document.getElementById('mallPrice').value;
-    if (p) document.getElementById('mallVipPrice').value = Math.round(Number(p) * 0.85);
+  // 🌟 VIP 特價計算：預設帶入 85 折，總部代表登入時允許自由手動編輯儲存
+  function calcVipPrice(forceReset = false) {
+    const p = document.getElementById('mallPrice')?.value;
+    const vipEl = document.getElementById('mallVipPrice');
+    if (!vipEl) return;
+
+    const isHQ = isHeadquartersUser();
+
+    // 權限控管：總部解鎖編輯；一般經銷商維持鎖定
+    if (isHQ) {
+      vipEl.disabled = false;
+      vipEl.style.removeProperty('background');
+      vipEl.style.cursor = 'text';
+      const badge = document.getElementById('badgeMallVipLock');
+      if (badge) badge.style.display = 'none';
+    } else {
+      vipEl.disabled = true;
+      vipEl.style.setProperty('background', 'var(--bg)', 'important');
+      vipEl.style.cursor = 'not-allowed';
+      const badge = document.getElementById('badgeMallVipLock');
+      if (badge) badge.style.display = 'inline-flex';
+    }
+
+    // 當強制重設、或欄位尚未填寫時，自動帶入 85 折
+    if (p && (forceReset || !vipEl.value || !isHQ)) {
+      vipEl.value = Math.round(Number(p) * 0.85);
+    }
   }
 
   async function instantUpdateMallStatus(newStatus) {
@@ -8559,9 +8596,14 @@
       return;
     }
 
-    // 樂觀 UI：備份舊快取並立即更新前端
+    // 樂觀 UI：備份舊快取，特價優先取手動填寫值（若留白則自動取 85 折）
     const backupCache = JSON.parse(JSON.stringify(mallCache));
-    const vipPriceCalc = Math.round(Number(payload.price) * 0.85);
+    const rawVipInput = document.getElementById('mallVipPrice')?.value;
+    const finalVipPrice = (rawVipInput !== undefined && rawVipInput !== '') 
+      ? Number(rawVipInput) 
+      : Math.round(Number(payload.price) * 0.85);
+    payload.vipPrice = finalVipPrice;
+    const vipPriceCalc = finalVipPrice;
     const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
     let tempRowId = rowId ? Number(rowId) : null;
 
