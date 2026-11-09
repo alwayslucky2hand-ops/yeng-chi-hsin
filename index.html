@@ -6140,6 +6140,13 @@
     if (clickedBtn) clickedBtn.classList.add('active');
 
     
+    const isHQUser = isHeadquartersUser();
+    const btnAddMall = document.querySelector("#tab2 button[onclick*=\"openNewForm('mall')\"]");
+    const btnAddMem = document.querySelector("#tab3 button[onclick*=\"openNewForm('mem')\"]");
+    if (btnAddMall) btnAddMall.style.display = isHQUser ? 'inline-flex' : 'none';
+    if (btnAddMem) btnAddMem.style.display = isHQUser ? 'inline-flex' : 'none';
+
+    
     if (tabId === 'tab1') {
       if (!isInventoryLoaded) loadInventoryDropdown(true);
       else renderInventoryList();
@@ -7435,6 +7442,19 @@
 
     if (!form) return;
 
+    // 🔒 總部定價與編輯主權：非總部帳號全面鎖定為純檢視模式
+    const isHQ = isHeadquartersUser();
+    const btnSubmit = document.getElementById('btnSubmitMall');
+    const mallInputs = form.querySelectorAll('input, select, textarea');
+    mallInputs.forEach(el => {
+      if (el.id !== 'editMallRowId') {
+        el.disabled = !isHQ;
+        if (!isHQ) el.style.setProperty('background', 'var(--bg)', 'important');
+        else el.style.removeProperty('background');
+      }
+    });
+    if (btnSubmit) btnSubmit.style.display = isHQ ? 'inline-flex' : 'none';
+
     // 若該卡片已經是展開狀態，再次點擊長條框即收合
     if (card && card.classList.contains('editing')) {
       closeForm('mall');
@@ -8426,8 +8446,10 @@
               <span class="id-chip" style="font-size:11px;" title="商品編號"><i class="ph ph-barcode"></i> ${item.productId || '-'}</span>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
-              <button type="button" class="icon-btn" onclick="event.stopPropagation(); copyMallItem(${item._rowId});" title="複製新增"><i class="ph ph-copy" style="font-size: 20px;"></i></button>
-              <button type="button" class="icon-btn danger" onclick="event.stopPropagation(); deleteFrontendMallItem(${item._rowId});" title="刪除"><i class="ph ph-trash" style="font-size: 20px;"></i></button>
+              ${bloodline.isHQ ? `
+                <button type="button" class="icon-btn" onclick="event.stopPropagation(); copyMallItem(${item._rowId});" title="複製新增"><i class="ph ph-copy" style="font-size: 20px;"></i></button>
+                <button type="button" class="icon-btn danger" onclick="event.stopPropagation(); deleteFrontendMallItem(${item._rowId});" title="刪除"><i class="ph ph-trash" style="font-size: 20px;"></i></button>
+              ` : ''}
               <button type="button" class="icon-btn" title="點擊展開或收合"><i class="ph ph-caret-down" id="icon-mall-${item._rowId}" style="font-size: 20px;"></i></button>
             </div>
           </div>
@@ -8451,9 +8473,11 @@
               <span style="font-family: monospace; font-weight: 800;">${shelfId}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
-              <button type="button" class="icon-btn" onclick="addNewItemToShelf('${shelfId}')" title="新增同架位商品規格項目" style="padding: 6px 8px; color: var(--accent); border-color: var(--accent);">
-                <i class="ph ph-plus" style="font-size: 18px;"></i>
-              </button>
+              ${bloodline.isHQ ? `
+                <button type="button" class="icon-btn" onclick="addNewItemToShelf('${shelfId}')" title="新增同架位商品規格項目" style="padding: 6px 8px; color: var(--accent); border-color: var(--accent);">
+                  <i class="ph ph-plus" style="font-size: 18px;"></i>
+                </button>
+              ` : ''}
               <i class="ph ph-caret-up" id="icon-${groupDomId}" style="font-size: 20px; cursor: pointer;" onclick="toggleShelfGroup('${groupDomId}')"></i>
             </div>
           </div>
@@ -8897,11 +8921,24 @@
       }
     });
 
-    // 🌟 微商血緣過濾：總部 TW-NAMIS 看全體，其餘經銷商僅看自己與延伸血緣之經銷與會員
+    // 🌟 嚴格權限過濾：總部看全體；經銷商僅看自己、兩代經銷商與自己直屬一般/VIP會員
     const bloodline = getDistributorBloodline();
     const bloodlineScopedMembers = bloodline.isHQ 
       ? memberCache 
-      : memberCache.filter(m => bloodline.hasAccess(m.memberId, m.lineId || m.referrerId, m.memberName));
+      : memberCache.filter(m => {
+          const mId = String(m.memberId || '').trim();
+          const ref = String(m.lineId || m.referrerId || '').trim();
+          const mType = String(m.memberType || '').trim();
+          const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+
+          if (isDist) {
+            // 經銷商名單：僅顯示自己、一代下線、二代下線
+            return (mId === bloodline.myId) || bloodline.gen1DistIds.has(mId) || bloodline.gen2DistIds.has(mId);
+          } else {
+            // 一般與 VIP 會員：嚴格只顯示自己直屬推薦的會員 (不含底下經銷商的會員)
+            return (ref === bloodline.myId) || (mId === bloodline.myId);
+          }
+        });
 
     const deduplicatedList = bloodlineScopedMembers.filter(item => {
       const mId = String(item.memberId || '').trim();
@@ -8965,13 +9002,18 @@
       const isVip = (!isDist && memberType.includes('VIP'));
       const isActive = (String(item.status || '有效').trim() !== '失效');
 
-      // 1. 膠囊標籤樣式分流：經銷會員(琉璃紫) / VIP(橙金) / 一般(冰藍)
-      let badgeBg, badgeColor, badgeBorder, badgeIcon;
+      // 1. 膠囊標籤樣式分流：一代經銷 / 二代經銷 / 經銷會員 / VIP / 一般
+      let badgeBg, badgeColor, badgeBorder, badgeIcon, displayType = memberType;
+      const isGen1 = !bloodline.isHQ && bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId);
+      const isGen2 = !bloodline.isHQ && bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId);
+
       if (isDist) {
         badgeBg = 'rgba(124, 58, 237, 0.08)';
         badgeColor = '#7C3AED';
         badgeBorder = '#DDD6FE';
         badgeIcon = '<i class="ph ph-handshake" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
+        if (isGen1) displayType = '一代經銷';
+        else if (isGen2) displayType = '二代經銷';
       } else if (isVip) {
         badgeBg = 'rgba(245, 158, 11, 0.10)';
         badgeColor = 'var(--warning)';
@@ -9049,7 +9091,7 @@
             <div class="inv-info">
               <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; padding:2px 9px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center; font-weight:700;">
-                  ${badgeIcon}${memberType}
+                  ${badgeIcon}${displayType}
                 </span>
                 ${isSelf ? `
                   <span style="background:#0F172A; color:#FFFFFF; padding:2px 9px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; letter-spacing:0.5px; box-shadow:0 1px 3px rgba(0,0,0,0.12);">
@@ -9154,6 +9196,19 @@
     const icon = document.getElementById(`icon-mem-${rowId}`);
 
     if (!form) return;
+
+    // 🔒 總部會員管理主權：非總部帳號全面鎖定為唯讀檢視
+    const isHQ = isHeadquartersUser();
+    const btnSubmitMem = document.getElementById('btnSubmitMem');
+    const memInputs = form.querySelectorAll('input, select, textarea');
+    memInputs.forEach(el => {
+      if (el.id !== 'editMemRowId') {
+        el.disabled = !isHQ;
+        if (!isHQ) el.style.setProperty('background', 'var(--bg)', 'important');
+        else el.style.removeProperty('background');
+      }
+    });
+    if (btnSubmitMem) btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
 
     if (card && card.classList.contains('editing')) {
       closeForm('mem');
@@ -9539,9 +9594,9 @@
                 </span>
               </div>
             </div>
-            <div class="order-header-right" style="display: flex; gap: 8px; align-items: center;" onclick="event.stopPropagation()">
+           <div class="order-header-right" style="display: flex; gap: 8px; align-items: center;" onclick="event.stopPropagation()">
               <div style="display: flex; align-items: center; gap: 4px;">
-                <select class="filter-input" style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;" onchange="instantUpdateOrderStatus('${order.orderId}', this.value, this)">
+                <select class="filter-input" ${!bloodline.isHQ ? 'disabled style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; background: var(--bg) !important; cursor: not-allowed;"' : 'style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;"'} onchange="instantUpdateOrderStatus('${order.orderId}', this.value, this)">
                   ${availableStatusList.map(s => `<option value="${s.name}" ${s.name === curStatus ? 'selected' : ''}>${s.name}</option>`).join('')}
                 </select>
                 <span id="status-spinner-${order.orderId}" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;"></span>
@@ -9786,6 +9841,19 @@
     const icon = document.getElementById(`icon-order-${orderId}`);
 
     if (!form) return;
+
+    // 🔒 總部訂單主權：非總部帳號全面鎖定為唯讀查閱
+    const isHQ = isHeadquartersUser();
+    const btnSubmitOrder = document.getElementById('btnSubmitOrder');
+    const btnLockItem = document.getElementById('btnToggleItemLock');
+    const orderInputs = form.querySelectorAll('input:not([type="hidden"]), select, textarea');
+    orderInputs.forEach(el => {
+      el.disabled = !isHQ;
+      if (!isHQ) el.style.setProperty('background', 'var(--bg)', 'important');
+      else el.style.removeProperty('background');
+    });
+    if (btnSubmitOrder) btnSubmitOrder.style.display = isHQ ? 'inline-flex' : 'none';
+    if (btnLockItem) btnLockItem.style.display = isHQ ? 'inline-flex' : 'none';
 
     if (card && card.classList.contains('editing')) {
       closeForm('order');
@@ -13424,45 +13492,54 @@
     const bloodlineAllIds = new Set([myId]);
     const bloodlineNames = new Set([String(session.memberName || '').trim()]);
 
-    // 1. 遞迴追蹤所有延伸下線經銷商 (第 1 代直推、第 2 代間接、第 N 代體系)
-    let added = true;
-    while (added) {
-      added = false;
-      members.forEach(m => {
-        const mId = String(m.memberId || '').trim();
-        const ref = String(m.lineId || m.referrerId || '').trim();
-        const mType = String(m.memberType || '').trim();
-        const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+    const isDistributorMember = (m) => {
+      const mType = String(m.memberType || '').trim();
+      const mId = String(m.memberId || '').trim();
+      return (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+    };
 
-        if (isDist && downlineDistIds.has(ref) && !downlineDistIds.has(mId)) {
-          downlineDistIds.add(mId);
-          bloodlineAllIds.add(mId);
-          if (m.memberName) bloodlineNames.add(String(m.memberName).trim());
-          added = true;
-        }
-      });
-    }
-
-    // 2. 收集自己與旗下所有血緣經銷商延伸出去的會員/VIP/客戶名單
+    // 1. 直推一代經銷商集合
+    const gen1DistIds = new Set();
     members.forEach(m => {
       const mId = String(m.memberId || '').trim();
       const ref = String(m.lineId || m.referrerId || '').trim();
-      const name = String(m.memberName || '').trim();
-
-      if (downlineDistIds.has(mId) || downlineDistIds.has(ref)) {
-        bloodlineAllIds.add(mId);
-        if (name) bloodlineNames.add(name);
+      if ((ref === myId) && isDistributorMember(m) && (mId !== myId)) {
+        gen1DistIds.add(mId);
+        downlineDistIds.add(mId);
       }
     });
 
-    // 3. 統一提供存取權檢驗函式
+    // 2. 推薦二代經銷商集合
+    const gen2DistIds = new Set();
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      if (gen1DistIds.has(ref) && isDistributorMember(m) && (mId !== myId)) {
+        gen2DistIds.add(mId);
+        downlineDistIds.add(mId);
+      }
+    });
+
+    // 3. 收集「自己直屬之一般會員與 VIP 會員」（排除下線經銷商的會員）
+    const myDirectCustomerIds = new Set([myId]);
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      if (!isDistributorMember(m) && (ref === myId || mId === myId)) {
+        myDirectCustomerIds.add(mId);
+        if (m.memberName) bloodlineNames.add(String(m.memberName).trim());
+      }
+    });
+
+    // 會員頁可視名單：自己 + 一代經銷 + 二代經銷 + 自己的直屬一般/VIP會員
+    const memberPageVisibleIds = new Set([...downlineDistIds, ...myDirectCustomerIds]);
+
+    // 4. 存取權檢驗函式：訂單、物流、總覽追蹤僅管理「自己與直屬一般/VIP會員」
     const hasAccess = (itemMemberId, itemReferrerId, itemName) => {
       const mId = String(itemMemberId || '').trim();
       const ref = String(itemReferrerId || '').trim();
-      const name = String(itemName || '').trim();
-      if (mId && bloodlineAllIds.has(mId)) return true;
-      if (ref && downlineDistIds.has(ref)) return true;
-      if (name && bloodlineNames.has(name)) return true;
+      if (mId && myDirectCustomerIds.has(mId)) return true;
+      if (ref === myId) return true;
       return false;
     };
 
