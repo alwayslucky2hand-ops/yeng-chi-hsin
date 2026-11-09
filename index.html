@@ -6310,7 +6310,14 @@
 
   function computeAndRenderDashboard() {
     initDashboardDatePickers();
-    const orders = Array.isArray(orderCache) ? orderCache : [];
+    const bloodline = getDistributorBloodline();
+    
+    const rawOrders = Array.isArray(orderCache) ? orderCache : [];
+    const orders = bloodline.isHQ ? rawOrders : rawOrders.filter(o => {
+      const memMatch = (memberCache || []).find(m => String(m.memberId || '').trim() === String(o.memberId || '').trim());
+      const refId = o.referrerId || o.memberLineId || (memMatch ? (memMatch.lineId || memMatch.referrerId) : '');
+      return bloodline.hasAccess(o.memberId, refId, o.memberName || o.receiverName);
+    });
 
     const startInput = document.getElementById('dashStartDate');
     const endInput = document.getElementById('dashEndDate');
@@ -7255,9 +7262,17 @@
     // 重要防護：重繪列表前，務必將進貨表單搬回頂部安全插槽，避免被 innerHTML 覆寫銷毀
     closeForm('inv');
 
+    const bloodline = getDistributorBloodline();
     const kwElement = document.getElementById('filterKeyword');
     const kw = kwElement ? kwElement.value.toLowerCase() : '';
     const filtered = inventoryCache.filter(item => {
+      
+      if (!bloodline.isHQ) {
+        const rec = String(item.recorder || '').trim();
+        const log = String(item.invLog || '');
+        const isMyInv = (rec === bloodline.myId) || bloodline.bloodlineNames.has(rec) || log.includes(bloodline.myId);
+        if (!isMyInv) return false;
+      }
       if (!kw) return true;
       const allText = Object.values(item)
         .filter(val => val !== null && val !== undefined)
@@ -8283,10 +8298,17 @@
     // 重要防護：重繪列表前，先確保商城編輯表單已歸位至安全插槽
     closeForm('mall');
 
+    const bloodline = getDistributorBloodline();
     const kwElement = document.getElementById('filterMallKeyword');
     const kw = kwElement ? kwElement.value.toLowerCase() : '';
 
     const filtered = mallCache.filter(item => {
+      // 🌟 血緣隔離：總部看全表；經銷商看自己架位或全館公開展售品
+      if (!bloodline.isHQ) {
+        const log = String(item.mallLog || '');
+        const isMyMall = log.includes(bloodline.myId) || bloodline.bloodlineNames.has(item.productName);
+        if (!isMyMall && item.visibility !== '公開展售') return false;
+      }
       if (!kw) return true;
       const allText = Object.values(item)
         .filter(val => val !== null && val !== undefined)
@@ -8755,7 +8777,13 @@
       }
     });
 
-    const deduplicatedList = memberCache.filter(item => {
+    // 🌟 微商血緣過濾：總部 TW-NAMIS 看全體，其餘經銷商僅看自己與延伸血緣之經銷與會員
+    const bloodline = getDistributorBloodline();
+    const bloodlineScopedMembers = bloodline.isHQ 
+      ? memberCache 
+      : memberCache.filter(m => bloodline.hasAccess(m.memberId, m.lineId || m.referrerId, m.memberName));
+
+    const deduplicatedList = bloodlineScopedMembers.filter(item => {
       const isDist = (String(item.memberType || '').trim() === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
       if (!isDist) {
         const name = String(item.memberName || '').trim();
@@ -9289,7 +9317,16 @@
     const stEl = document.getElementById('filterOrderStatus');
     const targetStatus = stEl ? stEl.value : '';
 
+    const bloodline = getDistributorBloodline();
     const filtered = orderCache.filter(item => {
+      // 🌟 血緣過濾：僅顯示歸屬於自身血緣網絡之訂單
+      if (!bloodline.isHQ) {
+        const memMatch = (memberCache || []).find(m => String(m.memberId || '').trim() === String(item.memberId || '').trim());
+        const refId = item.referrerId || item.memberLineId || (memMatch ? (memMatch.lineId || memMatch.referrerId) : '');
+        const isBelongsToBloodline = bloodline.hasAccess(item.memberId, refId, item.memberName || item.receiverName);
+        if (!isBelongsToBloodline) return false;
+      }
+
       if (targetStatus && item.status !== targetStatus) return false;
       if (!kw) return true;
 
@@ -10732,9 +10769,15 @@
     );
 
     // ========================================================
-    // 💥 核心直通升級：凡狀態為「收款」之訂單，100% 自動直入撿貨區！
+    // 💥 核心直通升級：凡狀態為「收款」之訂單，100% 自動直入撿貨區！(綁定血緣防護)
     // ========================================================
+    const bloodline = getDistributorBloodline();
     const paidOrders = orderCache.filter(o => {
+      if (!bloodline.isHQ) {
+        const memMatch = (memberCache || []).find(m => String(m.memberId || '').trim() === String(o.memberId || '').trim());
+        const refId = o.referrerId || o.memberLineId || (memMatch ? (memMatch.lineId || memMatch.referrerId) : '');
+        if (!bloodline.hasAccess(o.memberId, refId, o.memberName || o.receiverName)) return false;
+      }
       const st = String(o.status || '').trim();
       const oid = String(o.orderId || '').trim();
       const isAlreadyPacked = pendingDispatchOrderIds.has(oid);
@@ -10785,8 +10828,13 @@
       return paidOrders.some(po => po.orderId === pq.orderId);
     });
 
-    // 待交寄清單渲染（排除已進入配送之訂單）
+    // 待交寄清單渲染（排除已進入配送之訂單，嚴格綁定血緣防護）
     const dispatchOrders = orderCache.filter(o => {
+      if (!bloodline.isHQ) {
+        const memMatch = (memberCache || []).find(m => String(m.memberId || '').trim() === String(o.memberId || '').trim());
+        const refId = o.referrerId || o.memberLineId || (memMatch ? (memMatch.lineId || memMatch.referrerId) : '');
+        if (!bloodline.hasAccess(o.memberId, refId, o.memberName || o.receiverName)) return false;
+      }
       const st = String(o.status || '').trim();
       const oid = String(o.orderId || '').trim();
       if (st === '配送' || st === '到貨' || st === '收貨' || st === '退貨' || st === '取消') return false;
@@ -12328,7 +12376,16 @@
 
     const cleanId = (s) => String(s || '').replace(/\s+/g, '').toUpperCase();
 
+    const bloodline = getDistributorBloodline();
     const dispatchedLogs = logisticsCache.filter(item => {
+      // 🌟 血緣防護：非總部代表僅看自身血緣網絡之出貨配貨紀錄
+      if (!bloodline.isHQ) {
+        const ord = (orderCache || []).find(o => cleanId(o.orderId) === cleanId(item.orderId));
+        const memMatch = (memberCache || []).find(m => String(m.memberId || '').trim() === String(item.memberId || '').trim());
+        const refId = ord ? (ord.referrerId || ord.memberLineId) : (memMatch ? (memMatch.lineId || memMatch.referrerId) : '');
+        if (!bloodline.hasAccess(item.memberId, refId, item.memberName)) return false;
+      }
+
       // 💥 鐵律一：依訂單編號對照最新訂單狀態，只有「配送/到貨/收貨」才准出現在配貨歷史清單！
       const ord = (orderCache || []).find(o => cleanId(o.orderId) === cleanId(item.orderId));
       if (ord) {
@@ -13158,12 +13215,90 @@
     }
   }
 
-  // 🔒 總部權限鑑別：僅有總部指定帳號 (TW-NAMIS / HQ / 總部信箱) 具備核准修改經銷狀態特權
+  // 🔒 總部權限鑑別：僅有總部指定代表 (TW-NAMIS / HQ / ADMIN) 具備最高上帝視角權限
   function isHeadquartersUser() {
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim().toUpperCase();
-    const email = String(session.email || '').trim().toLowerCase();
-    return (myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN' || email.includes('alwayslucky2hand') || session.isHQ === true);
+    return (myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN' || session.isHQ === true);
+  }
+
+  // ==========================================
+  // 🌟 微商血緣關係網核心引擎 (Genealogy / Bloodline Lineage Engine)
+  // 總部代表：TW-NAMIS (上帝視角，通盤總覽所有資料)
+  // 各經銷商：僅看得到自己、底下各代經銷商，以及自身與底下延伸出去的會員名單、訂單與物流紀錄
+  // ==========================================
+  function getDistributorBloodline(targetDistId = null) {
+    const session = getActiveDistributorSession();
+    const myId = String(targetDistId || session.memberId || '').trim();
+    const isHQ = isHeadquartersUser();
+
+    // 總部代表 TW-NAMIS 擁有全局視野，無須過濾
+    if (isHQ || myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN') {
+      return {
+        isHQ: true,
+        myId: myId,
+        downlineDistIds: new Set((memberCache || []).map(m => String(m.memberId || '').trim())),
+        bloodlineAllIds: new Set((memberCache || []).map(m => String(m.memberId || '').trim())),
+        bloodlineNames: new Set((memberCache || []).map(m => String(m.memberName || '').trim())),
+        hasAccess: () => true
+      };
+    }
+
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const downlineDistIds = new Set([myId]);
+    const bloodlineAllIds = new Set([myId]);
+    const bloodlineNames = new Set([String(session.memberName || '').trim()]);
+
+    // 1. 遞迴追蹤所有延伸下線經銷商 (第 1 代直推、第 2 代間接、第 N 代體系)
+    let added = true;
+    while (added) {
+      added = false;
+      members.forEach(m => {
+        const mId = String(m.memberId || '').trim();
+        const ref = String(m.lineId || m.referrerId || '').trim();
+        const mType = String(m.memberType || '').trim();
+        const isDist = (mType === '經銷會員') || mId.startsWith('DIS-') || (mId.startsWith('TW-') && mId !== 'TW-NAMIS');
+
+        if (isDist && downlineDistIds.has(ref) && !downlineDistIds.has(mId)) {
+          downlineDistIds.add(mId);
+          bloodlineAllIds.add(mId);
+          if (m.memberName) bloodlineNames.add(String(m.memberName).trim());
+          added = true;
+        }
+      });
+    }
+
+    // 2. 收集自己與旗下所有血緣經銷商延伸出去的會員/VIP/客戶名單
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const name = String(m.memberName || '').trim();
+
+      if (downlineDistIds.has(mId) || downlineDistIds.has(ref)) {
+        bloodlineAllIds.add(mId);
+        if (name) bloodlineNames.add(name);
+      }
+    });
+
+    // 3. 統一提供存取權檢驗函式
+    const hasAccess = (itemMemberId, itemReferrerId, itemName) => {
+      const mId = String(itemMemberId || '').trim();
+      const ref = String(itemReferrerId || '').trim();
+      const name = String(itemName || '').trim();
+      if (mId && bloodlineAllIds.has(mId)) return true;
+      if (ref && downlineDistIds.has(ref)) return true;
+      if (name && bloodlineNames.has(name)) return true;
+      return false;
+    };
+
+    return {
+      isHQ: false,
+      myId: myId,
+      downlineDistIds,
+      bloodlineAllIds,
+      bloodlineNames,
+      hasAccess
+    };
   }
 
   // 1. 渲染自己的經銷商資訊（展開內容完整呈現經銷狀態・總部權限封印）
