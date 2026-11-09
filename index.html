@@ -3075,8 +3075,11 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">定價</label>
-              <input type="number" id="mallPrice" class="login-input" placeholder="輸入商品原價 (TWD)" oninput="calcVipPrice()">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">一般定價</label>
+                <span id="badgeMallPriceLock" class="sealed-badge" style="display: none;"><i class="ph ph-lock-key"></i> 總部定價鎖定</span>
+              </div>
+              <input type="number" id="mallPrice" class="login-input" placeholder="一般銷售定價 (TWD)" oninput="calcVipPrice()">
             </div>
           </div>
 
@@ -3084,15 +3087,15 @@
           <div class="input-row">
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <label class="form-label" style="margin-bottom: 0;">特價</label>
+                <label class="form-label" style="margin-bottom: 0;">VIP 特價</label>
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <button type="button" onclick="calcVipPrice(true)" class="icon-btn" style="border: none; padding: 0 4px; color: var(--accent); font-size: 11px;" title="依原價重新計算 85 折預設值">
+                  <button type="button" id="btnRecalcVipPrice" onclick="calcVipPrice(true)" class="icon-btn" style="border: none; padding: 0 4px; color: var(--accent); font-size: 11px; display: none;" title="依原價重新計算 85 折預設值">
                     <i class="ph ph-arrow-counter-clockwise"></i> 85折
                   </button>
-                  <span id="badgeMallVipLock" class="sealed-badge" style="display: none;"><i class="ph ph-lock-key"></i> 僅總部可自訂</span>
+                  <span id="badgeMallVipLock" class="sealed-badge" style="display: none;"><i class="ph ph-lock-key"></i> 總部 VIP 價鎖定</span>
                 </div>
               </div>
-              <input type="number" id="mallVipPrice" class="login-input" placeholder="預設 85 折，總部可自由編輯金額">
+              <input type="number" id="mallVipPrice" class="login-input" placeholder="VIP 專屬優惠價 (TWD)">
             </div>
           </div>
 
@@ -7460,13 +7463,45 @@
       document.getElementById('mallIngredients').value = item.ingredients || '';
       document.getElementById('mallShelfQty').value = item.shelfQty || 0;
       document.getElementById('mallVisibility').value = item.visibility || '公開展售';
-      document.getElementById('mallPrice').value = item.price || 0;
-      // 優先回填試算表已儲存之特價；若為空才帶入 85 折，並同步判斷總部編輯權限
+      // 🔒 總部定價主權防護：判斷是否為總部帳號 (TW-NAMIS / HQ / ADMIN)
+      const isHQ = isHeadquartersUser();
+      const priceFld = document.getElementById('mallPrice');
       const vipFld = document.getElementById('mallVipPrice');
+      const badgePriceLock = document.getElementById('badgeMallPriceLock');
+      const badgeVipLock = document.getElementById('badgeMallVipLock');
+      const btnRecalcVip = document.getElementById('btnRecalcVipPrice');
+
+      if (priceFld) {
+        priceFld.value = item.price || 0;
+        if (isHQ) {
+          priceFld.disabled = false;
+          priceFld.style.removeProperty('background');
+          priceFld.style.cursor = 'text';
+          if (badgePriceLock) badgePriceLock.style.display = 'none';
+        } else {
+          priceFld.disabled = true;
+          priceFld.style.setProperty('background', 'var(--bg)', 'important');
+          priceFld.style.cursor = 'not-allowed';
+          if (badgePriceLock) badgePriceLock.style.display = 'inline-flex';
+        }
+      }
+
       if (vipFld) {
         vipFld.value = (item.vipPrice !== undefined && item.vipPrice !== '') ? item.vipPrice : Math.round(Number(item.price || 0) * 0.85);
+        if (isHQ) {
+          vipFld.disabled = false;
+          vipFld.style.removeProperty('background');
+          vipFld.style.cursor = 'text';
+          if (badgeVipLock) badgeVipLock.style.display = 'none';
+          if (btnRecalcVip) btnRecalcVip.style.display = 'inline-flex';
+        } else {
+          vipFld.disabled = true;
+          vipFld.style.setProperty('background', 'var(--bg)', 'important');
+          vipFld.style.cursor = 'not-allowed';
+          if (badgeVipLock) badgeVipLock.style.display = 'inline-flex';
+          if (btnRecalcVip) btnRecalcVip.style.display = 'none';
+        }
       }
-      calcVipPrice(false);
       const fmtDate = (dStr) => { try { return dStr ? dStr.split(' ')[0].replace(/\//g, '-') : ""; } catch(e) { return dStr; } };
       const startEl = document.getElementById('mallStartDate');
       if (startEl) startEl.value = fmtDate(item.startDate);
@@ -7519,6 +7554,28 @@
     // 新增進貨時，自動帶入 IN-yyyymmddhhmmss 最新時間編號
     if (type === 'inv') {
       generateAutoId();
+    }
+    if (type === 'mall') {
+      const isHQ = isHeadquartersUser();
+      const priceFld = document.getElementById('mallPrice');
+      const vipFld = document.getElementById('mallVipPrice');
+      const badgePriceLock = document.getElementById('badgeMallPriceLock');
+      const badgeVipLock = document.getElementById('badgeMallVipLock');
+      const btnRecalcVip = document.getElementById('btnRecalcVipPrice');
+
+      if (priceFld) {
+        priceFld.disabled = !isHQ;
+        if (!isHQ) priceFld.style.setProperty('background', 'var(--bg)', 'important');
+        else priceFld.style.removeProperty('background');
+        if (badgePriceLock) badgePriceLock.style.display = isHQ ? 'none' : 'inline-flex';
+      }
+      if (vipFld) {
+        vipFld.disabled = !isHQ;
+        if (!isHQ) vipFld.style.setProperty('background', 'var(--bg)', 'important');
+        else vipFld.style.removeProperty('background');
+        if (badgeVipLock) badgeVipLock.style.display = isHQ ? 'none' : 'inline-flex';
+        if (btnRecalcVip) btnRecalcVip.style.display = isHQ ? 'inline-flex' : 'none';
+      }
     }
     if (type === 'mem') {
       generateMemId();
@@ -8123,8 +8180,10 @@
     const imagesSnapshot = [...invImageStateArray];
     const currentDist = getActiveDistributorSession();
 
+    const isHQ = isHeadquartersUser();
     const payload = {
       _rowId: rowId,
+      isHQ: isHQ,
       distId: currentDist.memberId || '',
       distName: currentDist.memberName || '',
       productId: document.getElementById('invId').value.trim(),
@@ -9105,7 +9164,19 @@
       document.getElementById('memPhone').value = item.phone || '';
       document.getElementById('memLineId').value = item.lineId || '';
       document.getElementById('memEmail').value = item.email || '';
-      document.getElementById('memBirthday').value = item.birthday || '';
+      // 🔒 生日與生日禮權益：嚴格鎖定不可篡改，只有總部帳號登入才可編輯
+      const bdayInput = document.getElementById('memBirthday');
+      if (bdayInput) {
+        bdayInput.value = item.birthday || '';
+        bdayInput.disabled = !isHQ;
+        if (!isHQ) {
+          bdayInput.style.setProperty('background', 'var(--bg)', 'important');
+          bdayInput.style.cursor = 'not-allowed';
+        } else {
+          bdayInput.style.removeProperty('background');
+          bdayInput.style.cursor = 'text';
+        }
+      }
       document.getElementById('memRegTime').value = item.registerTime || '';
       document.getElementById('memVipTime').value = item.vipTime || '';
 
