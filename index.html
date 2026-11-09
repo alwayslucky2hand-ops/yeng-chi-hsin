@@ -8715,8 +8715,16 @@
 
   function generateMemId() {
     const typeVal = document.getElementById('memType')?.value || '一般會員';
-    const prefix = typeVal === '經銷會員' ? 'DIS-' : 'MEM-';
-    document.getElementById('memId').value = prefix + getFormattedNowTime(true);
+    if (typeVal === '經銷會員') {
+      // 經銷商全面採用國碼-年-月日-序號格式
+      if (typeof autoComputeDistributorId === 'function') {
+        autoComputeDistributorId();
+      }
+    } else {
+      // 一般與 VIP 會員固定為 MEM-yyyymmddhhmmss
+      const memIdEl = document.getElementById('memId');
+      if (memIdEl) memIdEl.value = 'MEM-' + getFormattedNowTime(true);
+    }
   }
 
   function fillMemTime(inputId) {
@@ -8826,7 +8834,8 @@
       : memberCache.filter(m => bloodline.hasAccess(m.memberId, m.lineId || m.referrerId, m.memberName));
 
     const deduplicatedList = bloodlineScopedMembers.filter(item => {
-      const isDist = (String(item.memberType || '').trim() === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
+      const mId = String(item.memberId || '').trim();
+      const isDist = (String(item.memberType || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
       if (!isDist) {
         const name = String(item.memberName || '').trim();
         const phone = normalizeMemberPhone(item.phone);
@@ -8880,7 +8889,9 @@
 
     container.innerHTML = filtered.map(item => {
       const memberType = String(item.memberType || '一般會員').trim();
-      const isDist = (memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
+      // 🌟 經銷商規格判定：排除已取消的 DIS-，精準對齊 [國碼2-年2-月日4-序號3] (如 TW-26-1102-001) 或總部 TW-NAMIS
+      const mId = String(item.memberId || '').trim();
+      const isDist = (memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
       // 判定是否為登入經銷商本人
       const isSelf = isSelfMember(item);
       const isVip = (!isDist && memberType.includes('VIP'));
@@ -13332,7 +13343,7 @@
         const mId = String(m.memberId || '').trim();
         const ref = String(m.lineId || m.referrerId || '').trim();
         const mType = String(m.memberType || '').trim();
-        const isDist = (mType === '經銷會員') || mId.startsWith('DIS-') || (mId.startsWith('TW-') && mId !== 'TW-NAMIS');
+        const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
 
         if (isDist && downlineDistIds.has(ref) && !downlineDistIds.has(mId)) {
           downlineDistIds.add(mId);
@@ -13789,11 +13800,14 @@
 
     const members = Array.isArray(memberCache) ? memberCache : [];
 
-    // 找出第一代直屬下線經銷商 (推薦人為本人，且身分為經銷會員)
+    // 找出第一代直屬下線經銷商 (推薦人為本人，符合國碼經銷商規格)
+    const isDistributorId = (id, type) => (String(type || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id) || (id.startsWith('TW-') && !id.startsWith('MEM-'));
+
     const gen1List = members.filter(m => {
+      const mId = String(m.memberId || '').trim();
       const ref = String(m.lineId || m.referrerId || '').trim();
-      const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
-      return (ref === myId) && isDist && (String(m.memberId).trim() !== myId);
+      const isDist = isDistributorId(mId, m.memberType);
+      return (ref === myId) && isDist && (mId !== myId);
     });
 
     // 找出第二代間接下線經銷商 (推薦人為第一代經銷商)
@@ -13804,9 +13818,10 @@
     gen1List.forEach(g1 => {
       const g1Id = String(g1.memberId).trim();
       const g2Children = members.filter(m => {
+        const mId = String(m.memberId || '').trim();
         const ref = String(m.lineId || m.referrerId || '').trim();
-        const isDist = String(m.memberType || '').trim() === '經銷會員' || String(m.memberId || '').startsWith('DIS-');
-        return (ref === g1Id) && isDist && (String(m.memberId).trim() !== g1Id);
+        const isDist = isDistributorId(mId, m.memberType);
+        return (ref === g1Id) && isDist && (mId !== g1Id);
       });
       gen2Map[g1Id] = g2Children;
       totalGen2Count += g2Children.length;
