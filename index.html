@@ -7611,6 +7611,21 @@
       }
     }
     if (type === 'mem') {
+      const isHQ = isHeadquartersUser();
+      const btnSubmitMem = document.getElementById('btnSubmitMem');
+      const memNameEl = document.getElementById('memName');
+      const memPhoneEl = document.getElementById('memPhone');
+      const memEmailEl = document.getElementById('memEmail');
+      const bdayInput = document.getElementById('memBirthday');
+      const memStatusEl = document.getElementById('memStatus');
+
+      if (memNameEl) { memNameEl.disabled = false; memNameEl.style.removeProperty('background'); }
+      if (memPhoneEl) { memPhoneEl.disabled = false; memPhoneEl.style.removeProperty('background'); }
+      if (memEmailEl) { memEmailEl.disabled = false; memEmailEl.style.removeProperty('background'); }
+      if (bdayInput) { bdayInput.disabled = false; bdayInput.style.removeProperty('background'); }
+      if (memStatusEl) { memStatusEl.disabled = false; memStatusEl.style.background = '#FFFFFF'; }
+      if (btnSubmitMem) btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
+
       generateMemId();
       fillMemTime('memRegTime');
     }
@@ -9197,19 +9212,6 @@
 
     if (!form) return;
 
-    // 🔒 總部會員管理主權：非總部帳號全面鎖定為唯讀檢視
-    const isHQ = isHeadquartersUser();
-    const btnSubmitMem = document.getElementById('btnSubmitMem');
-    const memInputs = form.querySelectorAll('input, select, textarea');
-    memInputs.forEach(el => {
-      if (el.id !== 'editMemRowId') {
-        el.disabled = !isHQ;
-        if (!isHQ) el.style.setProperty('background', 'var(--bg)', 'important');
-        else el.style.removeProperty('background');
-      }
-    });
-    if (btnSubmitMem) btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
-
     if (card && card.classList.contains('editing')) {
       closeForm('mem');
       return;
@@ -9222,13 +9224,41 @@
     document.getElementById('editMemRowId').value = rowId;
     const item = memberCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
+      // 🌟 第一時間於函式頂部判定總部身分，徹底根治 TDZ ReferenceError 崩潰
+      const isHQ = isHeadquartersUser();
+      const isDistMember = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-') || String(item.memberId || '').startsWith('TW-'));
+
       document.getElementById('memId').value = item.memberId || '';
       document.getElementById('memType').value = item.memberType || '一般會員';
-      document.getElementById('memName').value = item.memberName || '';
-      document.getElementById('memPhone').value = item.phone || '';
       document.getElementById('memLineId').value = item.lineId || '';
-      document.getElementById('memEmail').value = item.email || '';
-      // 🔒 生日與生日禮權益：嚴格鎖定不可篡改，只有總部帳號登入才可編輯
+      document.getElementById('memRegTime').value = item.registerTime || '';
+      document.getElementById('memVipTime').value = item.vipTime || '';
+
+      // 1. 可編輯欄位：總部帳號全面開放編輯，非總部唯讀
+      const memNameEl = document.getElementById('memName');
+      const memPhoneEl = document.getElementById('memPhone');
+      const memEmailEl = document.getElementById('memEmail');
+
+      if (memNameEl) {
+        memNameEl.value = item.memberName || '';
+        memNameEl.disabled = !isHQ;
+        if (!isHQ) memNameEl.style.setProperty('background', 'var(--bg)', 'important');
+        else { memNameEl.style.removeProperty('background'); memNameEl.style.cursor = 'text'; }
+      }
+      if (memPhoneEl) {
+        memPhoneEl.value = item.phone || '';
+        memPhoneEl.disabled = !isHQ;
+        if (!isHQ) memPhoneEl.style.setProperty('background', 'var(--bg)', 'important');
+        else { memPhoneEl.style.removeProperty('background'); memPhoneEl.style.cursor = 'text'; }
+      }
+      if (memEmailEl) {
+        memEmailEl.value = item.email || '';
+        memEmailEl.disabled = !isHQ;
+        if (!isHQ) memEmailEl.style.setProperty('background', 'var(--bg)', 'important');
+        else { memEmailEl.style.removeProperty('background'); memEmailEl.style.cursor = 'text'; }
+      }
+
+      // 2. 生日欄位控制：總部帳號開放編輯
       const bdayInput = document.getElementById('memBirthday');
       if (bdayInput) {
         bdayInput.value = item.birthday || '';
@@ -9241,18 +9271,37 @@
           bdayInput.style.cursor = 'text';
         }
       }
-      document.getElementById('memRegTime').value = item.registerTime || '';
-      document.getElementById('memVipTime').value = item.vipTime || '';
 
+      // 3. 到期日
       const isDist = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
       const expiryInput = document.getElementById('memExpiryDate');
       if (expiryInput) {
         expiryInput.value = isDist ? (item.distExpiry || '') : (item.vipExpiry || '');
       }
+
+      // 4. 狀態欄位控制：總部帳號自由切換審核中/有效/失效
       const memStatusEl = document.getElementById('memStatus');
       const memStatusLockBadge = document.getElementById('badgeMemStatusLock');
-      const isDistMember = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-') || String(item.memberId || '').startsWith('TW-'));
-      const isHQ = isHeadquartersUser();
+      if (memStatusEl) {
+        memStatusEl.value = item.status || (isDistMember ? '審核中' : '有效');
+        if (isHQ) {
+          memStatusEl.disabled = false;
+          memStatusEl.style.background = '#FFFFFF';
+          memStatusEl.style.cursor = 'pointer';
+          if (memStatusLockBadge) memStatusLockBadge.style.display = 'none';
+        } else {
+          memStatusEl.disabled = true;
+          memStatusEl.style.setProperty('background', 'var(--bg)', 'important');
+          memStatusEl.style.cursor = 'not-allowed';
+          if (memStatusLockBadge) memStatusLockBadge.style.display = 'inline-flex';
+        }
+      }
+
+      // 5. 儲存按鈕權限：總部帳號解鎖顯示，非總部帳號隱藏
+      const btnSubmitMem = document.getElementById('btnSubmitMem');
+      if (btnSubmitMem) {
+        btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
+      }
 
       if (memStatusEl) {
         memStatusEl.value = item.status || (isDistMember ? '審核中' : '有效');
@@ -9330,8 +9379,11 @@
       vipTime = document.getElementById('memVipTime').value.trim();
     }
 
+    const currentDist = getActiveDistributorSession();
     const payload = {
       _rowId: rowId,
+      isHQ: isHeadquartersUser(),
+      distId: currentDist.memberId || '',
       memberId: document.getElementById('memId').value.trim(),
       memberType: memberType,
       memberName: document.getElementById('memName').value.trim(),
