@@ -3613,10 +3613,42 @@
           
           <div class="input-row">
             <div class="input-col">
-              <label class="form-label">庫存</label>
-              <select id="mallSelectProduct" class="login-input" onchange="autoFillMallData()">
-                <option value="">-- 自由手填 (尚未進貨/預先上架) --</option>
-              </select>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">模式</label>
+                
+                <div class="a4-segmented-control" style="max-width:180px; padding:2px; margin:0;">
+                  <button type="button" class="a4-segment-btn active" id="btnMallModeSingle" onclick="switchMallMode('single')">單品</button>
+                  <button type="button" class="a4-segment-btn" id="btnMallModeBundle" onclick="switchMallMode('bundle')">套組</button>
+                </div>
+              </div>
+
+              
+              <div id="mallSingleModeSlot">
+                <select id="mallSelectProduct" class="login-input" onchange="autoFillMallData()">
+                  <option value="">-- 自由手填 (尚未進貨/預先上架) --</option>
+                </select>
+              </div>
+
+              
+              <div id="mallBundleModeSlot" style="display:none; flex-direction:column; gap:8px;">
+                
+                <div id="mallBundleItemsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+
+                
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <select id="mallSelectBundleCandidate" class="login-input" style="flex:1;">
+                    <option value="">-- 選擇要加入套組的商品 --</option>
+                  </select>
+                  <button type="button" class="icon-btn" onclick="addBundleComponentItem()" title="加入套組" style="background:#0F172A; color:#FFFFFF; border-color:#0F172A; width:42px; height:42px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; flex-shrink:0;">
+                    <i class="ph ph-plus" style="font-size:20px;"></i>
+                  </button>
+                </div>
+
+                
+                <div id="mallBundleCalculationTip" style="font-size:12px; line-height:1.6; color:#475569; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px;">
+                  尚未加入任何子品項，請點選上方「＋」加入組合內容
+                </div>
+              </div>
             </div>
           </div>
 
@@ -9081,7 +9113,6 @@
 
     if (!form) return;
 
-    // 🔒 總部定價與編輯主權：非總部帳號全面鎖定為純檢視模式
     const isHQ = isHeadquartersUser();
     const btnSubmit = document.getElementById('btnSubmitMall');
     const mallInputs = form.querySelectorAll('input, select, textarea');
@@ -9094,7 +9125,6 @@
     });
     if (btnSubmit) btnSubmit.style.display = isHQ ? 'inline-flex' : 'none';
 
-    // 若該卡片已經是展開狀態，再次點擊長條框即收合
     if (card && card.classList.contains('editing')) {
       closeForm('mall');
       return;
@@ -9107,20 +9137,44 @@
     document.getElementById('editMallRowId').value = rowId;
     const item = mallCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
-      // 回填商品獨立欄位
       if (document.getElementById('mallProductName')) document.getElementById('mallProductName').value = item.productName || '';
       if (document.getElementById('mallCategory')) document.getElementById('mallCategory').value = item.category || '';
       if (document.getElementById('mallInProductId')) document.getElementById('mallInProductId').value = item.productId || '待進貨';
 
-      // 若已有對應的進貨品則選取，否則保持在自由手填
-      const sel = document.getElementById('mallSelectProduct');
-      if (sel) {
-        if (item.productId && item.productId !== '待進貨' && Array.from(sel.options).some(o => o.value === item.productId)) {
-          sel.value = item.productId;
-        } else {
-          sel.value = '';
+      // 💥 智慧偵測：若此商品為組合套組 (BUNDLE: 開頭)，一秒還原套組配方
+      if (item.productId && item.productId.startsWith('BUNDLE:')) {
+        switchMallMode('bundle');
+        mallBundleWorkingItems = [];
+        const rawRecipe = item.productId.replace('BUNDLE:', '').trim();
+        const parts = rawRecipe.split('+');
+        parts.forEach(part => {
+          const [pid, qtyStr] = part.split('*');
+          const invItem = (inventoryCache || []).find(x => x.productId === pid);
+          const mallRef = (mallCache || []).find(m => m.productId === pid);
+          if (invItem) {
+            mallBundleWorkingItems.push({
+              productId: invItem.productId,
+              productName: invItem.productName || '商品',
+              spec: invItem.spec || '標準',
+              stockQty: Number(invItem.availableStock || invItem.stockQty || 0),
+              price: mallRef ? Number(mallRef.price || 0) : 0,
+              qty: Number(qtyStr) || 1
+            });
+          }
+        });
+        renderBundleWorkingItems();
+      } else {
+        switchMallMode('single');
+        const sel = document.getElementById('mallSelectProduct');
+        if (sel) {
+          if (item.productId && item.productId !== '待進貨' && Array.from(sel.options).some(o => o.value === item.productId)) {
+            sel.value = item.productId;
+          } else {
+            sel.value = '';
+          }
         }
       }
+
       const mallIdSelect = document.getElementById('mallPrdId');
       if (mallIdSelect && item.mallPrdId && !Array.from(mallIdSelect.options).some(opt => opt.value === item.mallPrdId)) {
         const newOpt = document.createElement('option');
@@ -9135,8 +9189,7 @@
       document.getElementById('mallIngredients').value = item.ingredients || '';
       document.getElementById('mallShelfQty').value = item.shelfQty || 0;
       document.getElementById('mallVisibility').value = item.visibility || '公開展售';
-      // 🔒 總部定價主權防護：判斷是否為總部帳號 (TW-NAMIS / HQ / ADMIN)
-      const isHQ = isHeadquartersUser();
+
       const priceFld = document.getElementById('mallPrice');
       const vipFld = document.getElementById('mallVipPrice');
       const badgePriceLock = document.getElementById('badgeMallPriceLock');
@@ -9174,6 +9227,7 @@
           if (btnRecalcVip) btnRecalcVip.style.display = 'none';
         }
       }
+
       const fmtDate = (dStr) => { try { return dStr ? dStr.split(' ')[0].replace(/\//g, '-') : ""; } catch(e) { return dStr; } };
       const startEl = document.getElementById('mallStartDate');
       if (startEl) startEl.value = fmtDate(item.startDate);
@@ -9181,6 +9235,7 @@
       if (endEl) endEl.value = fmtDate(item.endDate);
       document.getElementById('mallDesc').value = item.description || '';
       document.getElementById('mallStatus').value = item.status || '上架中';
+
       if (item.imageUrl && !item.imageUrl.includes('No+Img')) {
         const urls = item.imageUrl.split('\n').filter(u => u.trim() !== '');
         mallImageStateArray = urls.map(url => {
@@ -9203,6 +9258,135 @@
       form.style.display = 'block';
       form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+  }
+
+  function renderMallList() {
+    closeForm('mall');
+
+    const bloodline = getDistributorBloodline();
+    const kwElement = document.getElementById('filterMallKeyword');
+    const kw = kwElement ? kwElement.value.trim().toLowerCase() : '';
+
+    const filtered = mallCache.filter(item => {
+      if (!bloodline.isHQ) {
+        const log = String(item.mallLog || '');
+        const isMyMall = log.includes(bloodline.myId) || bloodline.bloodlineNames.has(item.productName);
+        if (!isMyMall && item.visibility !== '公開展售') return false;
+      }
+      if (!kw) return true;
+      const rowText = (item._raw || Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
+      const words = kw.split(/\s+/).filter(Boolean);
+      return words.every(w => rowText.includes(w));
+    });
+
+    const container = document.getElementById('mallListContainer');
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">無符合條件的商城商品</div>`;
+      return;
+    }
+
+    const grouped = {};
+    filtered.forEach(item => {
+      const gId = item.mallPrdId || '未分配架號';
+      if (!grouped[gId]) grouped[gId] = [];
+      grouped[gId].push(item);
+    });
+
+    container.innerHTML = Object.keys(grouped).map((shelfId, idx) => {
+      const groupDomId = `shelf-group-${idx}`;
+      const itemsHtml = grouped[shelfId].map(item => {
+        const isBundle = Boolean(item.productId && item.productId.startsWith('BUNDLE:'));
+
+        // 💥 套組即時動態短板可售套數運算
+        let dynamicBundleStock = Number(item.shelfQty || 0);
+        let bundleDetailText = '';
+
+        if (isBundle) {
+          const rawRecipe = item.productId.replace('BUNDLE:', '').trim();
+          const parts = rawRecipe.split('+');
+          let bottleneckSets = 999999;
+          let names = [];
+
+          parts.forEach(part => {
+            const [pid, qtyStr] = part.split('*');
+            const qty = Number(qtyStr) || 1;
+            const invMatch = (inventoryCache || []).find(x => x.productId === pid);
+            if (invMatch) {
+              const avail = Number(invMatch.availableStock || invMatch.stockQty || 0);
+              const possible = Math.floor(avail / qty);
+              if (possible < bottleneckSets) bottleneckSets = possible;
+              names.push(`${invMatch.productName}x${qty}`);
+            }
+          });
+          dynamicBundleStock = (bottleneckSets !== 999999) ? bottleneckSets : 0;
+          bundleDetailText = `內含：${names.join(' ＋ ')}`;
+        }
+
+        return `
+          <div class="inv-card" id="mall-card-${item._rowId}" onclick="toggleMallEdit(${item._rowId})">
+            <div class="inv-header">
+              <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="background:${item.visibility === 'VIP限定' ? '#f59e0b20' : 'var(--accent-soft)'}; color:${item.visibility === 'VIP限定' ? 'var(--warning)' : 'var(--accent)'}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">
+                  ${item.visibility || '未設定'}
+                </span>
+                ${isBundle ? `
+                  <span style="background:rgba(124, 58, 237, 0.08); color:#7C3AED; border:1px solid #DDD6FE; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="ph ph-package" style="font-size:13px;"></i> 套組
+                  </span>
+                ` : ''}
+                <span style="color:var(--text);">${item.productName}</span>
+                <span class="id-chip" style="font-size:11px;" title="商品編號">
+                  <i class="ph ph-barcode"></i> ${isBundle ? '組合商品' : (item.productId || '-')}
+                </span>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                ${bloodline.isHQ ? `
+                  <button type="button" class="icon-btn" onclick="event.stopPropagation(); copyMallItem(${item._rowId});" title="複製新增"><i class="ph ph-copy" style="font-size: 20px;"></i></button>
+                  <button type="button" class="icon-btn danger" onclick="event.stopPropagation(); deleteFrontendMallItem(${item._rowId});" title="刪除"><i class="ph ph-trash" style="font-size: 20px;"></i></button>
+                ` : ''}
+                <button type="button" class="icon-btn" title="展開或收合"><i class="ph ph-caret-down" id="icon-mall-${item._rowId}" style="font-size: 20px;"></i></button>
+              </div>
+            </div>
+            <div class="card-readonly-content" style="display: flex; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-subtle);">
+              <div style="flex-shrink: 0;">${getThumbnailHtml(item.imageUrl)}</div>
+              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; flex-grow: 1;">
+                原價：$${item.price} ｜ VIP價：$${item.vipPrice} <br>
+                ${isBundle ? `
+                  <div style="color:var(--accent); font-weight:700; margin:2px 0;">${bundleDetailText}</div>
+                  即時可組裝套數：<strong style="color:${dynamicBundleStock > 0 ? '#059669' : 'var(--danger)'};">${dynamicBundleStock} 套</strong> (依單品庫存短板自動同步) <br>
+                ` : `
+                  上架量：${item.shelfQty} ｜ 剩餘量：${item.remainQty || item.shelfQty} <br>
+                `}
+                期間：${item.startDate ? item.startDate.split(' ')[0] : ''} ~ ${item.endDate ? item.endDate.split(' ')[0] : '無'}
+              </div>
+            </div>
+            <div id="form-slot-mall-${item._rowId}"></div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="mall-shelf-group" id="${groupDomId}" style="background: #ffffff; border: 2px solid var(--accent); border-radius: 12px; margin-bottom: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(49, 117, 181, 0.08);">
+          <div class="shelf-header-bar" onclick="toggleShelfGroup('${groupDomId}')" title="點擊展開或收合架位">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="ph ph-storefront" style="font-size: 26px;"></i>
+              <span style="font-family: monospace; font-weight: 800;">${shelfId}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
+              ${bloodline.isHQ ? `
+                <button type="button" class="icon-btn" onclick="addNewItemToShelf('${shelfId}')" title="新增同架位商品規格項目" style="padding: 6px 8px; color: var(--accent); border-color: var(--accent);">
+                  <i class="ph ph-plus" style="font-size: 18px;"></i>
+                </button>
+              ` : ''}
+              <i class="ph ph-caret-up" id="icon-${groupDomId}" style="font-size: 20px; cursor: pointer;" onclick="toggleShelfGroup('${groupDomId}')"></i>
+            </div>
+          </div>
+          <div class="shelf-items-wrapper">
+            ${itemsHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // 架號整個長條標題列點擊展開/收合
@@ -10302,14 +10486,219 @@
   }
 
   // ==========================================
-  // 商城表單相關互動與儲存功能
+  // 商城表單相關互動與儲存功能 (支援單品與組合套組雙模態)
   // ==========================================
-  // 自動帶入進貨庫存資訊（支援自由手填切換與事後選取一鍵帶入）
+  let currentMallMode = 'single'; // 'single' | 'bundle'
+  let mallBundleWorkingItems = []; // [{ productId, productName, spec, price, qty, stockQty }]
+
+  /**
+   * 切換單品 / 套組模式
+   */
+  function switchMallMode(mode) {
+    currentMallMode = mode;
+    const btnSingle = document.getElementById('btnMallModeSingle');
+    const btnBundle = document.getElementById('btnMallModeBundle');
+    const slotSingle = document.getElementById('mallSingleModeSlot');
+    const slotBundle = document.getElementById('mallBundleModeSlot');
+
+    if (mode === 'bundle') {
+      if (btnBundle) btnBundle.classList.add('active');
+      if (btnSingle) btnSingle.classList.remove('active');
+      if (slotBundle) slotBundle.style.display = 'flex';
+      if (slotSingle) slotSingle.style.display = 'none';
+
+      // 填充可加入套組的商品候選選單
+      populateBundleCandidateDropdown();
+      renderBundleWorkingItems();
+      showToast('已切換為：組合套組模式');
+    } else {
+      if (btnSingle) btnSingle.classList.add('active');
+      if (btnBundle) btnBundle.classList.remove('active');
+      if (slotSingle) slotSingle.style.display = 'block';
+      if (slotBundle) slotBundle.style.display = 'none';
+      showToast('已切換為：單品上架模式');
+    }
+  }
+
+  /**
+   * 填充候選子品項選單
+   */
+  function populateBundleCandidateDropdown() {
+    const sel = document.getElementById('mallSelectBundleCandidate');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- 選擇要加入套組的商品 --</option>';
+
+    (inventoryCache || []).forEach(item => {
+      const avail = Number(item.availableStock || item.stockQty || 0);
+      sel.innerHTML += `<option value="${item.productId}">[${item.category || '商品'}] ${item.productName} (${item.spec || '標準'}) · 存量:${avail}</option>`;
+    });
+  }
+
+  /**
+   * 點選「＋」加入一個子品項進套組
+   */
+  function addBundleComponentItem() {
+    const sel = document.getElementById('mallSelectBundleCandidate');
+    if (!sel || !sel.value) {
+      showToast('請先選擇要加入的商品');
+      return;
+    }
+
+    const pid = sel.value;
+    const invItem = (inventoryCache || []).find(x => x.productId === pid);
+    if (!invItem) return;
+
+    // 若已存在，數量直接 +1
+    const existing = mallBundleWorkingItems.find(x => x.productId === pid);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      // 尋找其單品原價參考
+      const mallRef = (mallCache || []).find(m => m.productId === pid);
+      const refPrice = mallRef ? Number(mallRef.price || 0) : 0;
+
+      mallBundleWorkingItems.push({
+        productId: invItem.productId,
+        productName: invItem.productName || '商品',
+        spec: invItem.spec || '標準',
+        stockQty: Number(invItem.availableStock || invItem.stockQty || 0),
+        price: refPrice,
+        imageUrl: invItem.imageUrl || '',
+        qty: 1
+      });
+    }
+
+    // 若上架品名尚未填寫，自動給予優雅的建議名稱
+    const nameEl = document.getElementById('mallProductName');
+    if (nameEl && (!nameEl.value || nameEl.value.trim() === '')) {
+      nameEl.value = `${invItem.productName} 特惠套組`;
+    }
+
+    renderBundleWorkingItems();
+    sel.value = '';
+  }
+
+  /**
+   * 子品項數量增減
+   */
+  function updateBundleComponentQty(pid, delta) {
+    const match = mallBundleWorkingItems.find(x => x.productId === pid);
+    if (!match) return;
+    match.qty += delta;
+    if (match.qty <= 0) {
+      removeBundleComponentItem(pid);
+      return;
+    }
+    renderBundleWorkingItems();
+  }
+
+  /**
+   * 移除子品項
+   */
+  function removeBundleComponentItem(pid) {
+    mallBundleWorkingItems = mallBundleWorkingItems.filter(x => x.productId !== pid);
+    renderBundleWorkingItems();
+  }
+
+  /**
+   * 渲染套組子品項清單與即時計算
+   */
+  function renderBundleWorkingItems() {
+    const listEl = document.getElementById('mallBundleItemsList');
+    const tipEl = document.getElementById('mallBundleCalculationTip');
+    if (!listEl) return;
+
+    if (mallBundleWorkingItems.length === 0) {
+      listEl.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:10px 0;">尚未加入任何商品</div>';
+      if (tipEl) tipEl.innerHTML = '請點選上方「＋」加入組合內容';
+      return;
+    }
+
+    listEl.innerHTML = mallBundleWorkingItems.map(it => `
+      <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${it.productName}
+          </div>
+          <div style="font-size:11px; color:var(--text-muted);">
+            規格: ${it.spec} ｜ 庫存: <strong style="color:var(--text);">${it.stockQty}</strong> 件
+          </div>
+        </div>
+        <!-- 數量步進控制器 [-] qty [+] -->
+        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+          <button type="button" class="icon-btn" onclick="updateBundleComponentQty('${it.productId}', -1)" style="width:28px; height:28px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+            <i class="ph ph-minus" style="font-size:12px;"></i>
+          </button>
+          <span style="font-family:monospace; font-weight:800; font-size:14px; min-width:24px; text-align:center;">${it.qty}</span>
+          <button type="button" class="icon-btn" onclick="updateBundleComponentQty('${it.productId}', 1)" style="width:28px; height:28px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px;">
+            <i class="ph ph-plus" style="font-size:12px;"></i>
+          </button>
+          <button type="button" class="icon-btn danger" onclick="removeBundleComponentItem('${it.productId}')" title="移除" style="border:none; padding:4px; margin-left:2px;">
+            <i class="ph ph-x" style="font-size:15px;"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    // 計算木桶短板套數與原價總和
+    computeBundleStats();
+  }
+
+  /**
+   * 賈伯斯短板原則：計算套組最大可組裝套數與金額建議
+   */
+  function computeBundleStats() {
+    const tipEl = document.getElementById('mallBundleCalculationTip');
+    if (mallBundleWorkingItems.length === 0) return;
+
+    let maxPossibleSets = 999999;
+    let totalRefOriginalPrice = 0;
+
+    mallBundleWorkingItems.forEach(it => {
+      const setsFromThis = Math.floor(it.stockQty / it.qty);
+      if (setsFromThis < maxPossibleSets) {
+        maxPossibleSets = setsFromThis;
+      }
+      totalRefOriginalPrice += (it.price * it.qty);
+    });
+
+    if (maxPossibleSets === 999999) maxPossibleSets = 0;
+
+    // 自動回填可售數量與定價參考
+    const shelfQtyEl = document.getElementById('mallShelfQty');
+    if (shelfQtyEl) shelfQtyEl.value = maxPossibleSets;
+
+    const priceEl = document.getElementById('mallPrice');
+    if (priceEl && (!priceEl.value || priceEl.value === '0') && totalRefOriginalPrice > 0) {
+      priceEl.value = totalRefOriginalPrice;
+      calcVipPrice();
+    }
+
+    if (tipEl) {
+      const curPrice = Number(document.getElementById('mallPrice')?.value || totalRefOriginalPrice);
+      const discountText = (totalRefOriginalPrice > curPrice && curPrice > 0) 
+        ? ` · <span style="color:#059669; font-weight:700;">現省 NT$ ${(totalRefOriginalPrice - curPrice).toLocaleString()}</span>` 
+        : '';
+
+      tipEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>單品原價合計：<strong>NT$ ${totalRefOriginalPrice.toLocaleString()}</strong>${discountText}</span>
+          <span style="background:#0F172A; color:#fff; padding:2px 8px; border-radius:6px; font-weight:700; font-family:monospace;">
+            最大可售: ${maxPossibleSets} 套
+          </span>
+        </div>
+        <div style="font-size:11px; color:#64748B; margin-top:2px;">
+          庫存依各單品庫存短板自動動態同步，單品若有賣出或補貨將自動連動。
+        </div>
+      `;
+    }
+  }
+
+  // 自動帶入進貨庫存資訊（支援單品手填與帶入）
   function autoFillMallData() {
     const pid = document.getElementById('mallSelectProduct').value;
     const inIdEl = document.getElementById('mallInProductId');
     if (!pid) {
-      // 切換回自由手填模式
       if (inIdEl && (!inIdEl.value || inIdEl.value.startsWith('IN-'))) {
         inIdEl.value = '待進貨';
       }
@@ -10326,13 +10715,11 @@
       if (document.getElementById('mallSpec')) document.getElementById('mallSpec').value = item.spec || '';
       if (document.getElementById('mallIngredients')) document.getElementById('mallIngredients').value = item.ingredients || '';
 
-      // 若已有實體庫存且架上量未填，自動預設填入目前可用存量
       const shelfQtyEl = document.getElementById('mallShelfQty');
       if (shelfQtyEl && (!shelfQtyEl.value || shelfQtyEl.value === '0')) {
         shelfQtyEl.value = item.availableStock || 0;
       }
 
-      // 自動帶入進貨時的商品照片
       if (item.imageUrl && (!mallImageStateArray || mallImageStateArray.length === 0)) {
         const urls = item.imageUrl.split('\n').filter(u => u.trim() !== '');
         mallImageStateArray = urls.map(url => {
@@ -10341,11 +10728,11 @@
         });
         renderMallImages();
       }
-      showToast(`已成功將進貨品 [${item.productId}] ${item.productName} 資訊帶入！`);
+      showToast(`已帶入單品 [${item.productId}] ${item.productName}`);
     }
   }
 
-  // 2. 上架編號：全面強制鎖定 SEL-yyyymmddhhmmss (14碼精確時間戳，杜絕 SHF- 舊版覆蓋)
+  // 2. 上架編號：全面強制鎖定 SEL-yyyymmddhhmmss
   function generateMallId() {
     const pad = (n) => String(n).padStart(2, '0');
     const d = new Date();
@@ -10364,7 +10751,7 @@
     return newId;
   }
 
-  // 🌟 VIP 特價計算：預設帶入 85 折，總部代表登入時允許自由手動編輯儲存
+  // VIP 特價計算：預設帶入 85 折
   function calcVipPrice(forceReset = false) {
     const p = document.getElementById('mallPrice')?.value;
     const vipEl = document.getElementById('mallVipPrice');
@@ -10372,7 +10759,6 @@
 
     const isHQ = isHeadquartersUser();
 
-    // 權限控管：總部解鎖編輯；一般經銷商維持鎖定
     if (isHQ) {
       vipEl.disabled = false;
       vipEl.style.removeProperty('background');
@@ -10387,7 +10773,6 @@
       if (badge) badge.style.display = 'inline-flex';
     }
 
-    // 當強制重設、或欄位尚未填寫時，自動帶入 85 折
     if (p && (forceReset || !vipEl.value || !isHQ)) {
       vipEl.value = Math.round(Number(p) * 0.85);
     }
@@ -10395,13 +10780,12 @@
 
   async function instantUpdateMallStatus(newStatus) {
     const rowId = document.getElementById('editMallRowId').value;
-    // 若沒有 rowId，代表是「新增上架」尚未建檔，僅切換選單值，等按儲存時一併寫入即可
     if (!rowId) return;
 
     const target = mallCache.find(function(x) { return Number(x._rowId) === Number(rowId); });
     const oldStatus = target ? target.status : '上架中';
     if (target) target.status = newStatus;
-    showToast("已切換狀態為：" + newStatus + "（背景同步中...）");
+    showToast("已切換狀態為：" + newStatus);
 
     try {
       const res = await apiCall('updateMallItemStatus', {
@@ -10409,31 +10793,50 @@
         status: newStatus
       });
       if (res && res.status === 'success') {
-        showToast("試算表狀態已同步為：" + newStatus);
+        showToast("試算表狀態已同步：" + newStatus);
       } else {
         if (target) target.status = oldStatus;
         document.getElementById('mallStatus').value = oldStatus;
-        showToast("狀態更新失敗已還原：" + (res && res.data ? res.data.message : "未知錯誤"));
+        showToast("狀態更新失敗已還原");
       }
     } catch (e) {
       if (target) target.status = oldStatus;
       document.getElementById('mallStatus').value = oldStatus;
-      showToast("狀態連線更新發生錯誤已還原");
+      showToast("連線異常已還原");
     }
   }
 
+  /**
+   * 送出上架儲存 (支援單品與組合套組語法打包)
+   */
   async function submitMallData() {
     const btn = document.getElementById('btnSubmitMall');
     const rowId = document.getElementById('editMallRowId').value;
     const sel = document.getElementById('mallSelectProduct');
-    const invItem = inventoryCache.find(x => x.productId === sel.value);
     const currentDist = getActiveDistributorSession();
 
-    // 優先讀取獨立欄位，兼顧自填與下拉帶入
-    const productName = (document.getElementById('mallProductName')?.value || '').trim() || (invItem && invItem.productName) || '';
-    const category = (document.getElementById('mallCategory')?.value || '').trim() || (invItem && invItem.category) || '未分類';
-    const inProductId = (document.getElementById('mallInProductId')?.value || '').trim() || sel.value || '待進貨';
+    let inProductId = '待進貨';
+    let defaultProductName = '';
+    let defaultCategory = '營養保養組合';
 
+    // 依當前模式分流
+    if (currentMallMode === 'bundle') {
+      if (mallBundleWorkingItems.length === 0) {
+        showToast('套組模式下必須加入至少 1 項商品！');
+        return;
+      }
+      // 打包為極簡配比語法：BUNDLE:IN-xxx*2+IN-yyy*1
+      inProductId = 'BUNDLE:' + mallBundleWorkingItems.map(x => `${x.productId}*${x.qty}`).join('+');
+      defaultProductName = mallBundleWorkingItems.map(x => `${x.productName}x${x.qty}`).join('＋');
+    } else {
+      const invItem = inventoryCache.find(x => x.productId === sel.value);
+      inProductId = (document.getElementById('mallInProductId')?.value || '').trim() || sel.value || '待進貨';
+      defaultProductName = (invItem && invItem.productName) || '';
+      defaultCategory = (invItem && invItem.category) || '未分類';
+    }
+
+    const productName = (document.getElementById('mallProductName')?.value || '').trim() || defaultProductName;
+    const category = (document.getElementById('mallCategory')?.value || '').trim() || defaultCategory;
     const imagesSnapshot = [...mallImageStateArray];
 
     const payload = {
@@ -10444,9 +10847,9 @@
       productName: productName,
       category: category,
       mallPrdId: document.getElementById('mallPrdId').value.trim(),
-      type: document.getElementById('mallType').value.trim(),
+      type: document.getElementById('mallType').value.trim() || (currentMallMode === 'bundle' ? '組合套組' : '標準瓶裝'),
       color: document.getElementById('mallColor').value.trim(),
-      spec: document.getElementById('mallSpec').value.trim(),
+      spec: document.getElementById('mallSpec').value.trim() || (currentMallMode === 'bundle' ? `${mallBundleWorkingItems.length}件組合裝` : ''),
       ingredients: document.getElementById('mallIngredients').value.trim(),
       shelfQty: document.getElementById('mallShelfQty').value || 0,
       visibility: document.getElementById('mallVisibility').value,
@@ -10458,20 +10861,17 @@
       imagesBase64: imagesSnapshot
     };
 
-    // 關鍵解鎖：不再強制需要 productId，只要有商品名稱、架號與定價即可上架
     if (!payload.productName || !payload.mallPrdId || !payload.price) {
       showToast("商品名稱、所屬架號與定價為必填！");
       return;
     }
 
-    // 樂觀 UI：備份舊快取，特價優先取手動填寫值（若留白則自動取 85 折）
     const backupCache = JSON.parse(JSON.stringify(mallCache));
     const rawVipInput = document.getElementById('mallVipPrice')?.value;
     const finalVipPrice = (rawVipInput !== undefined && rawVipInput !== '') 
       ? Number(rawVipInput) 
       : Math.round(Number(payload.price) * 0.85);
     payload.vipPrice = finalVipPrice;
-    const vipPriceCalc = finalVipPrice;
     const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
     let tempRowId = rowId ? Number(rowId) : null;
 
@@ -10492,7 +10892,7 @@
           description: payload.description,
           visibility: payload.visibility,
           price: payload.price,
-          vipPrice: vipPriceCalc,
+          vipPrice: finalVipPrice,
           shelfQty: payload.shelfQty,
           remainQty: payload.shelfQty,
           startDate: payload.startDate,
@@ -10518,7 +10918,7 @@
         description: payload.description,
         visibility: payload.visibility,
         price: payload.price,
-        vipPrice: vipPriceCalc,
+        vipPrice: finalVipPrice,
         shelfQty: payload.shelfQty,
         remainQty: payload.shelfQty,
         soldQty: 0,
@@ -10532,7 +10932,7 @@
     closeForm('mall');
     syncMallShelfSelectUI();
     renderMallList();
-    showToast(rowId ? "商城商品已更新（背景同步中...）" : "商品已預先上架（背景同步中...）");
+    showToast(currentMallMode === 'bundle' ? "組合套組已儲存！庫存依短板動態連動" : "商品已儲存！");
 
     btn.disabled = true;
     try {
@@ -10547,18 +10947,18 @@
           if (resData.vipPrice !== undefined) mallCache[targetIdx].vipPrice = resData.vipPrice;
           if (resData.mallLog) mallCache[targetIdx].mallLog = resData.mallLog;
         }
-        showToast(resData.message || "試算表上架同步完成！");
+        showToast("試算表同步完成！");
       } else {
         mallCache = backupCache;
         syncMallShelfSelectUI();
         renderMallList();
-        showToast("錯誤已還原: " + (res && res.data ? res.data.message : "處理失敗"));
+        showToast("同步失敗已還原");
       }
     } catch(e) {
       mallCache = backupCache;
       syncMallShelfSelectUI();
       renderMallList();
-      showToast("系統連線錯誤已還原，請稍後再試");
+      showToast("連線異常已還原");
     } finally {
       btn.disabled = false;
     }
