@@ -1145,21 +1145,456 @@
     .material-symbols-outlined { font-size: 20px !important; }
 
      
-    .restock-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 9998; justify-content: center; align-items: center; padding: 16px; backdrop-filter: blur(2px); overscroll-behavior: contain; }
-    .restock-modal.active { display: flex; animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1); }
-    .restock-dialog { background: #FFFFFF; width: 100%; max-width: 540px; height: 88vh; max-height: 88vh; border-radius: 10px; border: 1px solid #CBD5E1; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16); display: flex; flex-direction: column; overflow: hidden; will-change: transform; }
-    .restock-dialog-header { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: #FFFFFF; }
-    .restock-dialog-body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scroll-behavior: smooth; will-change: scroll-position; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; }
-    .restock-dialog-footer { padding: 10px 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; background: #FFFFFF; gap: 10px; }
-    .restock-item-preview { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px 12px; display: flex; gap: 12px; align-items: center; }
-    .restock-feedback-banner { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.restock-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 16px;
+  animation: restockFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes restockFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.restock-dialog {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: restockSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes restockSlideUp {
+  from { transform: translateY(12px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+ 
+.restock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #F1F5F9;
+  background: #FFFFFF;
+}
+
+.restock-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.restock-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.restock-icon-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.restock-icon-btn:active {
+  transform: scale(0.94);
+}
+
+ 
+.restock-dialog-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+ 
+.restock-prod-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.restock-prod-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #E2E8F0;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.restock-prod-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.restock-prod-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.restock-prod-sub {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.restock-prod-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #EEF2F6;
+  font-size: 11px;
+  font-weight: 500;
+  color: #334155;
+}
+
+ 
+.restock-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.restock-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.restock-field-label-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.restock-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  letter-spacing: 0.02em;
+}
+
+.restock-field-status {
+  font-size: 11px;
+  color: #94A3B8;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+ 
+.restock-input,
+.restock-select,
+.restock-textarea {
+  width: 100%;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #0F172A;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.restock-input:focus,
+.restock-select:focus,
+.restock-textarea:focus {
+  border-color: #0F172A;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+}
+
+.restock-input::placeholder,
+.restock-textarea::placeholder {
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.restock-input:read-only {
+  background: #F8FAFC;
+  color: #475569;
+  border-color: #E2E8F0;
+  cursor: default;
+}
+
+.restock-textarea {
+  resize: none;
+  min-height: 72px;
+  line-height: 1.5;
+}
+
+ 
+.restock-photo-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 12px;
+}
+
+.restock-photo-preview-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.restock-photo-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.restock-photo-hint {
+  flex: 1;
+  font-size: 12px;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.restock-photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.restock-icon-btn-bordered {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.restock-icon-btn-bordered:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.restock-icon-btn-bordered:active {
+  transform: scale(0.92);
+}
+
+.restock-icon-btn-bordered.loading {
+  animation: restockSpin 1s linear infinite;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+@keyframes restockSpin {
+  100% { transform: rotate(360deg); }
+}
+
+ 
+.restock-history-accordion {
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.restock-history-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  user-select: none;
+}
+
+.restock-history-list {
+  max-height: 130px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #FFFFFF;
+}
+
+.restock-history-entry {
+  font-size: 11px;
+  color: #64748B;
+  border-left: 2px solid #E2E8F0;
+  padding-left: 8px;
+  line-height: 1.4;
+}
+
+ 
+.restock-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid #F1F5F9;
+  background: #FFFFFF;
+}
+
+.restock-btn-submit {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #0F172A;
+  color: #FFFFFF;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  padding: 0;
+}
+
+.restock-btn-submit:hover {
+  background: #1E293B;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
+}
+
+.restock-btn-submit:active {
+  transform: scale(0.92);
+}
+
+.restock-btn-submit:disabled {
+  background: #94A3B8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.restock-btn-clear {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.restock-btn-clear:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+.restock-btn-clear:active {
+  transform: scale(0.92);
+}
+
+ 
+.restock-toast-pill {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100000;
+  white-space: nowrap;
+}
+
+.restock-toast-pill.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
 
      
     @media (max-width: 768px) {
       .restock-modal { padding: 0 !important; align-items: flex-end !important; }
-      .restock-dialog { width: 100% !important; max-width: 100% !important; height: 94vh !important; max-height: 94vh !important; border-radius: 16px 16px 0 0 !important; border-bottom: none !important; border-left: none !important; border-right: none !important; }
-      .restock-dialog-body { padding: 14px 14px 28px 14px !important; }
+      .restock-dialog { width: 100% !important; max-width: 100% !important; height: 95vh !important; max-height: 95vh !important; border-radius: 16px 16px 0 0 !important; border-bottom: none !important; border-left: none !important; border-right: none !important; }
+      .restock-dialog-body { padding: 14px 14px 32px 14px !important; gap: 12px !important; }
       .restock-dialog-footer { padding: 10px 14px !important; }
+      .restock-grid-2 { grid-template-columns: 1fr !important; gap: 10px !important; }
     }
 
      
@@ -4374,7 +4809,7 @@
             <i class="ph ph-users" style="font-size:19px; color:var(--accent);"></i>
             <span>直推獎金</span>
           </div>
-          <span style="font-size:11px; color:var(--accent); font-weight:800;">首購 8%~13.8% ｜ 補貨 3%</span>
+          <span style="font-size:11px; color:var(--accent); font-weight:800;">首購 8.8%~13.8% ｜ 補貨 3%</span>
         </div>
 
         
@@ -4382,7 +4817,7 @@
           <svg class="circle-chart-svg" viewBox="0 0 70 70">
             <circle class="circle-bg" cx="35" cy="35" r="30"></circle>
             <circle class="circle-progress" id="circleProgressRing" cx="35" cy="35" r="30"></circle>
-            <text class="circle-text-center" id="circleRateText" x="35" y="39" text-anchor="middle">8.0%</text>
+            <text class="circle-text-center" id="circleRateText" x="35" y="39" text-anchor="middle">8.8%</text>
           </svg>
           <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:0;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
@@ -4393,7 +4828,7 @@
               再推薦 3 人，獎金升至 11.8%
             </div>
             <div class="ladder-step-strip">
-              <span class="ladder-chip active" id="chipTier8">8.0% (0人)</span>
+              <span class="ladder-chip active" id="chipTier8">8.8% (0-2人)</span>
               <span class="ladder-chip" id="chipTier11">11.8% (3人)</span>
               <span class="ladder-chip" id="chipTier13">13.8% (5人)</span>
             </div>
@@ -4567,113 +5002,182 @@
 
 
 
-
-<div id="restockModal" class="restock-modal" onclick="closeRestockModal()">
-  <div class="restock-dialog" onclick="event.stopPropagation()">
-    
-    
-    <div class="restock-dialog-header">
-      <div style="font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:6px;">
-        <i class="ph ph-package" style="font-size:18px; color:var(--accent);"></i>
-        <span>補貨</span>
+<div id="restockModal" class="restock-modal" style="display:none;">
+    <div class="restock-dialog">
+      
+      
+      <div id="restockToastPill" class="restock-toast-pill">
+        <svg id="restockToastIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="restockToastText"></span>
       </div>
-      <button type="button" class="icon-btn" onclick="closeRestockModal()" title="關閉" style="border:none; padding:4px;">
-        <i class="ph ph-x" style="font-size:18px;"></i>
-      </button>
-    </div>
-
-    <input type="hidden" id="restockRowId" value="">
-
-    
-    <div class="restock-dialog-body">
-      
-      <div id="restockItemPreview" class="restock-item-preview"></div>
 
       
-      <div class="input-row" style="margin-bottom:0;">
-        <div class="input-col">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <label class="form-label" style="margin-bottom:0;">照片</label>
-            <div style="display:flex; gap:6px;">
-              
-              <input type="file" id="restockBatchFileInput" accept="image/*" multiple onchange="handleRestockBatchImageSelect(this)" style="display:none;">
-              <button type="button" class="icon-btn" onclick="document.getElementById('restockBatchFileInput').click()" title="批量上傳或拍照" style="padding:5px 8px;">
-                <i class="ph ph-upload-simple" style="font-size:18px;"></i>
-              </button>
-              <button type="button" class="icon-btn" id="btnRestockAi" onclick="callRestockAiAnalyze()" title="AI解析" style="padding:5px 8px; color:var(--accent); border-color:var(--accent);">
-                <i class="ph ph-sparkle" style="font-size:18px;"></i>
-              </button>
+      <div class="restock-header">
+        <div class="restock-header-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span>補貨</span>
+        </div>
+        <button type="button" class="restock-icon-btn" onclick="closeRestockModal()" title="關閉視窗">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      
+      <div class="restock-dialog-body">
+
+        
+        <div class="restock-prod-card">
+          <img id="restockProductThumb" class="restock-prod-thumb" src="" alt="" />
+          <div class="restock-prod-meta">
+            <div id="restockProductName" class="restock-prod-name"></div>
+            <div id="restockProductMeta" class="restock-prod-sub"></div>
+            <div class="restock-prod-stock-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+              <span id="restockCurrentStock">庫存 0</span>
             </div>
           </div>
-          <div id="restockImgPreviewContainer" style="display:flex; flex-wrap:wrap; gap:8px; min-height:10px;"></div>
         </div>
+
+        
+        <div class="restock-form-stack">
+
+          
+          <div class="restock-field-row">
+            <div class="restock-field-label-bar">
+              <label class="restock-field-label">照片</label>
+              <span id="restockAiStatusText" class="restock-field-status">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                </svg>
+                自動辨識
+              </span>
+            </div>
+
+            <div class="restock-photo-bar" style="flex-direction: column; align-items: stretch; gap: 8px;">
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div id="restockPhotoCountBadge" style="font-size: 12px; font-weight: 600; color: #475569;">
+                  已選 0 / 10 張
+                </div>
+                <div class="restock-photo-actions">
+                  
+                  <button type="button" class="restock-icon-btn-bordered" onclick="triggerRestockCamera()" title="拍照存證">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                      <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                  </button>
+                  
+                  <button type="button" class="restock-icon-btn-bordered" onclick="triggerRestockUpload()" title="批量上傳照片 (最多10張)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </button>
+                  
+                  <button type="button" id="btnRestockAiTrigger" class="restock-icon-btn-bordered" onclick="callRestockAiAnalyze()" title="AI 輪調解析">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              
+              <div id="restockThumbnailsStrip" style="display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; -webkit-overflow-scrolling: touch; min-height: 52px; align-items: center;">
+                <div style="font-size: 12px; color: #94A3B8; padding: 6px 0;">點擊上方拍照或上傳，自動啟動多 Key 輪調解析</div>
+              </div>
+            </div>
+
+            
+            <input type="file" id="restockBatchCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleRestockBatchImageSelect(event)" />
+            <input type="file" id="restockBatchUploadInput" accept="image/*" multiple style="display:none;" onchange="handleRestockBatchImageSelect(event)" />
+          </div>
+
+          
+          <div class="restock-field-row">
+            <label class="restock-field-label">數量</label>
+            <input type="number" id="restockQuantityInput" class="restock-input" min="1" step="1" placeholder="請填寫本次進貨入庫數量" />
+          </div>
+
+          
+          <div class="restock-field-row">
+            <label class="restock-field-label">人員</label>
+            <input type="text" id="restockOperatorInput" class="restock-input" readonly placeholder="系統自動鎖定當前操作人員" />
+          </div>
+
+          
+          <div class="restock-field-row">
+            <label class="restock-field-label">狀態</label>
+            <select id="restockStatusSelect" class="restock-select">
+              <option value="正常 (外觀完好無損)">正常 (外觀完好無損)</option>
+              <option value="包裝微損 (內部正常)">包裝微損 (內部正常)</option>
+              <option value="即期品 (效期6個月內)">即期品 (效期6個月內)</option>
+              <option value="需複檢 (待主管查核)">需複檢 (待主管查核)</option>
+            </select>
+          </div>
+
+          
+          <div class="restock-field-row">
+            <label class="restock-field-label">備註</label>
+            <textarea id="restockNotesTextarea" class="restock-textarea" placeholder="拍攝後自動填入效期批號，亦可補充說明"></textarea>
+          </div>
+
+          
+          <div class="restock-history-accordion">
+            <div class="restock-history-summary" onclick="toggleRestockHistoryAccordion()">
+              <span style="display:inline-flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                入庫履歷
+              </span>
+              <svg id="restockHistoryArrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s ease;">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div id="restockHistoryList" class="restock-history-list" style="display:none;"></div>
+          </div>
+
+        </div>
+
       </div>
 
       
-      <div class="input-row" style="margin-bottom:0;">
-        <div class="input-col">
-          <label class="form-label">數量</label>
-          <input type="number" id="restockQty" class="login-input" value="1" min="1" style="font-size:18px; font-family:monospace; font-weight:700; text-align:center;">
-        </div>
-      </div>
-
-      
-      <div class="input-row" style="margin-bottom:0;">
-        <div class="input-col" style="position:relative;">
-          <label class="form-label">人員</label>
-          <input type="text" id="restockRecorder" class="login-input" placeholder="輸入或選擇經手人" autocomplete="off" onfocus="showFieldSuggestions(this)" oninput="showFieldSuggestions(this)">
-        </div>
-      </div>
-
-      
-      <div class="input-row" style="margin-bottom:0;">
-        <div class="input-col">
-          <label class="form-label">狀態</label>
-          <select id="restockStatus" class="login-input">
-            <option value="正常">正常</option>
-            <option value="盒損">盒損</option>
-            <option value="污損">污損</option>
-            <option value="微滲">微滲</option>
-            <option value="瑕疵">瑕疵</option>
-          </select>
-        </div>
-      </div>
-
-      
-      <div class="input-row" style="margin-bottom:0;">
-        <div class="input-col">
-          <label class="form-label">備註</label>
-          <textarea id="restockNotes" class="login-input" style="height:56px; resize:vertical;" placeholder="批次、效期或備註..."></textarea>
-        </div>
-      </div>
-
-      
-      <div style="background:#FFFFFF; border:1px solid #CBD5E1; border-radius:6px; padding:10px; margin-top:2px;">
-        <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-          <i class="ph ph-clock-counter-clockwise"></i>
-          <span>歷史</span>
-        </div>
-        <div id="restockHistoryLogView" class="log-box" style="font-size:12px; max-height:200px; overflow-y:auto;">
-          尚無紀錄
-        </div>
-      </div>
-    </div>
-
-    
-    <div class="restock-dialog-footer">
-      <div id="restockFeedbackBar" class="restock-feedback-banner"></div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button type="button" class="icon-btn" onclick="clearRestockFormFields()" title="清空" style="padding:6px 10px;">
-          <i class="ph ph-eraser" style="font-size:18px;"></i>
+      <div class="restock-footer">
+        
+        <button type="button" class="restock-btn-clear" onclick="clearRestockFormFields()" title="清空重設">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M3 21v-5h5"></path>
+          </svg>
         </button>
-        <button type="button" class="action-btn-primary" id="btnSubmitRestock" onclick="submitRestockData()" title="確認" style="width:36px; height:36px; padding:0; margin-top:0; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-          <i class="ph ph-floppy-disk" style="font-size:18px;"></i>
+
+        
+        <button type="button" id="btnSubmitRestock" class="restock-btn-submit" onclick="submitRestockRecord()" title="確認補貨">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
         </button>
       </div>
-    </div>
 
+    </div>
   </div>
-</div>
+  
 
 
 
@@ -8938,242 +9442,347 @@
 
 
   // ==========================================
-  // 模組：既有商品「補貨登記」前端邏輯與樂觀 UI
+  // 模組：既有商品「補貨登記」前端邏輯 (支援最多 10 張多圖輪調解析 ‧ 賈伯斯純線條極簡風)
   // ==========================================
-  let restockImageStateArray = [];
+  let currentRestockItem = null;
+  let restockImagesArray = []; // 最多支援 10 張 Base64 照片陣列
 
-  function openRestockModal(rowId) {
-    const item = inventoryCache.find(x => Number(x._rowId) === Number(rowId));
-    if (!item) return;
-
-    document.getElementById('restockRowId').value = rowId;
-    document.getElementById('restockQty').value = 1;
-    document.getElementById('restockRecorder').value = document.getElementById('invRecorder')?.value || '';
-    document.getElementById('restockStatus').value = '正常';
-    document.getElementById('restockNotes').value = '';
-    restockImageStateArray = [];
-    renderRestockImages();
-
-    // 渲染上方商品摘要
-    const previewEl = document.getElementById('restockItemPreview');
-    if (previewEl) {
-      previewEl.innerHTML = `
-        <div style="flex-shrink:0;">${getThumbnailHtml(item.imageUrl)}</div>
-        <div style="flex-grow:1; font-size:13px; line-height:1.6;">
-          <strong style="font-size:14px; color:var(--text);">${item.productName}</strong><br>
-          <span style="color:var(--text-muted);">編號：${item.productId} · 規格：${item.spec || '-'}</span><br>
-          <span style="font-size:12px; color:var(--accent); font-weight:700;">目前可用庫存量：${item.availableStock || item.stockQty || 0} 件</span>
-        </div>
-      `;
+  /**
+   * Apple 極簡懸浮膠囊 Toast (取代 alert)
+   */
+  function showRestockToast(msg, type = "info") {
+    const toast = document.getElementById('restockToastPill');
+    const icon = document.getElementById('restockToastIcon');
+    const text = document.getElementById('restockToastText');
+    if (!toast || !text) {
+      if (typeof showToast === 'function') showToast(msg);
+      return;
     }
 
-    // 渲染歷史日誌
-    renderGenericLogBox('restockHistoryLogView', item.invLog || '');
+    text.textContent = msg;
 
+    if (type === 'success') {
+      icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      icon.style.stroke = '#10B981';
+    } else if (type === 'error') {
+      icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+      icon.style.stroke = '#EF4444';
+    } else {
+      icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>';
+      icon.style.stroke = '#60A5FA';
+    }
+
+    toast.classList.add('active');
+    if (window._restockToastTimer) clearTimeout(window._restockToastTimer);
+    window._restockToastTimer = setTimeout(() => {
+      toast.classList.remove('active');
+    }, 2800);
+  }
+
+  /**
+   * 開啟補貨模態窗
+   */
+  function openRestockModal(target) {
+    let item = null;
+    if (typeof target === 'object' && target !== null) {
+      item = target;
+    } else {
+      item = (inventoryCache || []).find(x => Number(x._rowId) === Number(target));
+    }
+
+    if (!item) {
+      showRestockToast('查無該商品庫存資料', 'error');
+      return;
+    }
+
+    currentRestockItem = item;
+    restockImagesArray = [];
+
+    // 1. 商品資訊卡片
+    const thumbEl = document.getElementById('restockProductThumb');
+    if (thumbEl) {
+      let rawImg = item.imageUrl || '';
+      let firstImg = rawImg.split('\n')[0].trim();
+      let match = firstImg.match(/id=([a-zA-Z0-9_-]+)/) || firstImg.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        firstImg = 'https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w800';
+      }
+      thumbEl.src = (firstImg && !firstImg.includes('No+Img')) ? firstImg : 'https://placehold.co/100x100/FAFAFA/111111?text=No+Img';
+    }
+    const nameEl = document.getElementById('restockProductName');
+    if (nameEl) nameEl.textContent = item.productName || '未命名商品';
+
+    const metaEl = document.getElementById('restockProductMeta');
+    if (metaEl) metaEl.textContent = `編號: ${item.productId || '-'} · 規格: ${item.spec || '標準'}`;
+
+    const stockEl = document.getElementById('restockCurrentStock');
+    if (stockEl) stockEl.textContent = `庫存 ${item.availableStock || item.stockQty || 0} 件`;
+
+    // 2. 表單欄位重設
+    const qtyInput = document.getElementById('restockQuantityInput');
+    if (qtyInput) qtyInput.value = '1';
+
+    const statusSel = document.getElementById('restockStatusSelect');
+    if (statusSel) statusSel.value = '正常 (外觀完好無損)';
+
+    const notesText = document.getElementById('restockNotesTextarea');
+    if (notesText) notesText.value = '';
+
+    // 3. 人員：自動鎖定登入人員「會員編號_人名」
+    const opInput = document.getElementById('restockOperatorInput');
+    if (opInput) {
+      const session = (typeof getActiveDistributorSession === 'function') ? getActiveDistributorSession() : null;
+      if (session && session.memberId && session.memberName) {
+        opInput.value = `${session.memberId}_${session.memberName}`;
+      } else if (session && session.memberId) {
+        opInput.value = session.memberId;
+      } else if (session && session.memberName) {
+        opInput.value = session.memberName;
+      } else {
+        opInput.value = 'TW-NAMIS_總部管理員';
+      }
+    }
+
+    // 4. 重設照片橫向軌道
+    renderRestockThumbnailsStrip();
+
+    // 5. 渲染歷史履歷
+    renderRestockHistory(item);
+
+    // 6. 展現視窗
     const modal = document.getElementById('restockModal');
-    if (modal) modal.classList.add('active');
+    if (modal) modal.style.display = 'flex';
   }
 
   function closeRestockModal() {
     const modal = document.getElementById('restockModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) modal.style.display = 'none';
+    currentRestockItem = null;
+    restockImagesArray = [];
   }
 
-  // 核心：支援多圖一次批次多選 ＋ 逐次追加累加
-  function handleRestockBatchImageSelect(input) {
-    const files = Array.from(input.files || []);
-    if (files.length === 0) return;
+  function triggerRestockCamera() {
+    const el = document.getElementById('restockBatchCameraInput');
+    if (el) el.click();
+  }
 
-    let availableSlots = 10 - restockImageStateArray.length;
-    if (availableSlots <= 0) {
-      showToast("照片已達 10 張上限");
-      input.value = '';
+  function triggerRestockUpload() {
+    const el = document.getElementById('restockBatchUploadInput');
+    if (el) el.click();
+  }
+
+  /**
+   * 渲染最多 10 張縮圖橫向滑軌
+   */
+  function renderRestockThumbnailsStrip() {
+    const strip = document.getElementById('restockThumbnailsStrip');
+    const badge = document.getElementById('restockPhotoCountBadge');
+    const statusText = document.getElementById('restockAiStatusText');
+    if (!strip) return;
+
+    if (badge) {
+      badge.textContent = `已選 ${restockImagesArray.length} / 10 張`;
+    }
+
+    if (restockImagesArray.length === 0) {
+      strip.innerHTML = '<div style="font-size: 12px; color: #94A3B8; padding: 6px 0;">點擊上方拍照或上傳，自動啟動多 Key 輪調解析</div>';
+      if (statusText) statusText.textContent = '自動辨識';
       return;
     }
 
-    const filesToProcess = files.slice(0, availableSlots);
+    strip.innerHTML = restockImagesArray.map((base64, idx) => `
+      <div style="position: relative; width: 48px; height: 48px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CBD5E1; overflow: hidden; background: #FFFFFF;">
+        <img src="${base64}" style="width: 100%; height: 100%; object-fit: cover;" alt="照片 #${idx + 1}" />
+        <span onclick="removeRestockImageAt(${idx})" style="position: absolute; top: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%; background: rgba(15, 23, 42, 0.75); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; cursor: pointer;" title="移除此張照片">✕</span>
+      </div>
+    `).join('');
+  }
 
+  function removeRestockImageAt(index) {
+    restockImagesArray.splice(index, 1);
+    renderRestockThumbnailsStrip();
+    if (restockImagesArray.length > 0) {
+      callRestockAiAnalyze();
+    }
+  }
+
+  /**
+   * 拍照或批量選取照片後自動調用 AI (支援一次 1~10 張，累加不覆蓋)
+   */
+  function handleRestockBatchImageSelect(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    let availableSlots = 10 - restockImagesArray.length;
+    if (availableSlots <= 0) {
+      showRestockToast('已達 10 張照片上限', 'info');
+      e.target.value = '';
+      return;
+    }
+
+    const filesToRead = files.slice(0, availableSlots);
     let loadedCount = 0;
-    filesToProcess.forEach(file => {
+
+    filesToRead.forEach(file => {
       const reader = new FileReader();
-      reader.onload = function(e) {
-        // 逐次追加，不覆蓋舊照片
-        restockImageStateArray.push(e.target.result);
+      reader.onload = function(evt) {
+        restockImagesArray.push(evt.target.result);
         loadedCount++;
-        if (loadedCount === filesToProcess.length) {
-          renderRestockImages();
-          // 若為初次選入照片，自動引導點擊 AI 或直接辨識
-          showToast(`已追加 ${filesToProcess.length} 張照片，可點擊星號進行 AI 解析`);
+
+        if (loadedCount === filesToRead.length) {
+          renderRestockThumbnailsStrip();
+          showRestockToast(`已載入 ${filesToRead.length} 張照片，啟動多 Key 輪調解析...`, 'info');
+          // 自動觸發多圖輪調 AI 解析！
+          callRestockAiAnalyze();
         }
       };
       reader.readAsDataURL(file);
     });
 
-    input.value = '';
+    e.target.value = '';
   }
 
-  // 補貨登記專屬：一鍵 AI 解析最新上傳的照片並自動填妥狀態與備註
+  /**
+   * 調用後端 Gemini 輪調池解析所有照片
+   */
   async function callRestockAiAnalyze() {
-    if (!restockImageStateArray || restockImageStateArray.length === 0) {
-      showToast("請先上傳照片再執行 AI 解析");
+    if (!restockImagesArray || restockImagesArray.length === 0) {
+      showRestockToast('請先拍攝或上傳包裝照片', 'info');
       return;
     }
 
-    const latestImg = restockImageStateArray[restockImageStateArray.length - 1];
-    const btnAi = document.getElementById('btnRestockAi');
-    const feedbackBar = document.getElementById('restockFeedbackBar');
-
-    if (btnAi) {
-      btnAi.disabled = true;
-      btnAi.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i>';
-    }
-    if (feedbackBar) {
-      feedbackBar.innerHTML = '<span style="color:var(--text-muted);"><i class="ph ph-circle-notch ph-spin"></i> AI 視覺解析中...</span>';
-    }
+    const btnAi = document.getElementById('btnRestockAiTrigger');
+    const statusText = document.getElementById('restockAiStatusText');
+    if (btnAi) btnAi.classList.add('loading');
+    if (statusText) statusText.textContent = `輪調解析中 (${restockImagesArray.length}張)...`;
 
     try {
-      const res = await apiCall('analyzeImageWithGemini', { imageBase64: latestImg });
+      // 一次將所有照片陣列傳給後端，後端依序指派不同的 API KEY 輪流呼叫
+      const res = await apiCall('analyzeImageWithGemini', {
+        imagesBase64: restockImagesArray,
+        targetProduct: currentRestockItem ? (currentRestockItem.productName || '') : ''
+      });
+
+      if (btnAi) btnAi.classList.remove('loading');
+      if (statusText) statusText.textContent = '解析完成';
+
       if (res && res.status === 'success' && res.data) {
         const d = res.data;
-        // 自動帶入狀態
+
+        // 1. 數量自動填入 (若辨識到整箱或包裝數量大於 0)
+        if (d.quantity !== undefined && d.quantity !== null && Number(d.quantity) > 0) {
+          const qtyInput = document.getElementById('restockQuantityInput');
+          if (qtyInput) qtyInput.value = Number(d.quantity);
+        }
+
+        // 2. 有效日期、批號多圖綜整寫入「備註」
+        let noteParts = [];
+        if (d.expiryDate) {
+          noteParts.push(`有效日期：${d.expiryDate}`);
+        }
+        if (d.batchNo) {
+          noteParts.push(`批號：${d.batchNo}`);
+        }
+        if (d.notes) {
+          noteParts.push(d.notes);
+        }
+
+        if (noteParts.length > 0) {
+          const notesEl = document.getElementById('restockNotesTextarea');
+          if (notesEl) notesEl.value = noteParts.join(' ｜ ');
+        }
+
+        // 3. 狀態自適應對位
         if (d.status) {
-          const statusSelect = document.getElementById('restockStatus');
-          if (statusSelect) {
-            const hasOpt = Array.from(statusSelect.options).some(o => o.value === d.status);
-            if (!hasOpt) {
-              const newOpt = document.createElement('option');
-              newOpt.value = d.status;
-              newOpt.text = d.status;
-              statusSelect.add(newOpt);
+          const sel = document.getElementById('restockStatusSelect');
+          if (sel) {
+            for (let opt of sel.options) {
+              if (opt.value.includes(d.status) || d.status.includes(opt.value.substring(0, 2))) {
+                sel.value = opt.value;
+                break;
+              }
             }
-            statusSelect.value = d.status;
           }
         }
-        // 自動填入備註
-        const notesEl = document.getElementById('restockNotes');
-        if (notesEl && d.description) {
-          notesEl.value = `[AI辨識] ${d.productName || ''} · ${d.spec || ''}\n${d.description || ''}`;
-        }
 
-        if (feedbackBar) {
-          feedbackBar.innerHTML = '<span style="color:var(--success);"><i class="ph ph-check"></i> 解析完成，請填寫人員</span>';
-        }
-        showToast("AI 解析完成！已自動填入狀態與資訊");
+        showRestockToast(`AI 輪調解析完成！已綜整 ${d.analyzedCount || restockImagesArray.length} 張照片資訊`, 'success');
       } else {
-        if (feedbackBar) {
-          feedbackBar.innerHTML = '<span style="color:var(--danger);"><i class="ph ph-warning"></i> 解析未辨識</span>';
-        }
+        showRestockToast('未辨識出清晰日期，可手動填寫', 'info');
       }
-    } catch (e) {
-      if (feedbackBar) {
-        feedbackBar.innerHTML = '<span style="color:var(--danger);"><i class="ph ph-warning"></i> 連線異常</span>';
-      }
-    } finally {
-      if (btnAi) {
-        btnAi.disabled = false;
-        btnAi.innerHTML = '<i class="ph ph-sparkle" style="font-size:18px;"></i>';
-      }
+    } catch (err) {
+      if (btnAi) btnAi.classList.remove('loading');
+      if (statusText) statusText.textContent = '手動確認';
+      showRestockToast('解析連線逾時，請手動確認', 'error');
     }
   }
 
-  function removeRestockImage(index) {
-    restockImageStateArray.splice(index, 1);
-    renderRestockImages();
+  /**
+   * 清空重設
+   */
+  function clearRestockFormFields() {
+    const qtyInput = document.getElementById('restockQuantityInput');
+    if (qtyInput) qtyInput.value = '1';
+
+    const statusSel = document.getElementById('restockStatusSelect');
+    if (statusSel) statusSel.value = '正常 (外觀完好無損)';
+
+    const notesText = document.getElementById('restockNotesTextarea');
+    if (notesText) notesText.value = '';
+
+    restockImagesArray = [];
+    renderRestockThumbnailsStrip();
+
+    showRestockToast('表單已重設', 'info');
   }
 
-  function renderRestockImages() {
-    const container = document.getElementById('restockImgPreviewContainer');
-    if (!container) return;
-    container.innerHTML = '';
-
-    restockImageStateArray.forEach((imgSrc, index) => {
-      const box = document.createElement('div');
-      box.className = 'draggable-img-box';
-      box.draggable = true;
-      box.style.width = '58px';
-      box.style.height = '58px';
-      box.title = index === 0 ? "主圖 (拖曳可調整順序)" : `第 ${index + 1} 張 (拖曳可調整順序)`;
-      box.ondragstart = (e) => handleImgDragStart(e, 'restock', index);
-      box.ondragover = (e) => handleImgDragOver(e, index);
-      box.ondragleave = (e) => handleImgDragLeave(e);
-      box.ondrop = (e) => handleImgDrop(e, 'restock', index);
-      box.ondragend = (e) => handleImgDragEnd(e);
-
-      const img = document.createElement('img');
-      img.src = imgSrc;
-      img.className = 'draggable-img-thumb';
-      img.onclick = () => openImageModal(imgSrc);
-
-      const delBtn = document.createElement('div');
-      delBtn.innerHTML = '<i class="ph ph-x"></i>';
-      delBtn.style.position = 'absolute';
-      delBtn.style.top = '-5px';
-      delBtn.style.right = '-5px';
-      delBtn.style.width = '16px';
-      delBtn.style.height = '16px';
-      delBtn.style.backgroundColor = '#ffffff';
-      delBtn.style.color = 'var(--text-muted)';
-      delBtn.style.borderRadius = '50%';
-      delBtn.style.display = 'flex';
-      delBtn.style.alignItems = 'center';
-      delBtn.style.justifyContent = 'center';
-      delBtn.style.cursor = 'pointer';
-      delBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
-      delBtn.style.fontSize = '10px';
-      delBtn.onclick = (e) => { e.stopPropagation(); removeRestockImage(index); };
-
-      box.appendChild(img);
-      box.appendChild(delBtn);
-      container.appendChild(box);
-    });
-  }
-
-  async function submitRestockData() {
-    const rowId = document.getElementById('restockRowId').value;
-    const restockQty = Number(document.getElementById('restockQty').value) || 0;
-    const recorder = document.getElementById('restockRecorder').value.trim() || '倉庫同仁';
-    const status = document.getElementById('restockStatus').value;
-    const notes = document.getElementById('restockNotes').value.trim();
-    const btn = document.getElementById('btnSubmitRestock');
-
-    if (!rowId) {
-      showToast("查無商品資料，無法補貨！");
-      return;
-    }
-    if (restockQty <= 0) {
-      showToast("補貨數量必須大於 0！");
+  /**
+   * 確認送出補貨記錄 (10 張照片全部寫入 Drive 與進銷存工作表)
+   */
+  async function submitRestockRecord() {
+    if (!currentRestockItem) {
+      showRestockToast('無效的商品參照', 'error');
       return;
     }
 
-    const payload = {
-      _rowId: Number(rowId),
-      restockQty: restockQty,
-      recorder: recorder,
-      status: status,
-      notes: notes,
-      imagesBase64: [...restockImageStateArray]
-    };
+    const qtyVal = document.getElementById('restockQuantityInput')?.value;
+    const qty = parseInt(qtyVal, 10);
+    if (isNaN(qty) || qty <= 0) {
+      showRestockToast('請輸入有效的進貨數量', 'error');
+      document.getElementById('restockQuantityInput')?.focus();
+      return;
+    }
 
-    // 樂觀 UI：瞬間在本地快取累加數量，畫面 0 秒秒切！
-    const targetIdx = inventoryCache.findIndex(x => Number(x._rowId) === Number(rowId));
-    const backupCache = JSON.parse(JSON.stringify(inventoryCache));
+    const operator = (document.getElementById('restockOperatorInput')?.value || '').trim() || '系統登記';
+    const status = document.getElementById('restockStatusSelect')?.value || '正常';
+    const notes = (document.getElementById('restockNotesTextarea')?.value || '').trim();
+
+    const btnSubmit = document.getElementById('btnSubmitRestock');
+    if (btnSubmit) btnSubmit.disabled = true;
+
+    // 樂觀 UI：本地快取即刻秒加數量，畫面 0ms 立即更新
+    const rowId = currentRestockItem._rowId;
+    const targetIdx = (inventoryCache || []).findIndex(x => Number(x._rowId) === Number(rowId));
+    const backupCache = JSON.parse(JSON.stringify(inventoryCache || []));
 
     if (targetIdx !== -1) {
       const oldStock = Number(inventoryCache[targetIdx].stockQty) || 0;
       const oldAvail = Number(inventoryCache[targetIdx].availableStock) || 0;
-      inventoryCache[targetIdx].stockQty = oldStock + restockQty;
-      inventoryCache[targetIdx].availableStock = oldAvail + restockQty;
-      inventoryCache[targetIdx].recorder = recorder;
+      inventoryCache[targetIdx].stockQty = oldStock + qty;
+      inventoryCache[targetIdx].availableStock = oldAvail + qty;
+      inventoryCache[targetIdx].recorder = operator;
     }
 
-    // 0ms 原位內聯反饋與樂觀響應 (絕無 alert 彈窗)
-    const feedbackBar = document.getElementById('restockFeedbackBar');
-    if (feedbackBar) {
-      feedbackBar.innerHTML = `<span style="color:var(--text-muted);"><i class="ph ph-circle-notch ph-spin"></i> 同步試算表中...</span>`;
-    }
+    renderInventoryList();
+    showRestockToast('正在上傳照片並寫入入庫資料...', 'info');
 
-    btn.disabled = true;
-    btn.innerHTML = `<i class="ph ph-circle-notch ph-spin" style="font-size:18px;"></i>`;
+    const payload = {
+      _rowId: Number(rowId),
+      restockQty: qty,
+      recorder: operator,
+      status: status,
+      notes: notes,
+      imagesBase64: [...restockImagesArray] // 將最多 10 張照片全數傳入寫入 Drive
+    };
 
     try {
       const res = await apiCall('restockInventory', payload);
@@ -9186,45 +9795,60 @@
           if (resData.imageUrl) inventoryCache[targetIdx].imageUrl = resData.imageUrl;
         }
         renderInventoryList();
-
-        if (feedbackBar) {
-          feedbackBar.innerHTML = `<span style="color:var(--success);"><i class="ph ph-check"></i> 補貨入庫完成 (+${restockQty})</span>`;
-        }
-        btn.innerHTML = `<i class="ph ph-check" style="font-size:18px; color:var(--success);"></i>`;
+        showRestockToast(`補貨成功！已入庫 ${qty} 件，並存檔 ${restockImagesArray.length} 張存證照片`, 'success');
 
         setTimeout(() => {
           closeRestockModal();
-          btn.disabled = false;
-          btn.innerHTML = `<i class="ph ph-floppy-disk" style="font-size:20px;"></i>`;
-          if (feedbackBar) feedbackBar.innerHTML = '';
-        }, 800);
+          if (btnSubmit) btnSubmit.disabled = false;
+        }, 600);
       } else {
         inventoryCache = backupCache;
-        syncInventorySelectUI();
         renderInventoryList();
-        if (feedbackBar) {
-          feedbackBar.innerHTML = `<span style="color:var(--danger);"><i class="ph ph-warning"></i> ${res?.data?.message || '同步未完成'}</span>`;
-        }
-        btn.disabled = false;
-        btn.innerHTML = `<i class="ph ph-floppy-disk" style="font-size:20px;"></i>`;
+        const msg = (res && res.data && res.data.message) ? res.data.message : '寫入失敗';
+        showRestockToast(msg, 'error');
+        if (btnSubmit) btnSubmit.disabled = false;
       }
-    } catch (e) {
+    } catch (err) {
       inventoryCache = backupCache;
-      syncInventorySelectUI();
       renderInventoryList();
-      if (feedbackBar) {
-        feedbackBar.innerHTML = `<span style="color:var(--danger);"><i class="ph ph-warning"></i> 連線異常已還原</span>`;
-      }
-      btn.disabled = false;
-      btn.innerHTML = `<i class="ph ph-floppy-disk" style="font-size:20px;"></i>`;
+      showRestockToast('連線異常，資料已還原', 'error');
+      if (btnSubmit) btnSubmit.disabled = false;
     }
   }
 
-  function clearRestockFormFields() {
-    document.getElementById('restockQty').value = 1;
-    document.getElementById('restockNotes').value = '';
-    restockImageStateArray = [];
-    renderRestockImages();
+  // 雙相容別名
+  window.submitRestockRecord = submitRestockRecord;
+  window.submitRestockData = submitRestockRecord;
+
+  function toggleRestockHistoryAccordion() {
+    const list = document.getElementById('restockHistoryList');
+    const arrow = document.getElementById('restockHistoryArrow');
+    if (!list) return;
+    const isHidden = (list.style.display === 'none' || list.style.display === '');
+    list.style.display = isHidden ? 'flex' : 'none';
+    if (arrow) {
+      arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+  }
+
+  function renderRestockHistory(item) {
+    const container = document.getElementById('restockHistoryList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const rawHistory = item.invLog || item.history || item.log || '';
+    if (!rawHistory || rawHistory.trim() === '') {
+      container.innerHTML = '<div style="font-size:11px; color:#94A3B8; text-align:center; padding:8px 0;">尚無歷史入庫記錄</div>';
+      return;
+    }
+
+    const lines = rawHistory.split('\n').filter(l => l.trim() !== '');
+    lines.forEach(line => {
+      const d = document.createElement('div');
+      d.className = 'restock-history-entry';
+      d.textContent = line;
+      container.appendChild(d);
+    });
   }
 
   // 二階段原位內聯確認刪除 (替代 window.confirm，徹底免除阻斷彈窗)
@@ -10082,8 +10706,11 @@
           const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
 
           if (isDist) {
-            // 經銷商名單：僅顯示自己、一代下線、二代下線
-            return (mId === bloodline.myId) || bloodline.gen1DistIds.has(mId) || bloodline.gen2DistIds.has(mId);
+            // 經銷商名單：僅顯示自己、一代下線、二代下線 (防呆鍊保護)
+            return (mId === bloodline.myId) || 
+                   (bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId)) || 
+                   (bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId)) ||
+                   (bloodline.downlineDistIds && bloodline.downlineDistIds.has(mId));
           } else {
             // 一般與 VIP 會員：嚴格只顯示自己直屬推薦的會員 (不含底下經銷商的會員)
             return (ref === bloodline.myId) || (mId === bloodline.myId);
@@ -14651,16 +15278,16 @@
     }
   }
 
-  // 🔒 總部權限鑑別：僅有總部指定代表 (TW-NAMIS / HQ / ADMIN) 具備最高上帝視角權限
+  // 🔒 總部權限鑑別：只要編號是「TW-NAMIS」開頭即具備總部最高管理權限
   function isHeadquartersUser() {
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim().toUpperCase();
-    return (myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN' || session.isHQ === true);
+    return (myId.startsWith('TW-NAMIS') || myId === 'HQ' || myId === 'ADMIN' || session.isHQ === true);
   }
 
   // ==========================================
   // 🌟 微商血緣關係網核心引擎 (Genealogy / Bloodline Lineage Engine)
-  // 總部代表：TW-NAMIS (上帝視角，通盤總覽所有資料)
+  // 總部代表：TW-NAMIS 開頭 (上帝視角，通盤總覽所有資料)
   // 各經銷商：僅看得到自己、底下各代經銷商，以及自身與底下延伸出去的會員名單、訂單與物流紀錄
   // ==========================================
   function getDistributorBloodline(targetDistId = null) {
@@ -14668,13 +15295,16 @@
     const myId = String(targetDistId || session.memberId || '').trim();
     const isHQ = isHeadquartersUser();
 
-    // 總部代表 TW-NAMIS 擁有全局視野，無須過濾
-    if (isHQ || myId === 'TW-NAMIS' || myId === 'HQ' || myId === 'ADMIN') {
+    // 總部代表 TW-NAMIS 開頭擁有全局視野，無須過濾
+    if (isHQ || myId.startsWith('TW-NAMIS') || myId === 'HQ' || myId === 'ADMIN') {
+      const allIds = new Set((memberCache || []).map(m => String(m.memberId || '').trim()));
       return {
         isHQ: true,
         myId: myId,
-        downlineDistIds: new Set((memberCache || []).map(m => String(m.memberId || '').trim())),
-        bloodlineAllIds: new Set((memberCache || []).map(m => String(m.memberId || '').trim())),
+        gen1DistIds: allIds,
+        gen2DistIds: new Set(),
+        downlineDistIds: allIds,
+        bloodlineAllIds: allIds,
         bloodlineNames: new Set((memberCache || []).map(m => String(m.memberName || '').trim())),
         hasAccess: () => true
       };
@@ -14739,6 +15369,8 @@
     return {
       isHQ: false,
       myId: myId,
+      gen1DistIds,
+      gen2DistIds,
       downlineDistIds,
       bloodlineAllIds,
       bloodlineNames,
@@ -15455,14 +16087,14 @@
     }
   }
 
-  // 核心主運算引擎：全面對位 T+1 補貨 / T+2 推薦、海外回溯、公司外加5%營業稅
+  // 核心主運算引擎：當月獨立結算、公司+5%營業稅撥款、海外經銷商專屬封印
   function computeComprehensiveProfitReport(myId, startDate, endDate) {
     if (!myId) return;
 
     const session = getActiveDistributorSession();
+    const me = (memberCache || []).find(m => String(m.memberId).trim() === myId) || session;
     const members = Array.isArray(memberCache) ? memberCache : [];
     const orders = Array.isArray(orderCache) ? orderCache : [];
-    const inventory = Array.isArray(inventoryCache) ? inventoryCache : [];
 
     const parseNum = (v) => {
       const n = Number(String(v || 0).replace(/[^\d.-]/g, ''));
@@ -15470,21 +16102,28 @@
     };
     const fmtMoney = (n) => `NT$ ${Math.round(n || 0).toLocaleString()}`;
 
-    // 🔒 經銷商判斷器
+    // 1. 判斷是否為海外經銷商 (非台灣 TW 國籍且非 TW- 開頭)
+    const myCountry = String(me.countryCode || session.countryCode || '').trim().toUpperCase();
+    const isOverseasDistributor = (myCountry !== 'TW' && !myId.startsWith('TW-') && !isHeadquartersUser());
+
+    // 2. 判斷是否為公司法人申請人 (非自然人)
+    const isCompany = Boolean(
+      (me && me.identityType && (me.identityType === '公司' || me.identityType.includes('公司') || me.identityType.includes('法人'))) ||
+      (session && session.identityType && (session.identityType === '公司' || session.identityType.includes('公司') || session.identityType.includes('法人'))) ||
+      (me && me.companyTaxId && String(me.companyTaxId).trim() !== '') ||
+      (session && session.companyTaxId && String(session.companyTaxId).trim() !== '') ||
+      (me && me.companyTitle && String(me.companyTitle).trim() !== '') ||
+      (session && session.companyTitle && String(session.companyTitle).trim() !== '')
+    );
+
+    // 經銷商身分檢驗
     const isDistributor = (m) => {
       const type = String(m.memberType || '').trim();
       const id = String(m.memberId || '').trim();
-      return (type === '經銷會員') || id.startsWith('DIS-') || (id.startsWith('TW-') && id !== 'TW-NAMIS');
+      return (type === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id) || (id.startsWith('TW-') && !id.startsWith('TW-NAMIS'));
     };
 
-    // 🔒 台灣經銷商判定 (國籍為 TW 或編號為 TW- 開頭)
-    const isTaiwanMember = (m) => {
-      const id = String(m.memberId || '').trim();
-      const country = String(m.countryCode || '').trim().toUpperCase();
-      return country === 'TW' || id.startsWith('TW-');
-    };
-
-    // 本人帳號集合
+    // 本人帳號關聯
     const mySelfAccountIds = new Set([myId]);
     const cleanMyPhone = session.phone ? String(session.phone).replace(/\D/g, '') : '';
     const cleanMyEmail = session.email ? String(session.email).trim().toLowerCase() : '';
@@ -15494,11 +16133,11 @@
       const mPhone = String(m.phone || '').replace(/\D/g, '');
       const mEmail = String(m.email || '').trim().toLowerCase();
       if ((cleanMyPhone && mPhone && cleanMyPhone.endsWith(mPhone.slice(-8))) || (cleanMyEmail && mEmail && mEmail === cleanMyEmail)) {
-        if (!mId.startsWith('TW-') && !mId.startsWith('DIS-')) mySelfAccountIds.add(mId);
+        if (!mId.startsWith('TW-')) mySelfAccountIds.add(mId);
       }
     });
 
-    // 1. 兩代組織名單界定
+    // 兩代組織名單界定
     const gen1Members = members.filter(m => {
       const ref = String(m.lineId || m.referrerId || '').trim();
       return (ref === myId || mySelfAccountIds.has(ref)) && isDistributor(m) && !mySelfAccountIds.has(String(m.memberId).trim());
@@ -15511,11 +16150,10 @@
     });
     const gen2Ids = new Set(gen2Members.map(m => String(m.memberId).trim()));
 
-    // 2. 區塊二：個人採購與商城銷貨盤點 (零售差額直接賺走，不進總部獎金池)
-    // 🔒 經銷鐵律：僅採計已付款完成之訂單 (嚴格排除選購、下訂與取消)
+    // 3. 【營運盤點】：自己進貨賣貨賺差額（兩者本為含稅價，直接互減計算差額盈餘，100% 絕對不加 5% 營業稅）
     const isPaidOrder = (st) => ['收款', '出貨', '配送', '到貨', '收貨'].includes(String(st || '').trim());
-
     let myCustomerOrdersAmt = 0;
+
     orders.forEach(o => {
       if (!isPaidOrder(o.status)) return;
       const od = parseOrderDateString(o.orderTime);
@@ -15529,92 +16167,78 @@
       }
     });
 
-    const wholesaleCost = myCustomerOrdersAmt * 0.5; // 1/2 批發價成本
-    const retailGrossProfit = myCustomerOrdersAmt - wholesaleCost; // 35%~50% 自行現賺價差
+    const wholesaleCost = myCustomerOrdersAmt * 0.5; // 進貨成本 (5折)
+    const retailGrossProfit = myCustomerOrdersAmt - wholesaleCost; // 零售毛利差額 (純含稅價互減，絕不乘 1.05)
 
-    let currentStockTotalQty = 0;
-    inventory.forEach(inv => {
-      currentStockTotalQty += Number(inv.availableStock || inv.stockQty || 0);
-    });
-    const currentStockWholesaleVal = currentStockTotalQty * 500;
-
-    // 輔助函式：計算某特定月份下線團隊的「首購總額」與「補貨總額」
+    // 4. 計算團隊業績輔助函式
     const computeTeamWholesaleForMonth = (targetYear, targetMonth) => {
       const mStart = new Date(targetYear, targetMonth, 1);
       const mEnd = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
 
-      let g1NewNum = 0;
-      let g1FirstWholesale = 0;
-      let g1RestockNum = 0;
-      let g1RestockWholesale = 0;
+      let g1NewNum = 0, g1FirstWholesale = 0, g1RestockNum = 0, g1RestockWholesale = 0;
+      let g2NewNum = 0, g2FirstWholesale = 0, g2RestockNum = 0, g2RestockWholesale = 0;
 
-      let g2NewNum = 0;
-      let g2FirstWholesale = 0;
-      let g2RestockNum = 0;
-      let g2RestockWholesale = 0;
+      if (!isOverseasDistributor) {
+        gen1Members.forEach(g1 => {
+          const g1Id = String(g1.memberId).trim();
+          const joinD = parseOrderDateString(g1.registerTime || g1.timestamp);
+          const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
+          if (isNewInM) g1NewNum++;
 
-      // 一代團隊
-      gen1Members.forEach(g1 => {
-        const g1Id = String(g1.memberId).trim();
-        const joinD = parseOrderDateString(g1.registerTime || g1.timestamp);
-        const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
-        if (isNewInM) g1NewNum++;
+          const g1Orders = orders.filter(o => {
+            if (!isPaidOrder(o.status)) return false;
+            const od = parseOrderDateString(o.orderTime);
+            if (!od || od < mStart || od > mEnd) return false;
+            return (String(o.memberId).trim() === g1Id || String(o.referrerId).trim() === g1Id);
+          });
 
-        // 🌟 海外會員回溯判定：若該一代下線為海外籍，其首購與補貨業績 100% 依然歸台灣 A 計算
-        const g1Orders = orders.filter(o => {
-          if (!isPaidOrder(o.status)) return false;
-          const od = parseOrderDateString(o.orderTime);
-          if (!od || od < mStart || od > mEnd) return false;
-          return (String(o.memberId).trim() === g1Id || String(o.referrerId).trim() === g1Id);
+          g1Orders.forEach((ord, oIdx) => {
+            const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
+            if (isNewInM && oIdx === 0) {
+              g1FirstWholesale += wholesaleAmt;
+            } else {
+              g1RestockNum++;
+              g1RestockWholesale += wholesaleAmt;
+            }
+          });
         });
 
-        g1Orders.forEach((ord, oIdx) => {
-          const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
-          if (isNewInM && oIdx === 0) {
-            g1FirstWholesale += wholesaleAmt;
-          } else {
-            g1RestockNum++;
-            g1RestockWholesale += wholesaleAmt;
-          }
+        gen2Members.forEach(g2 => {
+          const g2Id = String(g2.memberId).trim();
+          const joinD = parseOrderDateString(g2.registerTime || g2.timestamp);
+          const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
+          if (isNewInM) g2NewNum++;
+
+          const g2Orders = orders.filter(o => {
+            if (!isPaidOrder(o.status)) return false;
+            const od = parseOrderDateString(o.orderTime);
+            if (!od || od < mStart || od > mEnd) return false;
+            return (String(o.memberId).trim() === g2Id || String(o.referrerId).trim() === g2Id);
+          });
+
+          g2Orders.forEach((ord, oIdx) => {
+            const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
+            if (isNewInM && oIdx === 0) {
+              g2FirstWholesale += wholesaleAmt;
+            } else {
+              g2RestockNum++;
+              g2RestockWholesale += wholesaleAmt;
+            }
+          });
         });
-      });
+      }
 
-      // 二代團隊
-      gen2Members.forEach(g2 => {
-        const g2Id = String(g2.memberId).trim();
-        const joinD = parseOrderDateString(g2.registerTime || g2.timestamp);
-        const isNewInM = joinD && (joinD >= mStart && joinD <= mEnd);
-        if (isNewInM) g2NewNum++;
-
-        const g2Orders = orders.filter(o => {
-          if (!isPaidOrder(o.status)) return false;
-          const od = parseOrderDateString(o.orderTime);
-          if (!od || od < mStart || od > mEnd) return false;
-          return (String(o.memberId).trim() === g2Id || String(o.referrerId).trim() === g2Id);
-        });
-
-        g2Orders.forEach((ord, oIdx) => {
-          const wholesaleAmt = parseNum(ord.totalAmount) * 0.5;
-          if (isNewInM && oIdx === 0) {
-            g2FirstWholesale += wholesaleAmt;
-          } else {
-            g2RestockNum++;
-            g2RestockWholesale += wholesaleAmt;
-          }
-        });
-      });
-
-      // 當月推薦階梯趴數判定 (單月累計人數，跨月歸零)
-      let g1Ladder = 0.08;
+      // 當月推薦階梯 (0-2人: 8.8%, 3-4人: 11.8%, 5人以上: 13.8%)
+      let g1Ladder = 0.088;
       if (g1NewNum >= 5) g1Ladder = 0.138;
       else if (g1NewNum >= 3) g1Ladder = 0.118;
 
-      const g1RefBonus = g1FirstWholesale * g1Ladder;
-      const g2RefBonus = g2FirstWholesale * 0.03;      // 二代固定 3%
+      const g1RefBonus = isOverseasDistributor ? 0 : (g1FirstWholesale * g1Ladder);
+      const g2RefBonus = isOverseasDistributor ? 0 : (g2FirstWholesale * 0.03);
       const totalRefBonus = g1RefBonus + g2RefBonus;
 
-      const g1ReBonus = g1RestockWholesale * 0.03;     // 一代補貨固定 3%
-      const g2ReBonus = g2RestockWholesale * 0.02;     // 二代補貨固定 2%
+      const g1ReBonus = isOverseasDistributor ? 0 : (g1RestockWholesale * 0.03);
+      const g2ReBonus = isOverseasDistributor ? 0 : (g2RestockWholesale * 0.02);
       const totalReBonus = g1ReBonus + g2ReBonus;
 
       return {
@@ -15626,14 +16250,15 @@
       };
     };
 
-    // 3. 計算當前選擇月份 (M) 產生的業績
+    // 5. 計算當月推薦與補貨進度 (直推獎金與間接獎金區塊)
     const curMonthStats = computeTeamWholesaleForMonth(distActiveYear, distActiveMonth);
 
-    // 圓餅圖 % 數進度條計算與激勵文字 (無任何 Emoji，極簡質感線條)
-    let ladderIncentiveText = "推薦新夥伴享專屬首購獎金";
-    let circleRateDisplay = "8.0%";
+    // 圓餅圖與階梯標籤更新
+    let circleRateDisplay = isOverseasDistributor ? "0.0%" : "8.8%";
     let progressPercent = 0;
-    const count = curMonthStats.g1NewNum || 0;
+    let ladderIncentiveText = isOverseasDistributor 
+      ? "海外經銷商享有專屬 3.5 折批發採購，依約免計組織獎金"
+      : "推薦新夥伴享專屬首購獎金";
 
     const chip8 = document.getElementById('chipTier8');
     const chip11 = document.getElementById('chipTier11');
@@ -15642,83 +16267,72 @@
     if (chip11) chip11.classList.remove('active');
     if (chip13) chip13.classList.remove('active');
 
-    if (count >= 5) {
-      circleRateDisplay = "13.8%";
-      progressPercent = 100;
-      ladderIncentiveText = `本月推薦 ${count} 人，已晉升 13.8% 頂級獎金階梯`;
-      if (chip13) chip13.classList.add('active');
-    } else if (count >= 3) {
-      circleRateDisplay = "11.8%";
-      progressPercent = Math.round(60 + ((count - 3) / 2) * 40);
-      const diff = 5 - count;
-      ladderIncentiveText = `再推薦 ${diff} 人，立即享有 13.8% 獎金`;
-      if (chip11) chip11.classList.add('active');
-    } else {
-      circleRateDisplay = "8.0%";
-      progressPercent = Math.round((count / 3) * 60);
-      const diff = 3 - count;
-      ladderIncentiveText = `再推薦 ${diff} 人，立即享有 11.8% 獎金`;
-      if (chip8) chip8.classList.add('active');
+    if (!isOverseasDistributor) {
+      const count = curMonthStats.g1NewNum || 0;
+      if (count >= 5) {
+        circleRateDisplay = "13.8%";
+        progressPercent = 100;
+        ladderIncentiveText = `本月推薦 ${count} 人，已晉升 13.8% 頂級獎金階梯`;
+        if (chip13) chip13.classList.add('active');
+      } else if (count >= 3) {
+        circleRateDisplay = "11.8%";
+        progressPercent = Math.round(60 + ((count - 3) / 2) * 40);
+        const diff = 5 - count;
+        ladderIncentiveText = `當月再推薦 ${diff} 人，立即享有 13.8% 獎金`;
+        if (chip11) chip11.classList.add('active');
+      } else {
+        circleRateDisplay = "8.8%";
+        progressPercent = Math.round((count / 3) * 60);
+        const diff = 3 - count;
+        ladderIncentiveText = `當月再推薦 ${diff} 人，立即享有 11.8% 獎金`;
+        if (chip8) chip8.classList.add('active');
+      }
     }
 
-    // 更新 SVG 圓形進度條 (圓周長 2 * PI * 30 ≈ 188.5)
     const ring = document.getElementById('circleProgressRing');
     const ringText = document.getElementById('circleRateText');
     if (ring) {
       const circumference = 188.5;
-      const offset = circumference - (circumference * progressPercent / 100);
-      ring.style.strokeDashoffset = offset;
+      ring.style.strokeDashoffset = circumference - (circumference * progressPercent / 100);
     }
-    if (ringText) {
-      ringText.textContent = circleRateDisplay;
-    }
+    if (ringText) ringText.textContent = circleRateDisplay;
 
-    // 4. 💥 核心突破：計算在該月 20 號實際會撥款入帳的總部獎金！
-    // 依合約規定：
-    // · 補貨獎金為次月 (T-1 月) 發放
-    // · 推薦獎金為次次月 (T-2 月) 發放
-    let mMinus1Year = distActiveYear;
-    let mMinus1Month = distActiveMonth - 1;
+    // 6. 【撥款時程】：T-1 補貨獎金 ＋ T-2 推薦首購獎金
+    let mMinus1Year = distActiveYear, mMinus1Month = distActiveMonth - 1;
     if (mMinus1Month < 0) { mMinus1Month = 11; mMinus1Year -= 1; }
 
-    let mMinus2Year = distActiveYear;
-    let mMinus2Month = distActiveMonth - 2;
+    let mMinus2Year = distActiveYear, mMinus2Month = distActiveMonth - 2;
     if (mMinus2Month < 0) { mMinus2Month += 12; mMinus2Year -= 1; }
 
-    // 上月 (T-1) 補貨獎金
     const statsMinus1 = computeTeamWholesaleForMonth(mMinus1Year, mMinus1Month);
-    const payoutRestockUntaxed = statsMinus1.totalReBonus;
+    const payoutRestockUntaxed = isOverseasDistributor ? 0 : statsMinus1.totalReBonus;
 
-    // 上上月 (T-2) 推薦獎金
     const statsMinus2 = computeTeamWholesaleForMonth(mMinus2Year, mMinus2Month);
-    const payoutReferralUntaxed = statsMinus2.totalRefBonus;
+    const payoutReferralUntaxed = isOverseasDistributor ? 0 : statsMinus2.totalRefBonus;
 
-    // 該月 20 號應發未稅總獎金
+    // 撥款應領未稅總額
     const scheduledPayoutUntaxed = payoutReferralUntaxed + payoutRestockUntaxed;
 
-    // 5. 身分判定與 5% 營業稅精算 (公司行號外加5%開立發票 ｜ 自然人未稅扣繳)
-    const isCompany = (session.identityType === '公司') || (session.companyTitle && session.companyTaxId);
-    const tax5Percent = scheduledPayoutUntaxed * 0.05;
+    // 7. 💥【核心對位截圖處】：5% 營業稅精算與撥款總額分流
+    // 公司申請人：撥發獎金要加 5% 營業稅讓公司開立發票請款；自然人：依法未稅核發免開發票
+    const bonusTaxAmount = (isCompany && !isOverseasDistributor) ? Math.round(scheduledPayoutUntaxed * 0.05) : 0;
+    const finalPayoutTotal = scheduledPayoutUntaxed + bonusTaxAmount; // 公司 = 未稅 * 1.05；自然人 = 未稅
 
-    // 公司法人應開立含稅發票金額 = 未稅總額 × 1.05
-    const companyInvoiceAmount = scheduledPayoutUntaxed * 1.05;
-    // 自然人實領金額 = 未稅總額 (依法扣繳 10% 所得稅與 2.11% 二代健保)
-    const personalNetCash = scheduledPayoutUntaxed;
+    // 預估總淨收益 = 零售毛利 (含稅互減差價，不加稅) + 撥發未稅獎金
+    const totalEstimatedEarnings = retailGrossProfit + (isOverseasDistributor ? 0 : scheduledPayoutUntaxed);
 
-    // 當月預估總淨收益 = 零售差價毛利 + 總部實領獎金
-    const totalEstimatedEarnings = retailGrossProfit + (isCompany ? scheduledPayoutUntaxed : personalNetCash);
-
-    // ==========================================
-    // 6. 前端 UI 賦值渲染
-    // ==========================================
+    // 8. 賦值更新前端 UI 畫面
+    // (1) 收益總覽
     const elNetEarn = document.getElementById('statTotalNetEarnings');
     const elRetailProfit = document.getElementById('statRetailGrossProfit');
     const elPayoutNet = document.getElementById('statPayoutEstimatedNet');
     if (elNetEarn) elNetEarn.innerText = fmtMoney(totalEstimatedEarnings);
     if (elRetailProfit) elRetailProfit.innerText = fmtMoney(retailGrossProfit);
-    if (elPayoutNet) elPayoutNet.innerText = fmtMoney(isCompany ? companyInvoiceAmount : scheduledPayoutUntaxed);
+    if (elPayoutNet) {
+      elPayoutNet.innerText = isOverseasDistributor ? "海外免結算 (NT$ 0)" : fmtMoney(finalPayoutTotal);
+    }
 
-    // 區塊二：營運盤點 (已移除庫存水位)
+    // (2) 營運盤點
     const elSelfCost = document.getElementById('statSelfWholesaleCost');
     const elCustSales = document.getElementById('statCustomerSalesRevenue');
     const elRealized = document.getElementById('statRealizedProfit');
@@ -15726,15 +16340,12 @@
     if (elCustSales) elCustSales.innerText = fmtMoney(myCustomerOrdersAmt);
     if (elRealized) elRealized.innerText = fmtMoney(retailGrossProfit);
 
-    // 區塊三：一代團隊
-    const elG1Rate = document.getElementById('badgeGen1LadderRate');
+    // (3) 一代明細
     const elG1Count = document.getElementById('statGen1NewCount');
     const elG1Incentive = document.getElementById('txtGen1LadderIncentive');
     const elG1FirstAmt = document.getElementById('statGen1FirstOrderAmt');
     const elG1RefBonus = document.getElementById('statGen1ReferralBonus');
     const elG1RefNet = document.getElementById('statGen1ReferralNet');
-
-    if (elG1Rate) elG1Rate.innerText = `${(curMonthStats.g1Ladder * 100).toFixed(1)}%`;
     if (elG1Count) elG1Count.innerText = curMonthStats.g1NewNum;
     if (elG1Incentive) elG1Incentive.innerText = ladderIncentiveText;
     if (elG1FirstAmt) elG1FirstAmt.innerText = fmtMoney(curMonthStats.g1FirstWholesale);
@@ -15750,7 +16361,7 @@
     if (elG1ReBonus) elG1ReBonus.innerText = fmtMoney(curMonthStats.g1ReBonus);
     if (elG1ReNet) elG1ReNet.innerText = fmtMoney(curMonthStats.g1ReBonus);
 
-    // 區塊四：二代團隊
+    // (4) 二代明細
     const elG2NewCount = document.getElementById('statGen2NewCount');
     const elG2FirstAmt = document.getElementById('statGen2FirstOrderAmt');
     const elG2RefBonus = document.getElementById('statGen2ReferralBonus');
@@ -15769,11 +16380,16 @@
     if (elG2ReBonus) elG2ReBonus.innerText = fmtMoney(curMonthStats.g2ReBonus);
     if (elG2ReNet) elG2ReNet.innerText = fmtMoney(curMonthStats.g2ReBonus);
 
-    // 區塊五：撥款行事曆與憑證
+    // (5) 【撥款時程卡片 UI 精確對位 (截圖紅底處)】
     const badgeIdTag = document.getElementById('badgeDistIdentityTag');
     if (badgeIdTag) {
-      badgeIdTag.innerText = isCompany ? '公司法人 (外加5%發票)' : '自然人 (未稅撥款)';
-      badgeIdTag.style.background = isCompany ? 'var(--accent)' : '#0F172A';
+      if (isOverseasDistributor) {
+        badgeIdTag.innerText = '海外經銷商 (免提獎金)';
+        badgeIdTag.style.background = '#64748B';
+      } else {
+        badgeIdTag.innerText = isCompany ? '公司法人 (+5% 營業稅撥款)' : '自然人 (未稅撥款)';
+        badgeIdTag.style.background = isCompany ? 'var(--accent)' : '#0F172A';
+      }
     }
 
     const titleSched = document.getElementById('txtPayoutScheduleTitle');
@@ -15796,28 +16412,39 @@
     if (elReSum) elReSum.innerText = fmtMoney(payoutRestockUntaxed);
     if (elUntaxed) elUntaxed.innerText = fmtMoney(scheduledPayoutUntaxed);
 
-    if (isCompany) {
-      if (elTax5) elTax5.innerText = `+ ${fmtMoney(tax5Percent)} (外加 5% 營業稅)`;
-      if (elNetOrInv) elNetOrInv.innerText = `${fmtMoney(companyInvoiceAmount)} (應開立三聯發票金額)`;
+    // 💥 截圖粉紅底「5% 營業稅」欄位精確連動：
+    if (isOverseasDistributor) {
+      if (elTax5) elTax5.innerText = '海外免計營業稅';
+      if (elNetOrInv) elNetOrInv.innerText = '海外免提撥 (NT$ 0)';
+    } else if (isCompany) {
+      // 公司申請人：顯示 +5% 稅額與發票開立總額
+      if (elTax5) elTax5.innerHTML = `+ ${fmtMoney(bonusTaxAmount)} <span style="font-size:11px; color:#2563EB; font-weight:normal;">(外加 5% 營業稅額)</span>`;
+      if (elNetOrInv) elNetOrInv.innerHTML = `${fmtMoney(finalPayoutTotal)} <span style="font-size:12px; font-weight:normal; color:#475569;">(公司撥款含稅總額)</span>`;
     } else {
-      if (elTax5) elTax5.innerText = `依法免開營業稅發票 (未稅核發)`;
-      if (elNetOrInv) elNetOrInv.innerText = `${fmtMoney(personalNetCash)} (未稅應發總額)`;
+      // 自然人：依法免開營業稅發票
+      if (elTax5) elTax5.innerHTML = `依法免開營業稅發票 <span style="font-size:11px; color:#64748B; font-weight:normal;">(未稅核發)</span>`;
+      if (elNetOrInv) elNetOrInv.innerHTML = `${fmtMoney(scheduledPayoutUntaxed)} <span style="font-size:12px; font-weight:normal; color:#475569;">(未稅應發總額)</span>`;
     }
 
-    // 憑證法規文字
+    // 撥款說明抽屜
     const instructionBox = document.getElementById('boxIdentityTaxInstruction');
     if (instructionBox) {
-      if (isCompany) {
+      if (isOverseasDistributor) {
+        instructionBox.innerHTML = `
+          <strong>【海外經銷商結算規範說明】：</strong><br>
+          依國際經銷商合作協議，海外經銷商享有專屬 3.5 折批發採購優惠與自售零售利潤，總部不另提撥二代團隊組織獎金。
+        `;
+      } else if (isCompany) {
         instructionBox.innerHTML = `
           <strong>【公司法人戶發票請款規定 (外加 5% 營業稅)】：</strong><br>
           1. 應開立三聯式統一發票，買受人抬頭「<strong>妍之馨生技有限公司</strong>」，統一編號「<strong>60559503</strong>」，品名載明「<strong>傭金收入</strong>」。<br>
-          2. 未稅總額為 <strong>${fmtMoney(scheduledPayoutUntaxed)}</strong>，外加 5% 營業稅 <strong>${fmtMoney(tax5Percent)}</strong>，應開立發票總額為：<strong style="font-size:14px; color:#92400E;">${fmtMoney(companyInvoiceAmount)}</strong>。<br>
-          3. 請於每月 10 號前寄達紙本發票至台中總公司會計部，核對無誤後於 20 號全額撥付 ${fmtMoney(companyInvoiceAmount)}。
+          2. 未稅總額為 <strong>${fmtMoney(scheduledPayoutUntaxed)}</strong>，外加 5% 營業稅 <strong>${fmtMoney(bonusTaxAmount)}</strong>，應開立發票總額為：<strong style="font-size:14px; color:#92400E;">${fmtMoney(finalPayoutTotal)}</strong>。<br>
+          3. 請於每月 10 號前寄達紙本發票至台中總公司會計部，核對無誤後於 20 號全額撥付 ${fmtMoney(finalPayoutTotal)}。
         `;
       } else {
         instructionBox.innerHTML = `
           <strong>【自然人領取獎金規定 (依法未稅核算與扣繳)】：</strong><br>
-          1. 自然人經銷商不需開立發票，總部核發未稅金額 <strong>${fmtMoney(personalNetCash)}</strong>。<br>
+          1. 自然人經銷商不需開立發票，總部核發未稅金額 <strong>${fmtMoney(scheduledPayoutUntaxed)}</strong>。<br>
           2. 單筆撥付金額達 NT$ 20,000 元（含）以上者，總部將依法代扣 10% 個人所得稅及 2.11% 二代健保補充保費，於次年開立扣繳憑單。<br>
           3. 若下線為海外經銷商，因其本人無法領取獎金，該筆組織獎金已 100% 回溯歸屬於您的獎金池中。
         `;
