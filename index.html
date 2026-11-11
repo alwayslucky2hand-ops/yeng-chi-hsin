@@ -1051,7 +1051,6 @@
       border: 1px solid #000 !important;
       box-shadow: none !important;
     }
-  }
     #a4StickersPrintArea {
       position: absolute !important;
       left: 0 !important;
@@ -1060,15 +1059,6 @@
       margin: 0 !important;
       padding: 0 !important;
       background: #FFFFFF !important;
-    }
-    .a4-page-sheet {
-      box-shadow: none !important;
-      margin: 0 !important;
-      page-break-after: always !important;
-      break-after: page !important;
-    }
-    .sticker-cell {
-      border: 0.5px solid #E2E8F0 !important;
     }
   }
 
@@ -3856,10 +3846,22 @@
         </button>
       </div>
 
-      <div class="filter-bar">
-        <div style="position:relative; width:100%;">
+      <div class="filter-bar" style="align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div style="position:relative; flex: 1; min-width: 220px;">
           <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:18px;"></i>
           <input type="text" id="filterMemberKeyword" class="filter-input" style="width:100%; padding-left:36px; border-radius:20px;" placeholder="全欄位模糊搜尋 (輸入會員編號、姓名、電話、推薦人編號、Email 或日期)..." oninput="renderMemberList()">
+        </div>
+        
+        <div id="memberTypeFilterCapsules" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="icon-btn" id="pillMemTypeDist" onclick="setMemberTypeFilter('經銷會員')" style="padding: 7px 11px; border-radius: 20px; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;" title="僅篩選經銷會員（再按一次取消）">
+            <i class="ph ph-handshake" style="font-size: 16px;"></i>
+          </button>
+          <button type="button" class="icon-btn" id="pillMemTypeVip" onclick="setMemberTypeFilter('VIP會員')" style="padding: 7px 11px; border-radius: 20px; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;" title="僅篩選VIP會員（再按一次取消）">
+            <i class="ph ph-crown" style="font-size: 16px;"></i>
+          </button>
+          <button type="button" class="icon-btn" id="pillMemTypeNormal" onclick="setMemberTypeFilter('一般會員')" style="padding: 7px 11px; border-radius: 20px; cursor: pointer; border: 1px solid #CBD5E1; background: #FFFFFF; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;" title="僅篩選一般會員（再按一次取消）">
+            <i class="ph ph-user" style="font-size: 16px;"></i>
+          </button>
         </div>
       </div>
 
@@ -6411,14 +6413,14 @@
                 <div style="display:flex; justify-content:space-between; font-size:10px; line-height:1.75;">
                   <div style="width:48%;">
                     <strong>Party A: Yan Zhi Xin Biotechnology Co., Ltd.</strong><br>
-                    • Representative: CEO / General Director<br>
-                    • Official Seal: <u>[Yan Zhi Xin Biotech Official Seal]</u>
+                    Representative: CEO / General Director<br>
+                    Official Seal: <u>[Yan Zhi Xin Biotech Official Seal]</u>
                   </div>
                   <div style="width:48%;">
                     <strong>Party B (Distributor):</strong><br>
-                    • Name: <u>${memberName || compTitle || '-'}</u><br>
-                    • Authorized Signature: ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:40px; vertical-align:middle;">` : '______________________'}<br>
-                    • Execution Date: <u>${nowYMD}</u>
+                    Name: <u>${memberName || compTitle || '-'}</u><br>
+                    Authorized Signature: ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:40px; vertical-align:middle;">` : '______________________'}<br>
+                    Execution Date: <u>${nowYMD}</u>
                   </div>
                 </div>
               </div>
@@ -8210,50 +8212,71 @@
 
     const cardsHtml = pageOrders.map(o => {
       const curStatus = o.status || '選購';
-      const orderDateStr = o.orderTime ? o.orderTime.split(' ')[0] : '-';
+      const orderDateStr = o.orderTime ? o.orderTime : '-';
       const custName = o.receiverName || o.memberName || '訪客';
-      const custPhone = o.receiverPhone || o.memberPhone || '-';
+      const custPhone = o.receiverPhone || o.memberPhone || '';
 
       const itemsHtml = (o.items || []).map(it => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #E2E8F0; font-size:12px;">
-          <div style="display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%;">
-            <span style="font-weight:700; color:var(--text);">${esc(it.productName || '商品')}</span>
-            <span style="color:var(--text-muted); font-size:11px;">(${esc(it.spec || it.mallPrdId || '-')})</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px dashed #E2E8F0; font-size:13px;">
+          <div style="display:flex; align-items:baseline; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">
+            <span style="font-weight:700; color:#0F172A;">${esc(it.productName || '商品')}</span>
+            ${(it.spec || it.mallPrdId) ? `<span style="color:#64748B; font-size:11.5px;">(${esc(it.spec || it.mallPrdId)})</span>` : ''}
           </div>
-          <span style="font-family:monospace; font-weight:700; color:var(--text);">
+          <span style="font-family:monospace; font-weight:700; color:#0F172A; white-space:nowrap;">
             x${it.buyQty || 1} · NT$ ${Number(it.subtotal || ((it.buyQty || 1) * (it.price || 0))).toLocaleString()}
           </span>
         </div>
       `).join('');
 
       return `
-        <div class="picking-order-card" onclick="switchTab('tab4'); setTimeout(() => toggleOrderEdit('${o.orderId}'), 120);" style="border: 1.5px solid var(--accent-line); border-radius: 8px; background: #fff; margin-bottom: 0; cursor: pointer; transition: all 0.2s;" title="點擊跳轉至訂單管理查看明細">
-          <div class="picking-order-header" style="background: #F8FAFC; padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; flex-wrap: wrap; gap: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span style="font-weight: 800; color: var(--accent); font-size: 14px; font-family: monospace;">${esc(o.orderId)}</span>
+        <div class="picking-order-card" onclick="switchTab('tab4'); setTimeout(() => toggleOrderEdit('${o.orderId}'), 120);" style="border: 1px solid rgba(144, 190, 224, 0.45); border-radius: 12px; background: #FFFFFF; padding: 16px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(44, 82, 130, 0.05); transition: all 0.2s;" title="點擊跳轉至訂單管理查看明細">
+          <!-- 頂部：單號、狀態標籤、會員編號與日期 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-bottom:10px; border-bottom:1px solid #F1F5F9;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="font-weight:800; color:#1E3A8A; font-size:15px; font-family:monospace; letter-spacing:0.3px;">${esc(o.orderId)}</span>
               <span class="order-status-badge" data-status="${esc(curStatus)}">${esc(curStatus)}</span>
-              <span class="id-chip" style="font-size: 11px;"><i class="ph ph-identification-card"></i> ${esc(o.memberId || '訪客')}</span>
+              ${o.memberId ? `<span class="id-chip" style="font-size:11px;"><i class="ph ph-identification-card"></i> ${esc(o.memberId)}</span>` : ''}
             </div>
-            <span style="font-size: 12px; color: var(--text-muted); font-family: monospace;">${esc(orderDateStr)}</span>
+            <span style="font-size:12px; color:#94A3B8; font-family:monospace;">${esc(orderDateStr)}</span>
           </div>
-          <div style="padding: 12px 14px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; flex-wrap: wrap; gap: 6px;">
-              <span>客戶姓名：<strong style="color:var(--text);">${esc(custName)}</strong></span>
-              <span>聯絡電話：<strong style="font-family:monospace;">${esc(custPhone)}</strong></span>
-            </div>
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 8px 12px; margin-bottom: 10px;">
-              ${itemsHtml || '<div style="color:var(--text-muted); font-size:12px;">無商品明細</div>'}
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
-              <span>付款方式：<strong>${esc(o.payMethod || '線上支付')}</strong></span>
-              <span>訂單總金額：<strong style="color: var(--accent); font-size: 15px; font-family: monospace;">NT$ ${Number(o.totalAmount || 0).toLocaleString()}</strong></span>
+
+          <!-- 顧客膠囊條：拿掉死板標籤，圖示化呈現，電話支援手機直接撥號點擊 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; font-size:13.5px; flex-wrap:wrap; gap:8px;">
+            <span style="font-weight:800; color:#0F172A; display:inline-flex; align-items:center; gap:5px;">
+              <i class="ph ph-user" style="color:var(--accent); font-size:16px;"></i> ${esc(custName)}
+            </span>
+            ${custPhone ? `
+              <a href="tel:${esc(custPhone)}" onclick="event.stopPropagation();" style="color:#475569; font-family:monospace; font-size:13px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:600;">
+                <i class="ph ph-phone" style="font-size:15px; color:#64748B;"></i> ${esc(custPhone)}
+              </a>` : ''}
+          </div>
+
+          <!-- 商品明細：淺底微色塊，具備呼吸留白感 -->
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px 12px; margin-bottom:10px;">
+            ${itemsHtml || '<div style="color:var(--text-muted); font-size:12px;">無商品明細</div>'}
+          </div>
+
+          <!-- 底部：付款方式與突出醒目的大字級金額 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:4px;">
+            <span style="font-size:12px; color:#475569; background:#EEF2F6; padding:3px 10px; border-radius:6px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+              <i class="ph ph-credit-card"></i> ${esc(o.payMethod || '線上支付')}
+            </span>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+              <span style="font-size:12px; color:#64748B;">訂單總額</span>
+              <strong style="color:#1E3A8A; font-size:18px; font-family:'Noto Serif TC', serif; font-weight:900;">
+                NT$ ${Number(o.totalAmount || 0).toLocaleString()}
+              </strong>
             </div>
           </div>
         </div>
       `;
-    }).join('<div style="width:100%; border-top:1.5px dashed #CBD5E1; margin:14px 0;"></div>'); // 🌟 每一筆訂單中間皆有淺淡優雅虛線分隔
+    }).join(`
+      <div style="width: 100%; display: flex; align-items: center; justify-content: center; margin: 24px 0 20px 0;">
+        <div style="width: 100%; border-top: 1.5px dashed rgba(184, 213, 229, 0.65);"></div>
+      </div>
+    `);
 
-    
+    // 🌟 賈伯斯直覺分頁控制列
     let paginationHtml = '';
     if (totalPages > 1) {
       let pageBtns = '';
@@ -8289,7 +8312,7 @@
     listContainer.innerHTML = cardsHtml + paginationHtml;
   }
 
-  
+  // 直覺換頁函式 (切換時平滑微移至清單頂部)
   function changeDashboardPage(newPage) {
     dashCurrentPage = newPage;
     renderDashboardOrderList();
@@ -8307,11 +8330,11 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  
-  
-  
+  // ==========================================
+  // 進貨與上架欄位：試算表歷史輸入紀錄下拉式選單引擎
+  // ==========================================
   const SUGGESTION_MAP = {
-    
+    // 進貨表單 (Tab 1)
     'invName': { field: 'productName', source: 'inv' },
     'invCategory': { field: 'category', source: 'inv' },
     'invType': { field: 'type', source: 'inv' },
@@ -8322,7 +8345,7 @@
     'invRecorder': { field: 'recorder', source: 'inv' },
     'restockRecorder': { field: 'recorder', source: 'inv' },
 
-    
+    // 上架表單 (Tab 2) - 支援跨進貨與商城雙向歷史提取
     'mallProductName': { field: 'productName', source: 'both' },
     'mallCategory': { field: 'category', source: 'both' },
     'mallType': { field: 'type', source: 'both' },
@@ -8449,7 +8472,7 @@
     }
   });
 
-  
+  // 賈伯斯直覺操作：點選別處空白處，自動收合開展之表單與經銷抽屜
   document.addEventListener('click', function(e) {
     const memForm = document.getElementById('memAddFormContainer');
     if (memForm && memForm.style.display !== 'none') {
@@ -8463,7 +8486,7 @@
       }
     }
 
-    
+    // 經銷頁抽屜點別處收合機制
     document.querySelectorAll('.dist-collapsible-zone.open').forEach(drawer => {
       if (!drawer.contains(e.target)) {
         drawer.classList.remove('open');
@@ -11059,7 +11082,9 @@
     try {
       const res = await apiCall('getMemberList');
       if (res && res.status === 'success') {
-        const resData = res.data || [];
+        const resData = Array.isArray(res.data)
+          ? res.data
+          : (res.data && Array.isArray(res.data.list) ? res.data.list : []);
         memberCache = resData;
         isMemberLoaded = true;
         renderMemberList();
@@ -11072,16 +11097,92 @@
     }
   }
 
+  // 會員類型過篩狀態機
+  let currentMemberTypeFilter = ''; // '' | '經銷會員' | 'VIP會員' | '一般會員'
+
+  function setMemberTypeFilter(type) {
+    if (currentMemberTypeFilter === type) {
+      currentMemberTypeFilter = ''; // 再次點擊取消篩選，還原顯示全部
+    } else {
+      currentMemberTypeFilter = type;
+    }
+    updateMemberTypeFilterUI();
+    renderMemberList();
+  }
+
+  function updateMemberTypeFilterUI() {
+    const btnDist = document.getElementById('pillMemTypeDist');
+    const btnVip = document.getElementById('pillMemTypeVip');
+    const btnNormal = document.getElementById('pillMemTypeNormal');
+
+    const isDist = (currentMemberTypeFilter === '經銷會員');
+    const isVip = (currentMemberTypeFilter === 'VIP會員');
+    const isNormal = (currentMemberTypeFilter === '一般會員');
+
+    if (btnDist) {
+      btnDist.style.background = isDist ? 'rgba(124, 58, 237, 0.12)' : '#FFFFFF';
+      btnDist.style.color = isDist ? '#7C3AED' : '#64748B';
+      btnDist.style.borderColor = isDist ? '#7C3AED' : '#CBD5E1';
+    }
+    if (btnVip) {
+      btnVip.style.background = isVip ? '#FEF3C7' : '#FFFFFF';
+      btnVip.style.color = isVip ? '#D97706' : '#64748B';
+      btnVip.style.borderColor = isVip ? '#F59E0B' : '#CBD5E1';
+    }
+    if (btnNormal) {
+      btnNormal.style.background = isNormal ? 'var(--accent-soft)' : '#FFFFFF';
+      btnNormal.style.color = isNormal ? 'var(--accent)' : '#64748B';
+      btnNormal.style.borderColor = isNormal ? 'var(--accent)' : '#CBD5E1';
+    }
+  }
+
+  // 反查推薦人階層資訊（支援直屬上線與上上線推薦人姓名與編號反查）
+  function getReferrerChainInfo(targetMemberId) {
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const target = members.find(m => String(m.memberId || '').trim() === String(targetMemberId || '').trim());
+    if (!target) return { directId: '', directName: '', grandId: '', grandName: '', isSecondGen: false };
+
+    const directId = String(target.lineId || target.referrerId || '').trim();
+    let directName = '';
+    if (directId) {
+      if (directId === 'TW-NAMIS') {
+        directName = '妍之馨總部';
+      } else {
+        const directMember = members.find(m => String(m.memberId || '').trim() === directId);
+        directName = directMember ? (directMember.memberName || '經銷商') : '經銷商';
+      }
+    }
+
+    let grandId = '';
+    let grandName = '';
+    let isSecondGen = false;
+
+    if (directId && directId !== 'TW-NAMIS') {
+      const directMember = members.find(m => String(m.memberId || '').trim() === directId);
+      if (directMember) {
+        grandId = String(directMember.lineId || directMember.referrerId || '').trim();
+        if (grandId) {
+          isSecondGen = true;
+          if (grandId === 'TW-NAMIS') {
+            grandName = '妍之馨總部';
+          } else {
+            const grandMember = members.find(m => String(m.memberId || '').trim() === grandId);
+            grandName = grandMember ? (grandMember.memberName || '經銷商') : '經銷商';
+          }
+        }
+      }
+    }
+
+    return { directId, directName, grandId, grandName, isSecondGen };
+  }
+
   function renderMemberList() {
     closeForm('mem');
 
     const kwElement = document.getElementById('filterMemberKeyword');
     const kw = kwElement ? kwElement.value.toLowerCase() : '';
 
-    // =========================================================================
-    // 嚴格同一人驗證鐵律（同姓名 且 同電話）：
-    // 若該人已有「有效經銷商」，前端僅顯示經銷商卡片，自動排除其會員卡片
-    // =========================================================================
+    // 嚴格同一人驗證鐵律（同姓名 且 同電話）
     const activeDistPersonKeys = new Set();
     memberCache.forEach(item => {
       const isDist = (String(item.memberType || '').trim() === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
@@ -11095,8 +11196,11 @@
       }
     });
 
-    // 🌟 嚴格權限過濾：總部看全體；經銷商僅看自己、兩代經銷商與自己直屬一般/VIP會員
     const bloodline = getDistributorBloodline();
+    const currentSession = getActiveDistributorSession();
+    const currentMyId = String(currentSession.memberId || '').trim();
+
+    // 🌟 嚴格權限過濾：總部看全體；經銷商僅看自己、兩代下線經銷商與自己直屬一般/VIP會員（排除上線經銷商）
     const bloodlineScopedMembers = bloodline.isHQ 
       ? memberCache 
       : memberCache.filter(m => {
@@ -11106,14 +11210,14 @@
           const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
 
           if (isDist) {
-            // 經銷商名單：僅顯示自己、一代下線、二代下線 (防呆鍊保護)
-            return (mId === bloodline.myId) || 
-                   (bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId)) || 
-                   (bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId)) ||
-                   (bloodline.downlineDistIds && bloodline.downlineDistIds.has(mId));
+            // 本人一定看得到
+            if (mId === bloodline.myId) return true;
+            // 下線經銷商（一代或二代）
+            return (bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId)) || 
+                   (bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId));
           } else {
-            // 一般與 VIP 會員：嚴格只顯示自己直屬推薦的會員 (不含底下經銷商的會員)
-            return (ref === bloodline.myId) || (mId === bloodline.myId);
+            // 一般與 VIP 會員：嚴格只顯示自己直屬推薦的會員
+            return (ref === bloodline.myId);
           }
         });
 
@@ -11130,22 +11234,13 @@
       return true;
     });
 
-    // 🌟 本人置頂演算法：當前登入之經銷商本人卡片強制排在第 1 個！
-    const currentSession = getActiveDistributorSession();
-    const currentMyId = String(currentSession.memberId || '').trim();
-    const currentMyPhone = currentSession.phone ? normalizeMemberPhone(currentSession.phone) : '';
-    const currentMyEmail = currentSession.email ? String(currentSession.email).trim().toLowerCase() : '';
-
+    // 🌟 本人鐵律：僅依唯一的 memberId 精確匹配，絕不使用 Email 避免共用信箱時誤判！
     const isSelfMember = (m) => {
       const mId = String(m.memberId || '').trim();
-      const mPhone = normalizeMemberPhone(m.phone);
-      const mEmail = String(m.email || '').trim().toLowerCase();
-      return (currentMyId && mId === currentMyId) ||
-             (currentMyPhone && mPhone && currentMyPhone === mPhone) ||
-             (currentMyEmail && mEmail && currentMyEmail === mEmail);
+      return (currentMyId && mId === currentMyId);
     };
 
-    // 排序：本人置頂 (-1)，其餘項目維持原時間排序
+    // 排序：本人置頂，其餘維持時間排序
     deduplicatedList.sort((a, b) => {
       const aIsSelf = isSelfMember(a);
       const bIsSelf = isSelfMember(b);
@@ -11155,12 +11250,24 @@
     });
 
     const filtered = deduplicatedList.filter(item => {
+      const memberType = String(item.memberType || '一般會員').trim();
+      const mId = String(item.memberId || '').trim();
+      const isDist = (memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+      const isVip = (!isDist && memberType.includes('VIP'));
+      const isNormal = (!isDist && !isVip);
+
+      // 依選取之身分 Icon 進行精準過篩
+      if (currentMemberTypeFilter === '經銷會員' && !isDist) return false;
+      if (currentMemberTypeFilter === 'VIP會員' && !isVip) return false;
+      if (currentMemberTypeFilter === '一般會員' && !isNormal) return false;
+
       if (!kw) return true;
-      // 完整比對「會員管理」工作表該列所有欄位 (包含身分證字號、營登統編、銀行代碼帳號等)
       const rowText = (item._raw || Object.values(item).filter(v => v !== null && v !== undefined && typeof v !== 'object').join(' ')).toLowerCase();
       const words = kw.split(/\s+/).filter(Boolean);
       return words.every(w => rowText.includes(w));
     });
+
+    updateMemberTypeFilterUI();
 
     const container = document.getElementById('memberListContainer');
     if (!container) return;
@@ -11171,19 +11278,31 @@
 
     container.innerHTML = filtered.map(item => {
       const memberType = String(item.memberType || '一般會員').trim();
-      // 🌟 經銷商規格判定：排除已取消的 DIS-，精準對齊 [國碼2-年2-月日4-序號3] (如 TW-26-1102-001) 或總部 TW-NAMIS
       const mId = String(item.memberId || '').trim();
       const isDist = (memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
-      // 判定是否為登入經銷商本人
       const isSelf = isSelfMember(item);
       const isVip = (!isDist && memberType.includes('VIP'));
       const isActive = (String(item.status || '有效').trim() !== '失效');
 
-      // 1. 膠囊標籤樣式分流：一代經銷 / 二代經銷 / 經銷會員 / VIP / 一般
-      let badgeBg, badgeColor, badgeBorder, badgeIcon, displayType = memberType;
-      const isGen1 = !bloodline.isHQ && bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId);
-      const isGen2 = !bloodline.isHQ && bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId);
+      // 取得推薦人階層資訊
+      const refChain = getReferrerChainInfo(mId);
 
+      let gen1Info = "無";
+      let gen2Info = "無";
+      let isGen1 = false;
+      let isGen2 = false;
+
+      if (isDist && !isSelf) {
+        const refId = String(item.lineId || item.referrerId || '').trim();
+        if (refId === currentMyId || (bloodline.isHQ && refId.startsWith('TW-NAMIS'))) {
+          isGen1 = true;
+        } else {
+          isGen2 = true;
+        }
+      }
+
+      // 1. 會員身分標籤樣式 (賈伯斯視覺層級)
+      let badgeBg, badgeColor, badgeBorder, badgeIcon, displayType = memberType;
       if (isDist) {
         badgeBg = 'rgba(124, 58, 237, 0.08)';
         badgeColor = '#7C3AED';
@@ -11191,6 +11310,7 @@
         badgeIcon = '<i class="ph ph-handshake" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
         if (isGen1) displayType = '一代經銷';
         else if (isGen2) displayType = '二代經銷';
+        else displayType = '經銷會員';
       } else if (isVip) {
         badgeBg = 'rgba(245, 158, 11, 0.10)';
         badgeColor = 'var(--warning)';
@@ -11203,23 +11323,42 @@
         badgeIcon = '<i class="ph ph-user" style="vertical-align: middle; margin-right: 4px; font-size: 14px;"></i>';
       }
 
-      // 2. 有效 / 審核中 / 失效 三態極簡線條膠囊標籤
+      // 2. 右側狀態徽章 (賈伯斯極致體驗：一般會員與 VIP 會員 100% 拔除「審核中」)
       const rawStatus = String(item.status || '有效').trim();
       let statusBadgeHtml = '';
-      if (rawStatus === '審核中') {
-        statusBadgeHtml = `<span style="border: 1px solid #FDE68A; background: #FFFBEB; color: #D97706; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">審核中</span>`;
-      } else if (rawStatus === '失效') {
-        statusBadgeHtml = `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
+
+      if (isDist) {
+        // 唯有經銷夥伴才具有審核資格狀態
+        if (rawStatus === '審核中') {
+          statusBadgeHtml = `<span style="border: 1px solid #FDE68A; background: #FFFBEB; color: #D97706; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">審核中</span>`;
+        } else if (rawStatus === '失效') {
+          statusBadgeHtml = `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">失效</span>`;
+        } else {
+          statusBadgeHtml = `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`;
+        }
+      } else if (isVip) {
+        // VIP 會員：商城滿額自動晉升，免審核！動態運算 VIP 效期
+        const vipExpStr = String(item.vipExpiry || item.vipExpireDate || item.vipExp || '').trim();
+        if (vipExpStr && vipExpStr !== '-') {
+          const nowYMD = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+          const cleanExp = vipExpStr.split(' ')[0].replace(/-/g, '/');
+          if (cleanExp < nowYMD) {
+            statusBadgeHtml = `<span style="border: 1px solid #FECACA; background: #FEF2F2; color: #EF4444; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display:inline-flex; align-items:center; gap:3px;"><i class="ph ph-warning-circle"></i> VIP已到期</span>`;
+          } else {
+            statusBadgeHtml = `<span style="border: 1px solid #FDE68A; background: #FFFBEB; color: #D97706; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display:inline-flex; align-items:center; gap:3px;"><i class="ph ph-crown"></i> VIP生效中</span>`;
+          }
+        } else {
+          statusBadgeHtml = `<span style="border: 1px solid #FDE68A; background: #FFFBEB; color: #D97706; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display:inline-flex; align-items:center; gap:3px;"><i class="ph ph-crown"></i> VIP會員</span>`;
+        }
       } else {
-        statusBadgeHtml = `<span style="border: 1px solid #A7F3D0; background: #ECFDF5; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 700;">有效</span>`;
+        // 一般會員：一般純粹消費者，終身有效、免審核、無效期干擾
+        statusBadgeHtml = `<span style="border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display:inline-flex; align-items:center; gap:4px;"><i class="ph ph-check" style="color:var(--success); font-size:12px;"></i> 正常</span>`;
       }
 
-      // 3. 容錯讀取真實試算表欄位，杜絕出現「-」缺漏
       const bday = item.birthday || item.birth || '-';
       const distExp = item.distExpiry || item.distExp || item.vipExpiry || '-';
-      const vipExp = item.vipExpiry || item.vipExp || '-';
+      const vipExp = item.vipExpiry || item.vipExpireDate || item.vipExp || '-';
 
-      // 4. 單行化極致呼吸感渲染器：每項資訊獨立一行，嚴禁擠壓並排
       const renderDetailRow = (icon, label, value, highlightColor = '') => `
         <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; line-height:1.6; padding:4px 0; border-bottom:1px dashed #F1F5F9;">
           <span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
@@ -11231,32 +11370,77 @@
         </div>
       `;
 
+      // 推薦人資訊區塊（雙層推薦人結構：直屬上線 + 上上線）
+      let referrerBlockHtml = '';
+      if (refChain.isSecondGen) {
+        referrerBlockHtml = `
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; margin:6px 0; display:flex; flex-direction:column; gap:6px;">
+            <div style="font-size:12px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:6px;">
+              <i class="ph ph-share-network" style="color:var(--accent); font-size:15px;"></i> 推薦人關係鏈
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; border-bottom:1px dashed #E2E8F0; padding-bottom:4px;">
+              <span style="color:var(--text-muted);">直屬上線推薦人</span>
+              <span style="font-weight:700; color:#0F172A;">
+                <span style="font-family:monospace; background:#FFFFFF; border:1px solid #CBD5E1; padding:1px 5px; border-radius:3px;">${refChain.directId}</span> 
+                ${refChain.directName}
+              </span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+              <span style="color:var(--text-muted);">上上線推薦人</span>
+              <span style="font-weight:700; color:#7C3AED;">
+                <span style="font-family:monospace; background:#FFFFFF; border:1px solid #DDD6FE; padding:1px 5px; border-radius:3px;">${refChain.grandId}</span> 
+                ${refChain.grandName}
+              </span>
+            </div>
+          </div>
+        `;
+      } else {
+        referrerBlockHtml = `
+          <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; line-height:1.6; padding:4px 0; border-bottom:1px dashed #F1F5F9;">
+            <span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+              <i class="ph ph-share-network" style="font-size:15px; color:var(--accent);"></i> 推薦人資訊
+            </span>
+            <span style="font-weight:700; color:var(--text); text-align:right;">
+              <span style="font-family:monospace; background:#F8FAFC; border:1px solid #CBD5E1; padding:1px 5px; border-radius:3px;">${refChain.directId || '無'}</span>
+              ${refChain.directName ? `<span style="margin-left:4px; color:#0F172A;">(${refChain.directName})</span>` : ''}
+            </span>
+          </div>
+        `;
+      }
+
+      // 3. 詳情欄位條件式自適應排版
       let timeDetailsHtml = '';
       if (isDist) {
         timeDetailsHtml = [
           renderDetailRow('ph-phone', '聯絡電話', item.phone),
-          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          referrerBlockHtml,
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '經銷申請', item.registerTime),
-          renderDetailRow('ph-calendar-check', '有效到期', distExp, isActive ? '#7C3AED' : 'var(--danger)'),
+          renderDetailRow('ph-calendar-check', '有效到期', distExp || '永久有效', isActive ? '#7C3AED' : 'var(--danger)'),
           renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       } else if (isVip) {
+        // VIP 會員：顯示晉升日期、VIP 到期日與年度滿額累計
+        const vipStartDate = item.vipTime || item.vipDate || item.registerTime || '-';
+        const vipExpireDate = (vipExp && vipExp !== '-') ? vipExp : '商城滿額展延中';
         timeDetailsHtml = [
           renderDetailRow('ph-phone', '聯絡電話', item.phone),
-          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          referrerBlockHtml,
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
-          renderDetailRow('ph-sparkle', '晉升 VIP', item.vipTime),
-          renderDetailRow('ph-calendar-check', '有效到期', vipExp, isActive ? 'var(--warning)' : 'var(--danger)'),
+          renderDetailRow('ph-crown', '晉升 VIP', vipStartDate, '#D97706'),
+          renderDetailRow('ph-calendar-check', 'VIP 到期日', vipExpireDate, '#EF4444'),
+          renderDetailRow('ph-chart-line-up', '年度消費累計', '依商城年度消費自動展延', 'var(--text-muted)'),
           renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       } else {
+        // 一般會員：終身無效期，完全移除過期焦慮
         timeDetailsHtml = [
           renderDetailRow('ph-phone', '聯絡電話', item.phone),
-          renderDetailRow('ph-share-network', '推薦人編號', item.lineId || '無'),
+          referrerBlockHtml,
           renderDetailRow('ph-envelope-simple', '電子信箱', item.email),
           renderDetailRow('ph-calendar-plus', '註冊時間', item.registerTime),
+          renderDetailRow('ph-infinity', '會員期限', '終身無效期（一般消費者）', 'var(--text-muted)'),
           renderDetailRow('ph-cake', '生日資訊', bday)
         ].join('');
       }
@@ -11264,7 +11448,6 @@
       return `
         <div class="inv-card" id="mem-card-${item._rowId}" onclick="toggleMemEdit(${item._rowId})">
           <div class="inv-header">
-            <!-- 1. 頂部：身份標籤 + 姓名 + 會員編號 + 本人膠囊標籤 -->
             <div class="inv-info">
               <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span style="background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder}; padding:2px 9px; border-radius:12px; font-size:11px; display:inline-flex; align-items:center; font-weight:700;">
@@ -11280,7 +11463,6 @@
               </div>
             </div>
 
-            <!-- 2. 中間操作列：左側 (僅留有效/失效標籤，已移除人頭ICON) ＋ 右側 (僅留刪除與展開，已移除複製) -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border-subtle); padding-top:8px; margin-top:2px;" onclick="event.stopPropagation()">
               <div style="display:flex; align-items:center;">
                 ${statusBadgeHtml}
@@ -11300,7 +11482,6 @@
             </div>
           </div>
 
-          <!-- 3. 下方詳細資訊區：100% 滿版橫幅，極致呼吸感，每樣資訊完整獨立一行 -->
           <div class="card-readonly-content" style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border-subtle); display:flex; flex-direction:column; gap:2px; width:100%;">
             ${timeDetailsHtml}
           </div>
@@ -11970,43 +12151,100 @@
 
     container.innerHTML = currentOrderItemsWorkingCopy.map((it, idx) => {
       const isUnlocked = isOrderItemUnlocked;
+      const isBundle = Boolean(it.productId && String(it.productId).startsWith('BUNDLE:'));
 
-      // 唯讀封印模式下的呈現（無文字按鈕・純圖示乾淨排版）
-      const lockedHtml = `
-        <div class="sealed-product-card">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">#${idx + 1}</span>
-              <strong style="color: var(--text); font-size: 14px;">${it.productName}</strong>
-              ${it.isNew ? '<span style="background:#dcfce7; color:#16a34a; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:700;">新追加</span>' : ''}
+      // 組合套組配方解析引擎：解析出套組內各單品之進貨編號與件數
+      let bundleSubItemsHtml = '';
+      if (isBundle) {
+        const rawRecipe = String(it.productId).replace('BUNDLE:', '').trim();
+        const parts = rawRecipe.split('+');
+        const subRows = parts.map(part => {
+          const [subPid, subQtyStr] = part.split('*');
+          const singleQty = Number(subQtyStr) || 1;
+          const totalSubQty = singleQty * (Number(it.buyQty) || 1);
+          const invMatch = (inventoryCache || []).find(x => x.productId === subPid);
+          const subName = invMatch ? invMatch.productName : '子商品品項';
+          const subSpec = invMatch ? invMatch.spec : '';
+
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; padding:6px 10px; font-size:12px;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span class="id-chip" style="font-size:10.5px; border-color:#CBD5E1;"><i class="ph ph-barcode"></i> ${subPid}</span>
+                <strong style="color:#0F172A;">${subName}</strong>
+                ${subSpec ? `<span style="color:#64748B; font-size:11px;">(${subSpec})</span>` : ''}
+              </div>
+              <div style="font-family:monospace; font-weight:800; color:#0F172A;">
+                每套 ${singleQty} 件 · 合計 <strong style="color:var(--accent); font-size:13px;">${totalSubQty} 件</strong>
+              </div>
             </div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <span class="id-chip" title="商城架號"><i class="ph ph-tag" style="vertical-align: middle;"></i> 架號: ${it.mallPrdId || '-'}</span>
-              <span class="id-chip" title="進貨編號"><i class="ph ph-barcode" style="vertical-align: middle;"></i> 進貨: ${it.productId || '-'}</span>
+          `;
+        }).join('');
+
+        bundleSubItemsHtml = `
+          <div style="background:#FAF5FF; border:1.5px solid #DDD6FE; border-radius:8px; padding:10px 12px; margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+            <div style="font-size:12px; font-weight:800; color:#7C3AED; display:flex; align-items:center; gap:6px;">
+              <i class="ph ph-package" style="font-size:16px;"></i> 組合套組內含商品明細清單
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              ${subRows}
             </div>
           </div>
-          <div style="display: flex; gap: 14px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
-            <div style="flex-shrink: 0;" title="點擊放大">${getThumbnailHtml(it.imageUrl)}</div>
-            <div class="order-text-full" style="flex: 1; font-size: 13px; color: var(--text); line-height: 1.8;">
-              <div>規格：<strong>${it.spec || '-'}</strong> · 顏色：<strong>${it.color || '-'}</strong> · 型態：<strong>${it.type || '-'}</strong></div>
-              <div>成份：${it.ingredients || '-'}</div>
-              <div style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">
-                購買數量：<strong style="color: var(--text); font-size: 13px;">${it.buyQty} 件</strong> · 
-                銷售單價：NT$ ${Number(it.price || 0).toLocaleString()} · 
-                小計：<strong style="color: var(--accent); font-size: 13px;">NT$ ${Number(it.subtotal || (it.buyQty * it.price)).toLocaleString()}</strong>
+        `;
+      }
+
+      // 賈伯斯純淨美學：完全排除成份，聚焦「進貨編號、商品名稱、數量」
+      const lockedHtml = `
+        <div class="sealed-product-card" style="background:#FFFFFF; border:1.5px solid #E2E8F0; border-radius:10px; padding:14px; margin-bottom:12px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+          <!-- 頂部：品名 + 編號晶片列 -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap; border-bottom:1px dashed #F1F5F9; padding-bottom:8px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="background:var(--accent-soft); color:var(--accent); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:800;">#${idx + 1}</span>
+              ${isBundle ? `<span style="background:rgba(124, 58, 237, 0.08); color:#7C3AED; border:1px solid #DDD6FE; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:800;"><i class="ph ph-package"></i> 組合套組</span>` : ''}
+              <strong style="color:var(--text); font-size:16px; letter-spacing:0.3px;">${it.productName}</strong>
+              ${it.isNew ? '<span style="background:#dcfce7; color:#16a34a; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:700;">新追加</span>' : ''}
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <span class="id-chip" title="${isBundle ? '套組編號' : '商城架號'}" style="font-weight:700; color:#0F172A; background:#F8FAFC;">
+                <i class="ph ph-tag" style="vertical-align:middle; color:var(--accent);"></i> ${isBundle ? '套組編號' : '架號'}: ${it.mallPrdId || '-'}
+              </span>
+              ${!isBundle ? `
+                <span class="id-chip" title="進貨商品編號" style="font-weight:800; color:#0F172A; background:#F8FAFC;">
+                  <i class="ph ph-barcode" style="vertical-align:middle; color:var(--accent);"></i> 進貨編號: ${it.productId || '-'}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- 中間：縮圖 + 數量與規格 -->
+          <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+            <div style="flex-shrink:0;" title="點擊放大">${getThumbnailHtml(it.imageUrl)}</div>
+            <div class="order-text-full" style="flex:1; display:flex; flex-direction:column; gap:4px; min-width:200px;">
+              <div style="font-size:13px; color:var(--text);">
+                規格：<strong>${it.spec || '-'}</strong> ${it.color ? `· 顏色：<strong>${it.color}</strong>` : ''} ${it.type ? `· 型態：<strong>${it.type}</strong>` : ''}
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px 12px; margin-top:4px; flex-wrap:wrap; gap:8px;">
+                <div style="font-size:13px; color:var(--text);">
+                  訂購數量：<strong style="font-size:18px; font-family:monospace; color:var(--accent); font-weight:900;">${it.buyQty} 件</strong>
+                </div>
+                <div style="font-size:13px; color:var(--text-muted);">
+                  單價：NT$ ${Number(it.price || 0).toLocaleString()} ｜ 小計：<strong style="color:var(--text); font-size:15px; font-family:monospace;">NT$ ${Number(it.subtotal || (it.buyQty * it.price)).toLocaleString()}</strong>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- 組合商品自動展開內含子商品進貨編號 -->
+          ${bundleSubItemsHtml}
         </div>
       `;
 
-      // 解鎖編輯模式下的欄位化呈現（移除品項為純線條圖示按鈕，無中文字）
+      // 解鎖編輯模式（同步拿掉成份輸入框，聚焦進貨編號、數量與價格）
       const unlockedHtml = `
         <div class="sealed-product-card unlocked" data-item-id="${it._rowId}">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">#${idx + 1}</span>
-              <strong style="color: var(--text); font-size: 14px;">${it.productName}</strong>
+              <strong style="color: var(--text); font-size: 15px;">${it.productName}</strong>
               <span style="background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; font-size: 11px; padding: 1px 6px; border-radius: 4px; font-weight: 600;">正在編輯</span>
             </div>
             <button type="button" class="icon-btn danger" onclick="deleteOrderItem('${it._rowId}')" title="移除此品項" style="padding: 6px 10px;">
@@ -12014,25 +12252,19 @@
             </button>
           </div>
           <div class="input-row">
-            <div class="input-col"><label class="form-label">商品型態</label><input type="text" class="login-input fld-item-type" value="${it.type || ''}" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
-          </div>
-          <div class="input-row">
-            <div class="input-col"><label class="form-label">商品顏色</label><input type="text" class="login-input fld-item-color" value="${it.color || ''}" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
+            <div class="input-col"><label class="form-label">進貨編號</label><input type="text" class="login-input fld-item-pid" value="${it.productId || ''}" readonly style="background:var(--bg) !important; font-family:monospace; font-weight:800;"></div>
           </div>
           <div class="input-row">
             <div class="input-col"><label class="form-label">商品規格</label><input type="text" class="login-input fld-item-spec" value="${it.spec || ''}" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
           </div>
           <div class="input-row">
-            <div class="input-col"><label class="form-label">商品主要成份 (完整顯示)</label><textarea class="login-input fld-item-ingredients" style="height:56px; resize:vertical;" oninput="onOrderItemFieldChange('${it._rowId}')">${it.ingredients || ''}</textarea></div>
-          </div>
-          <div class="input-row">
             <div class="input-col"><label class="form-label">購買數量</label><input type="number" class="login-input fld-item-qty" value="${it.buyQty || 1}" min="1" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
           </div>
           <div class="input-row">
-            <div class="input-col"><label class="form-label">商品銷售單價 (TWD)</label><input type="number" class="login-input fld-item-price" value="${it.price || 0}" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
+            <div class="input-col"><label class="form-label">銷售單價 (TWD)</label><input type="number" class="login-input fld-item-price" value="${it.price || 0}" oninput="onOrderItemFieldChange('${it._rowId}')"></div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; padding:8px 12px; border-radius:6px; border:1px solid #E2E8F0; margin-top:4px;">
-            <span style="font-size:12px; color:var(--text-muted);">金額小計試算：</span>
+            <span style="font-size:12px; color:var(--text-muted);">金額小計：</span>
             <strong style="color:var(--accent); font-size:14px; font-family:monospace;" class="fld-item-subtotal">NT$ ${(it.buyQty * it.price).toLocaleString()}</strong>
           </div>
         </div>
@@ -15678,7 +15910,7 @@
     }
   }
 
-  // 🔒 總部權限鑑別：只要編號是「TW-NAMIS」開頭即具備總部最高管理權限
+  // 🔒 總部權限鑑別：凡會員編號以「TW-NAMIS」開頭，均為妍之馨總部最高管理權限人員
   function isHeadquartersUser() {
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim().toUpperCase();
@@ -15687,7 +15919,7 @@
 
   // ==========================================
   // 🌟 微商血緣關係網核心引擎 (Genealogy / Bloodline Lineage Engine)
-  // 總部代表：TW-NAMIS 開頭 (上帝視角，通盤總覽所有資料)
+  // 總部代表：精準等於 TW-NAMIS (上帝視角，通盤總覽所有資料)
   // 各經銷商：僅看得到自己、底下各代經銷商，以及自身與底下延伸出去的會員名單、訂單與物流紀錄
   // ==========================================
   function getDistributorBloodline(targetDistId = null) {
@@ -15695,8 +15927,9 @@
     const myId = String(targetDistId || session.memberId || '').trim();
     const isHQ = isHeadquartersUser();
 
-    // 總部代表 TW-NAMIS 開頭擁有全局視野，無須過濾
-    if (isHQ || myId.startsWith('TW-NAMIS') || myId === 'HQ' || myId === 'ADMIN') {
+    // 凡是 TW-NAMIS 開頭皆為總部同仁，擁有全域最高視野，不受血緣隔離限制
+    const myIdUpper = myId.toUpperCase();
+    if (isHQ || myIdUpper.startsWith('TW-NAMIS') || myIdUpper === 'HQ' || myIdUpper === 'ADMIN') {
       const allIds = new Set((memberCache || []).map(m => String(m.memberId || '').trim()));
       return {
         isHQ: true,
