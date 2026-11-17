@@ -676,28 +676,137 @@
     .tab-btn.active::after { transform: scaleX(1); }
 
      
+    .mobile-top-bar,
+    .mobile-drawer-header,
+    .mobile-drawer-backdrop {
+      display: none;
+    }
+
+     
     @media (max-width: 768px) {
-      .tab-nav {
+      .mobile-top-bar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
         position: sticky !important;
         top: 0 !important;
-        z-index: 9999 !important;
+        z-index: 9998 !important;
         height: 50px !important;
-        max-height: 50px !important;
-        min-height: 50px !important;
-        gap: 8px !important;
-        padding: 0 8px !important;
-        margin-bottom: 12px !important;
+        padding: 0 12px !important;
+        background: var(--card-bg) !important;
+        border: 1.5px solid var(--accent-line) !important;
         border-radius: 8px !important;
         box-shadow: 0 4px 12px rgba(44, 82, 130, 0.12) !important;
+        margin-bottom: 8px !important;
       }
-      .tab-btn {
-        height: 100% !important;
-        padding: 0 10px !important;
-        font-size: 13.5px !important;
+      .mobile-top-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+      }
+      .mobile-hamburger-btn,
+      .mobile-logout-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 6px !important;
+        border: 1px solid var(--border-subtle) !important;
+        background: #FFFFFF !important;
+        color: var(--text) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 4px !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+      }
+      .mobile-logout-btn {
+        color: var(--danger) !important;
+        border-color: #FECACA !important;
+      }
+      .mobile-active-tab-title {
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: var(--accent) !important;
+        letter-spacing: 0.5px !important;
+      }
+      .mobile-drawer-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(15, 23, 42, 0.45) !important;
+        backdrop-filter: blur(2px) !important;
+        z-index: 10009 !important;
+      }
+      .mobile-drawer-backdrop.active {
+        display: block !important;
+      }
+      .tab-nav {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 248px !important;
+        max-width: 80vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        min-height: 100vh !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        padding: 14px 12px !important;
+        gap: 6px !important;
+        margin: 0 !important;
+        border-radius: 0 12px 12px 0 !important;
+        border: none !important;
+        border-right: 1.5px solid var(--accent-line) !important;
+        box-shadow: 4px 0 24px rgba(15, 23, 42, 0.16) !important;
+        z-index: 10010 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        touch-action: pan-y !important;
+        transform: translateX(-105%) !important;
+        transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+      .tab-nav.mobile-open {
+        transform: translateX(0) !important;
+      }
+      .mobile-drawer-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 4px 6px 12px 6px !important;
+        margin-bottom: 6px !important;
+        border-bottom: 1.5px solid var(--border-subtle) !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        color: var(--text) !important;
+      }
+      .tab-nav .tab-btn {
+        width: 100% !important;
+        height: auto !important;
+        padding: 12px 14px !important;
+        font-size: 15px !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+        text-align: left !important;
+      }
+      .tab-nav .tab-btn.active {
+        background: var(--accent-soft) !important;
+        color: var(--accent) !important;
+      }
+      .tab-nav .tab-btn::after {
+        display: none !important;
+      }
+      .tab-nav .tab-btn[onclick*="logoutDistributorAction"] {
+        margin-left: 0 !important;
+        margin-top: auto !important;
+        justify-content: center !important;
+        border-top: 1px dashed var(--border-subtle) !important;
+        border-radius: 0 !important;
+        padding-top: 14px !important;
       }
     }
     
@@ -3394,7 +3503,29 @@
   
   <div id="authenticatedAppShell" style="display: none; width: 100%; flex-direction: column; gap: 20px;">
 
-    <div class="tab-nav">
+    
+    <div class="mobile-top-bar">
+      <div class="mobile-top-left">
+        <button type="button" class="mobile-hamburger-btn" onclick="toggleMobileNavDrawer()" aria-label="開啟選單" title="開啟功能選單">
+          <i class="ph ph-list" style="font-size: 22px;"></i>
+        </button>
+        <span id="mobileActiveTabLabel" class="mobile-active-tab-title">進貨</span>
+      </div>
+      <button type="button" class="mobile-logout-btn" onclick="logoutDistributorAction()" title="登出經銷商後台">
+        <i class="ph ph-sign-out" style="font-size: 20px;"></i>
+      </button>
+    </div>
+
+    
+    <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop" onclick="closeMobileNavDrawer()"></div>
+
+    <div class="tab-nav" id="mainTabNav">
+      <div class="mobile-drawer-header">
+        <span><i class="ph ph-squares-four" style="vertical-align: middle; color: var(--accent); margin-right: 4px;"></i> 功能導覽</span>
+        <button type="button" class="icon-btn" onclick="closeMobileNavDrawer()" title="關閉選單" style="border: none; padding: 4px;">
+          <i class="ph ph-x" style="font-size: 18px;"></i>
+        </button>
+      </div>
       <button class="tab-btn active" onclick="switchTab('tab1', this)">
         <span class="material-symbols-outlined" style="vertical-align: middle;">inventory_2</span> 進貨
       </button>
@@ -7277,8 +7408,8 @@
     if (typeof memberCache !== 'undefined' && Array.isArray(memberCache)) {
       memberCache.forEach(m => {
         const id = String(m.memberId || '').trim().toUpperCase();
-        if (id.startsWith(iso + '-')) {
-          const match = id.match(/-(\d+)$/);
+        if (id.startsWith(iso + '-') && !id.startsWith('TW-NAMIS') && !/^(?:[A-Z]{2}-)?MEM-/.test(id)) {
+          const match = id.match(/^[A-Z]{2}-\d{2}-\d{4}-(\d+)$/);
           if (match && match[1]) {
             const seq = parseInt(match[1], 10);
             if (!isNaN(seq)) {
@@ -7895,7 +8026,7 @@
 
         
         
-        const isCustomerMem = memId.startsWith('MEM-') || memType.includes('一般') || (memType.includes('VIP') && memType !== '經銷會員');
+        const isCustomerMem = /^(?:[A-Z]{2}-)?MEM-/i.test(memId) || memType.includes('一般') || (memType.includes('VIP') && memType !== '經銷會員');
         if (isCustomerMem) {
           console.warn('偵測到非經銷商之顧客 Session，已自動清理重置：', memId, memType);
           localStorage.removeItem('YCH_DISTRIBUTOR_SESSION');
@@ -7951,6 +8082,22 @@
     renderLogisticsImages();
   });
 
+  function toggleMobileNavDrawer() {
+    const nav = document.getElementById('mainTabNav');
+    const backdrop = document.getElementById('mobileDrawerBackdrop');
+    if (!nav) return;
+    const willOpen = !nav.classList.contains('mobile-open');
+    nav.classList.toggle('mobile-open', willOpen);
+    if (backdrop) backdrop.classList.toggle('active', willOpen);
+  }
+
+  function closeMobileNavDrawer() {
+    const nav = document.getElementById('mainTabNav');
+    const backdrop = document.getElementById('mobileDrawerBackdrop');
+    if (nav) nav.classList.remove('mobile-open');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+
   function switchTab(tabId, clickedBtn) {
     if (getTabPermission(tabId) === 'none') {
       showToast('您目前沒有此分頁的檢視權限');
@@ -7978,6 +8125,12 @@
     if (targetTab) targetTab.classList.add('active');
     const resolvedBtn = clickedBtn || document.querySelector(`.tab-btn[onclick*="'${tabId}'"]`);
     if (resolvedBtn) resolvedBtn.classList.add('active');
+
+    const mobileLabel = document.getElementById('mobileActiveTabLabel');
+    if (mobileLabel && TAB_LABELS_MAP[tabId]) {
+      mobileLabel.innerText = TAB_LABELS_MAP[tabId];
+    }
+    closeMobileNavDrawer();
 
     const btnAddInv = document.querySelector("#tab1 button[onclick*=\"openNewForm('inv')\"]");
     const btnAddMall = document.querySelector("#tab2 button[onclick*=\"openNewForm('mall')\"]");
@@ -11208,9 +11361,9 @@
         autoComputeDistributorId();
       }
     } else {
-      // 一般與 VIP 會員固定為 MEM-yyyymmddhhmmss
+      // 一般與 VIP 會員統一為 國碼2碼-MEM-yyyymmddhhmmss
       const memIdEl = document.getElementById('memId');
-      if (memIdEl) memIdEl.value = 'MEM-' + getFormattedNowTime(true);
+      if (memIdEl) memIdEl.value = 'TW-MEM-' + getFormattedNowTime(true);
     }
   }
 
@@ -11395,7 +11548,9 @@
     // 嚴格同一人驗證鐵律（同姓名 且 同電話）
     const activeDistPersonKeys = new Set();
     memberCache.forEach(item => {
-      const isDist = (String(item.memberType || '').trim() === '經銷會員' || String(item.memberId || '').startsWith('DIS-'));
+      const itemId = String(item.memberId || '').trim().toUpperCase();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(itemId);
+      const isDist = !isGenMem && (String(item.memberType || '').trim() === '經銷會員' || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(itemId));
       const isActive = String(item.status || '有效').trim() !== '失效';
       if (isDist && isActive) {
         const name = String(item.memberName || '').trim();
@@ -11414,10 +11569,11 @@
     const bloodlineScopedMembers = bloodline.isHQ 
       ? memberCache 
       : memberCache.filter(m => {
-          const mId = String(m.memberId || '').trim();
+          const mId = String(m.memberId || '').trim().toUpperCase();
           const ref = String(m.lineId || m.referrerId || '').trim();
           const mType = String(m.memberType || '').trim();
-          const isDist = (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+          const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(mId);
+          const isDist = !isGenMem && ((mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS'));
 
           if (isDist) {
             // 本人一定看得到
@@ -11432,8 +11588,9 @@
         });
 
     const deduplicatedList = bloodlineScopedMembers.filter(item => {
-      const mId = String(item.memberId || '').trim();
-      const isDist = (String(item.memberType || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+      const mId = String(item.memberId || '').trim().toUpperCase();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(mId);
+      const isDist = !isGenMem && ((String(item.memberType || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS'));
       if (!isDist) {
         const name = String(item.memberName || '').trim();
         const phone = normalizeMemberPhone(item.phone);
@@ -11461,8 +11618,9 @@
 
     const filtered = deduplicatedList.filter(item => {
       const memberType = String(item.memberType || '一般會員').trim();
-      const mId = String(item.memberId || '').trim();
-      const isDist = (memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+      const mId = String(item.memberId || '').trim().toUpperCase();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(mId);
+      const isDist = !isGenMem && ((memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS'));
       const isVip = (!isDist && memberType.includes('VIP'));
       const isNormal = (!isDist && !isVip);
 
@@ -11489,7 +11647,9 @@
     container.innerHTML = filtered.map(item => {
       const memberType = String(item.memberType || '一般會員').trim();
       const mId = String(item.memberId || '').trim();
-      const isDist = (memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+      const mIdUpper = mId.toUpperCase();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(mIdUpper);
+      const isDist = !isGenMem && ((memberType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mIdUpper) || mIdUpper.startsWith('TW-NAMIS'));
       const isSelf = isSelfMember(item);
       const isVip = (!isDist && memberType.includes('VIP'));
       const isActive = (String(item.status || '有效').trim() !== '失效');
@@ -11783,7 +11943,9 @@
     const item = memberCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
       const isHQ = canEditTab('tab3');
-      const isDistMember = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-') || String(item.memberId || '').startsWith('TW-'));
+      const itemIdUpper = String(item.memberId || '').trim().toUpperCase();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(itemIdUpper);
+      const isDistMember = !isGenMem && (item.memberType === '經銷會員' || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(itemIdUpper) || itemIdUpper.startsWith('TW-NAMIS'));
 
       document.getElementById('memId').value = item.memberId || '';
       document.getElementById('memType').value = item.memberType || '一般會員';
@@ -16166,8 +16328,9 @@
 
     const isDistributorMember = (m) => {
       const mType = String(m.memberType || '').trim();
-      const mId = String(m.memberId || '').trim();
-      return (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || (mId.startsWith('TW-') && !mId.startsWith('MEM-'));
+      const mId = String(m.memberId || '').trim().toUpperCase();
+      if (!mId || /^(?:[A-Z]{2}-)?MEM-/.test(mId)) return false;
+      return (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS');
     };
 
     // 1. 直推一代經銷商集合
@@ -16234,10 +16397,12 @@
     if (!myId) return;
 
     // 💥 智慧對位修正：若當前 Session 還是舊的 MEM-，自動依 Email/電話在 memberCache 尋找真正的經銷會員
-    const isMemCustomer = myId.startsWith('MEM-');
+    const isMemCustomer = /^(?:[A-Z]{2}-)?MEM-/i.test(myId);
     if (isMemCustomer && typeof memberCache !== 'undefined') {
       const realDist = (memberCache || []).find(m => {
-        const isDistType = (String(m.memberType).trim() === '經銷會員') || String(m.memberId).startsWith('DIS-') || (!String(m.memberId).startsWith('MEM-') && String(m.memberId).includes('-'));
+        const mIdUpper = String(m.memberId || '').trim().toUpperCase();
+        const isGen = /^(?:[A-Z]{2}-)?MEM-/.test(mIdUpper);
+        const isDistType = !isGen && ((String(m.memberType).trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mIdUpper) || mIdUpper.startsWith('TW-NAMIS'));
         const sameEmail = session.email && String(m.email).trim().toLowerCase() === String(session.email).trim().toLowerCase();
         const samePhone = session.phone && String(m.phone).replace(/\D/g, '') === String(session.phone).replace(/\D/g, '');
         return isDistType && (sameEmail || samePhone);
@@ -16641,7 +16806,11 @@
     const members = Array.isArray(memberCache) ? memberCache : [];
 
     // 找出第一代直屬下線經銷商 (推薦人為本人，符合國碼經銷商規格)
-    const isDistributorId = (id, type) => (String(type || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id) || (id.startsWith('TW-') && !id.startsWith('MEM-'));
+    const isDistributorId = (id, type) => {
+      const idUpper = String(id || '').trim().toUpperCase();
+      if (!idUpper || /^(?:[A-Z]{2}-)?MEM-/.test(idUpper)) return false;
+      return (String(type || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(idUpper) || idUpper.startsWith('TW-NAMIS');
+    };
 
     const gen1List = members.filter(m => {
       const mId = String(m.memberId || '').trim();
@@ -16968,8 +17137,9 @@
     // 經銷商身分檢驗
     const isDistributor = (m) => {
       const type = String(m.memberType || '').trim();
-      const id = String(m.memberId || '').trim();
-      return (type === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id) || (id.startsWith('TW-') && !id.startsWith('TW-NAMIS'));
+      const id = String(m.memberId || '').trim().toUpperCase();
+      if (!id || /^(?:[A-Z]{2}-)?MEM-/.test(id)) return false;
+      return (type === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id);
     };
 
     // 本人帳號關聯
@@ -17388,7 +17558,7 @@
   function isTab8DistMember(m) {
     if (!m || isTab8HqMember(m)) return false;
     const id = String(m.memberId || '').trim().toUpperCase();
-    if (!id || id.startsWith('MEM-')) return false;
+    if (!id || /^(?:[A-Z]{2}-)?MEM-/.test(id)) return false;
     return /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id);
   }
 
