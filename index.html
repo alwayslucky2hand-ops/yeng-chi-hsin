@@ -3418,6 +3418,10 @@
         <i class="ph ph-tree-structure" style="font-size: 18px; vertical-align: middle;"></i> 經銷
       </button>
       
+      <button class="tab-btn" id="navBtnTab8" style="display:none;" onclick="switchTab('tab8', this)" title="總部人員與分頁權限管理">
+        <i class="ph ph-shield-check" style="font-size: 18px; vertical-align: middle;"></i> 權限
+      </button>
+      
       <button type="button" class="tab-btn" onclick="logoutDistributorAction()" title="登出經銷商後台" style="margin-left: auto; color: var(--danger);">
         <i class="ph ph-sign-out" style="font-size: 18px; vertical-align: middle;"></i>
       </button>
@@ -5022,6 +5026,90 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  
+  <div id="tab8" class="tab-content">
+    <div class="settings-section">
+      <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="ph ph-shield-check" style="vertical-align: middle; font-size: 22px; color: var(--accent);"></i> 權限管理</span>
+        <button type="button" id="btnOpenTab8AddHq" class="icon-btn" onclick="openTab8AddHqForm()" style="color: var(--accent); border-color: var(--accent); padding: 8px;" title="新增總部人員">
+          <i class="ph ph-plus" style="font-size: 20px;"></i>
+        </button>
+      </div>
+
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; display:flex; align-items:center; gap:6px; line-height:1.4;">
+        <i class="ph ph-info" style="font-size:15px; color:var(--accent); flex-shrink:0;"></i>
+        <span>點選人員卡片即可調整各分頁檢視與編輯權限，主帳號 TW-NAMIS 受保護不可刪除。</span>
+      </div>
+
+      
+      <div class="auth-nav-segment" style="margin-bottom:12px;">
+        <button type="button" class="auth-segment-btn active" id="tab8SegHq" onclick="switchTab8Segment('hq')">總部人員</button>
+        <button type="button" class="auth-segment-btn" id="tab8SegDist" onclick="switchTab8Segment('dist')">經銷商</button>
+      </div>
+
+      
+      <div class="filter-bar">
+        <div style="position:relative; width:100%;">
+          <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:18px;"></i>
+          <input type="text" id="tab8SearchInput" class="filter-input" style="width:100%; padding-left:36px; border-radius:20px;" placeholder="搜尋編號、姓名、電話或 Email..." oninput="renderTab8List()">
+        </div>
+      </div>
+
+      
+      <div id="tab8AddHqForm" style="display:none; background:#FFFFFF; border:1px solid var(--accent); border-radius:8px; padding:16px; margin-bottom:16px; box-shadow:0 4px 12px rgba(49, 117, 181, 0.1);">
+        <div onclick="closeTab8AddHqForm()" title="點擊收合" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:8px; margin-bottom:14px; cursor:pointer;">
+          <strong style="color:var(--accent);"><i class="ph ph-user-plus" style="vertical-align:middle;"></i> 新增總部人員</strong>
+          <i class="ph ph-x" style="color:var(--text-muted); font-size:18px;"></i>
+        </div>
+
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">編號</label>
+            <input type="text" id="tab8NewHqId" class="login-input" readonly style="background:var(--bg) !important; font-family:monospace; font-weight:800; color:var(--accent);">
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">姓名</label>
+            <input type="text" id="tab8NewHqName" class="login-input" placeholder="請輸入人員姓名">
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">電話</label>
+            <input type="tel" id="tab8NewHqPhone" class="login-input" placeholder="請輸入聯絡手機">
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">信箱</label>
+            <input type="email" id="tab8NewHqEmail" class="login-input" placeholder="請輸入登入驗證用 Email">
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label">權限</label>
+            <div id="tab8NewHqPermGrid" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:flex-end; align-items:center; margin-top:16px; border-top:1px dashed var(--border-subtle); padding-top:14px;">
+          <button type="button" class="icon-btn" onclick="closeTab8AddHqForm()" title="取消"><i class="ph ph-x" style="font-size:20px;"></i></button>
+          <button type="button" class="action-btn-primary" id="btnSaveTab8NewHq" onclick="saveTab8NewHqMember()" style="width:40px; height:40px; margin-top:0; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center;" title="建立總部人員"><i class="ph ph-check" style="font-size:22px;"></i></button>
+        </div>
+      </div>
+
+      
+      <div id="tab8MemberListContainer" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="text-align:center; color:var(--text-muted); padding:20px;">載入中...</div>
+      </div>
     </div>
   </div>
 
@@ -7699,6 +7787,71 @@
     }
   }
 
+  const TAB_LABELS_MAP = {
+    tab1: '進貨',
+    tab2: '上架',
+    tab3: '會員',
+    tab4: '訂單',
+    tab5: '物流',
+    tab6: '總覽',
+    tab7: '經銷',
+    tab8: '權限'
+  };
+
+  function getCurrentUserPermissions() {
+    const session = getActiveDistributorSession() || {};
+    const userId = String(session.memberId || '').trim().toUpperCase();
+    const isHq = isHeadquartersUser();
+    const fallback = isHq
+      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' }
+      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none' };
+
+    if (session.permissions && typeof session.permissions === 'object') {
+      const merged = Object.assign({}, fallback, session.permissions);
+      if (!isHq) merged.tab8 = 'none';
+      if (userId === 'TW-NAMIS') merged.tab8 = 'edit';
+      return merged;
+    }
+    return fallback;
+  }
+
+  function getTabPermission(tabId) {
+    const perms = getCurrentUserPermissions();
+    return perms[tabId] || 'none';
+  }
+
+  function canEditTab(tabId) {
+    return getTabPermission(tabId) === 'edit';
+  }
+
+  function applyTabVisibilityAndPermissions() {
+    const perms = getCurrentUserPermissions();
+    const isHq = isHeadquartersUser();
+    const tabIds = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5', 'tab6', 'tab7', 'tab8'];
+
+    let firstVisibleTab = null;
+    let activeTabStillVisible = false;
+    const activeBtn = document.querySelector('.tab-btn.active');
+    const activeMatch = activeBtn ? (activeBtn.getAttribute('onclick') || '').match(/'(tab\d+)'/) : null;
+    const activeTabId = activeMatch ? activeMatch[1] : null;
+
+    tabIds.forEach(tid => {
+      const btn = document.getElementById('navBtn' + tid.charAt(0).toUpperCase() + tid.slice(1))
+        || document.querySelector(`.tab-btn[onclick*="'${tid}'"]`);
+      const perm = perms[tid] || 'none';
+      const visible = (tid === 'tab8') ? (isHq && perm !== 'none') : (perm !== 'none');
+
+      if (btn) btn.style.display = visible ? '' : 'none';
+      if (visible && !firstVisibleTab) firstVisibleTab = tid;
+      if (visible && tid === activeTabId) activeTabStillVisible = true;
+    });
+
+    if (activeTabId && !activeTabStillVisible && firstVisibleTab) {
+      const targetBtn = document.querySelector(`.tab-btn[onclick*="'${firstVisibleTab}'"]`);
+      switchTab(firstVisibleTab, targetBtn);
+    }
+  }
+
   
   function unlockMainApplication(distributorInfo) {
     const authScreen = document.getElementById('authScreen');
@@ -7706,8 +7859,12 @@
     if (authScreen) authScreen.style.display = 'none';
     if (appShell) {
       appShell.style.display = 'flex';
-      
-      switchTab('tab1');
+      applyTabVisibilityAndPermissions();
+      const perms = getCurrentUserPermissions();
+      const tabIds = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5', 'tab6', 'tab7', 'tab8'];
+      const firstTab = tabIds.find(t => (t === 'tab8' ? isHeadquartersUser() && perms[t] !== 'none' : perms[t] !== 'none')) || 'tab1';
+      const targetBtn = document.querySelector(`.tab-btn[onclick*="'${firstTab}'"]`);
+      switchTab(firstTab, targetBtn);
     }
   }
 
@@ -7795,6 +7952,15 @@
   });
 
   function switchTab(tabId, clickedBtn) {
+    if (getTabPermission(tabId) === 'none') {
+      showToast('您目前沒有此分頁的檢視權限');
+      return;
+    }
+    if (tabId === 'tab8' && !isHeadquartersUser()) {
+      showToast('僅總部帳號可使用權限管理');
+      return;
+    }
+
     closeForm('inv');
     closeForm('mall');
     closeForm('mem');
@@ -7810,16 +7976,16 @@
 
     const targetTab = document.getElementById(tabId);
     if (targetTab) targetTab.classList.add('active');
-    if (clickedBtn) clickedBtn.classList.add('active');
+    const resolvedBtn = clickedBtn || document.querySelector(`.tab-btn[onclick*="'${tabId}'"]`);
+    if (resolvedBtn) resolvedBtn.classList.add('active');
 
-    
-    const isHQUser = isHeadquartersUser();
+    const btnAddInv = document.querySelector("#tab1 button[onclick*=\"openNewForm('inv')\"]");
     const btnAddMall = document.querySelector("#tab2 button[onclick*=\"openNewForm('mall')\"]");
     const btnAddMem = document.querySelector("#tab3 button[onclick*=\"openNewForm('mem')\"]");
-    if (btnAddMall) btnAddMall.style.display = isHQUser ? 'inline-flex' : 'none';
-    if (btnAddMem) btnAddMem.style.display = isHQUser ? 'inline-flex' : 'none';
+    if (btnAddInv) btnAddInv.style.display = canEditTab('tab1') ? 'inline-flex' : 'none';
+    if (btnAddMall) btnAddMall.style.display = canEditTab('tab2') ? 'inline-flex' : 'none';
+    if (btnAddMem) btnAddMem.style.display = canEditTab('tab3') ? 'inline-flex' : 'none';
 
-    
     if (tabId === 'tab1') {
       if (!isInventoryLoaded) loadInventoryDropdown(true);
       else renderInventoryList();
@@ -7852,6 +8018,8 @@
       }
     } else if (tabId === 'tab7') {
       loadDistributorTab();
+    } else if (tabId === 'tab8') {
+      loadTab8Permissions();
     }
   }
 
@@ -9030,18 +9198,19 @@
               </div>
             </div>
             <div style="display:flex; gap:6px; align-items:center;" onclick="event.stopPropagation()">
-              <!-- 核心純線條按鈕：既有商品直接點擊登記補貨 -->
-              <button type="button" class="icon-btn" onclick="openRestockModal(${item._rowId})" title="商品補貨登記" style="color:var(--accent); border-color:var(--accent); padding:6px 8px;">
-                <i class="ph ph-plus-circle" style="font-size: 18px;"></i>
-              </button>
-              <button type="button" class="icon-btn" onclick="copyInvItem(${item._rowId})" title="複製新增品項" style="padding:6px 8px;">
-                <i class="ph ph-copy" style="font-size: 18px;"></i>
-              </button>
-              <span id="inv-del-zone-${item._rowId}">
-                <button type="button" class="icon-btn danger" onclick="askInlineDeleteInv(${item._rowId})" title="刪除商品" style="padding:6px 8px;">
-                  <i class="ph ph-trash" style="font-size: 18px;"></i>
+              ${canEditTab('tab1') ? `
+                <button type="button" class="icon-btn" onclick="openRestockModal(${item._rowId})" title="商品補貨登記" style="color:var(--accent); border-color:var(--accent); padding:6px 8px;">
+                  <i class="ph ph-plus-circle" style="font-size: 18px;"></i>
                 </button>
-              </span>
+                <button type="button" class="icon-btn" onclick="copyInvItem(${item._rowId})" title="複製新增品項" style="padding:6px 8px;">
+                  <i class="ph ph-copy" style="font-size: 18px;"></i>
+                </button>
+                <span id="inv-del-zone-${item._rowId}">
+                  <button type="button" class="icon-btn danger" onclick="askInlineDeleteInv(${item._rowId})" title="刪除商品" style="padding:6px 8px;">
+                    <i class="ph ph-trash" style="font-size: 18px;"></i>
+                  </button>
+                </span>
+              ` : ''}
               <button type="button" class="icon-btn" onclick="toggleInvEdit(${item._rowId})" title="規格編輯與日誌" style="padding:6px 8px;">
                 <i class="ph ph-caret-down" id="icon-inv-${item._rowId}" style="font-size: 18px;"></i>
               </button>
@@ -9091,6 +9260,17 @@
     if (card) card.classList.add('editing');
     if (icon) icon.className = 'ph ph-caret-up';
 
+    const canEditInv = canEditTab('tab1');
+    const btnSubmitInv = document.getElementById('btnSubmitInv');
+    const btnAiAnalyze = document.getElementById('btnAiAnalyze');
+    form.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(el => {
+      el.disabled = !canEditInv;
+      if (!canEditInv) el.style.setProperty('background', 'var(--bg)', 'important');
+      else el.style.removeProperty('background');
+    });
+    if (btnSubmitInv) btnSubmitInv.style.display = canEditInv ? 'flex' : 'none';
+    if (btnAiAnalyze) btnAiAnalyze.style.display = canEditInv ? 'inline-flex' : 'none';
+
     document.getElementById('editRowId').value = rowId;
     const item = inventoryCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
@@ -9136,7 +9316,7 @@
 
     if (!form) return;
 
-    const isHQ = isHeadquartersUser();
+    const isHQ = canEditTab('tab2');
     const btnSubmit = document.getElementById('btnSubmitMall');
     const mallInputs = form.querySelectorAll('input, select, textarea');
     mallInputs.forEach(el => {
@@ -9363,7 +9543,7 @@
                 </span>
               </div>
               <div style="display:flex; gap:8px; align-items:center;">
-                ${bloodline.isHQ ? `
+                ${canEditTab('tab2') ? `
                   <button type="button" class="icon-btn" onclick="event.stopPropagation(); copyMallItem(${item._rowId});" title="複製新增"><i class="ph ph-copy" style="font-size: 20px;"></i></button>
                   <button type="button" class="icon-btn danger" onclick="event.stopPropagation(); deleteFrontendMallItem(${item._rowId});" title="刪除"><i class="ph ph-trash" style="font-size: 20px;"></i></button>
                 ` : ''}
@@ -9396,7 +9576,7 @@
               <span style="font-family: monospace; font-weight: 800;">${shelfId}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
-              ${bloodline.isHQ ? `
+              ${canEditTab('tab2') ? `
                 <button type="button" class="icon-btn" onclick="addNewItemToShelf('${shelfId}')" title="新增同架位商品規格項目" style="padding: 6px 8px; color: var(--accent); border-color: var(--accent);">
                   <i class="ph ph-plus" style="font-size: 18px;"></i>
                 </button>
@@ -9435,7 +9615,7 @@
       generateAutoId();
     }
     if (type === 'mall') {
-      const isHQ = isHeadquartersUser();
+      const isHQ = canEditTab('tab2');
       const priceFld = document.getElementById('mallPrice');
       const vipFld = document.getElementById('mallVipPrice');
       const badgePriceLock = document.getElementById('badgeMallPriceLock');
@@ -9457,7 +9637,7 @@
       }
     }
     if (type === 'mem') {
-      const isHQ = isHeadquartersUser();
+      const isHQ = canEditTab('tab3');
       const btnSubmitMem = document.getElementById('btnSubmitMem');
       const memNameEl = document.getElementById('memName');
       const memPhoneEl = document.getElementById('memPhone');
@@ -9982,13 +10162,16 @@
     renderInventoryList();
     showRestockToast('正在上傳照片並寫入入庫資料...', 'info');
 
+    const curDistRestock = getActiveDistributorSession();
     const payload = {
       _rowId: Number(rowId),
+      operatorId: curDistRestock.memberId || '',
+      operatorName: curDistRestock.memberName || '',
       restockQty: qty,
       recorder: operator,
       status: status,
       notes: notes,
-      imagesBase64: [...restockImagesArray] // 將最多 10 張照片全數傳入寫入 Drive
+      imagesBase64: [...restockImagesArray]
     };
 
     try {
@@ -10100,7 +10283,12 @@
     renderInventoryList();
 
     try {
-      const res = await apiCall('deleteInventoryItem', { _rowId: targetRow });
+      const curDistDelInv = getActiveDistributorSession();
+      const res = await apiCall('deleteInventoryItem', {
+        _rowId: targetRow,
+        operatorId: curDistDelInv.memberId || '',
+        operatorName: curDistDelInv.memberName || ''
+      });
       if (!res || res.status !== 'success') {
         inventoryCache = backupCache;
         syncInventorySelectUI();
@@ -10491,7 +10679,12 @@
     showToast("已移除商城商品（背景同步試算表中...）");
 
     try {
-      const res = await apiCall('deleteMallItem', { _rowId: targetRow });
+      const curDistDelMall = getActiveDistributorSession();
+      const res = await apiCall('deleteMallItem', {
+        _rowId: targetRow,
+        operatorId: curDistDelMall.memberId || '',
+        operatorName: curDistDelMall.memberName || ''
+      });
       if (res && res.status === 'success') {
         showToast('試算表已同步刪除');
       } else {
@@ -10780,7 +10973,7 @@
     const vipEl = document.getElementById('mallVipPrice');
     if (!vipEl) return;
 
-    const isHQ = isHeadquartersUser();
+    const isHQ = canEditTab('tab2');
 
     if (isHQ) {
       vipEl.disabled = false;
@@ -10811,9 +11004,12 @@
     showToast("已切換狀態為：" + newStatus);
 
     try {
+      const curDistMallSt = getActiveDistributorSession();
       const res = await apiCall('updateMallItemStatus', {
         _rowId: Number(rowId),
-        status: newStatus
+        status: newStatus,
+        operatorId: curDistMallSt.memberId || '',
+        operatorName: curDistMallSt.memberName || ''
       });
       if (res && res.status === 'success') {
         showToast("試算表狀態已同步：" + newStatus);
@@ -11087,6 +11283,20 @@
           : (res.data && Array.isArray(res.data.list) ? res.data.list : []);
         memberCache = resData;
         isMemberLoaded = true;
+        const curSession = getActiveDistributorSession();
+        if (curSession && curSession.memberId) {
+          const me = memberCache.find(m => String(m.memberId || '').trim() === String(curSession.memberId || '').trim());
+          if (me && me.permissions) {
+            try {
+              const parsedPerms = (typeof me.permissions === 'string') ? JSON.parse(me.permissions) : me.permissions;
+              if (parsedPerms && typeof parsedPerms === 'object') {
+                curSession.permissions = parsedPerms;
+                localStorage.setItem('YCH_DISTRIBUTOR_SESSION', JSON.stringify(curSession));
+              }
+            } catch (e) {}
+          }
+        }
+        applyTabVisibilityAndPermissions();
         renderMemberList();
       } else {
         const errMsg = (res && res.data && res.data.message) ? res.data.message : '無法取得會員資料';
@@ -11468,7 +11678,7 @@
                 ${statusBadgeHtml}
               </div>
               <div style="display:flex; gap:6px; align-items:center;">
-                ${!isSelf ? `
+                ${(!isSelf && canEditTab('tab3') && String(item.memberId || '').trim().toUpperCase() !== 'TW-NAMIS') ? `
                   <span id="mem-del-zone-${item._rowId}">
                     <button type="button" class="icon-btn danger" onclick="askInlineDeleteMember(${item._rowId})" title="刪除會員" style="padding:6px 8px;">
                       <i class="ph ph-trash" style="font-size: 18px;"></i>
@@ -11532,7 +11742,12 @@
     showToast("已移除會員資料（背景同步中...）");
 
     try {
-      const res = await apiCall('deleteMemberItem', { _rowId: targetRow });
+      const curDistDelMem = getActiveDistributorSession();
+      const res = await apiCall('deleteMemberItem', {
+        _rowId: targetRow,
+        operatorId: curDistDelMem.memberId || '',
+        operatorName: curDistDelMem.memberName || ''
+      });
       if (res && res.status === 'success') {
         showToast('試算表已同步刪除');
       } else {
@@ -11567,8 +11782,7 @@
     document.getElementById('editMemRowId').value = rowId;
     const item = memberCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
-      // 🌟 第一時間於函式頂部判定總部身分，徹底根治 TDZ ReferenceError 崩潰
-      const isHQ = isHeadquartersUser();
+      const isHQ = canEditTab('tab3');
       const isDistMember = (item.memberType === '經銷會員' || String(item.memberId || '').startsWith('DIS-') || String(item.memberId || '').startsWith('TW-'));
 
       document.getElementById('memId').value = item.memberId || '';
@@ -11991,7 +12205,7 @@
             </div>
            <div class="order-header-right" style="display: flex; gap: 8px; align-items: center;" onclick="event.stopPropagation()">
               <div style="display: flex; align-items: center; gap: 4px;">
-                <select class="filter-input" ${!bloodline.isHQ ? 'disabled style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; background: var(--bg) !important; cursor: not-allowed;"' : 'style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;"'} onchange="instantUpdateOrderStatus('${order.orderId}', this.value, this)">
+                <select class="filter-input" ${!canEditTab('tab4') ? 'disabled style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; background: var(--bg) !important; cursor: not-allowed;"' : 'style="padding: 5px 8px; font-size: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;"'} onchange="instantUpdateOrderStatus('${order.orderId}', this.value, this)">
                   ${availableStatusList.map(s => `<option value="${s.name}" ${s.name === curStatus ? 'selected' : ''}>${s.name}</option>`).join('')}
                 </select>
                 <span id="status-spinner-${order.orderId}" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;"></span>
@@ -12288,8 +12502,7 @@
 
     if (!form) return;
 
-    // 🔒 總部訂單主權：非總部帳號全面鎖定為唯讀查閱
-    const isHQ = isHeadquartersUser();
+    const isHQ = canEditTab('tab4');
     const btnSubmitOrder = document.getElementById('btnSubmitOrder');
     const btnLockItem = document.getElementById('btnToggleItemLock');
     const orderInputs = form.querySelectorAll('input:not([type="hidden"]), select, textarea');
@@ -13582,12 +13795,14 @@
                   <button type="button" class="icon-btn" onclick="openShippingLabelModal('${o.orderId}')" title="預覽右半邊貼紙 (出貨託運貼條)" style="padding:6px 10px;">
                     <i class="ph ph-receipt" style="font-size:16px;"></i>
                   </button>
-                  <button type="button" class="icon-btn" onclick="rollbackDispatchOrder('${o.orderId}', '${outId}')" title="退回重新撿貨" style="color:var(--text-muted); border-color:#CBD5E1; padding:6px 10px;">
-                    <i class="ph ph-arrow-u-up-left" style="font-size:16px;"></i>
-                  </button>
-                  <button type="button" class="icon-btn" id="btn-dispatch-${outId}" onclick="executeDirectDispatch('${o.orderId}', '${outId}')" title="確認出庫進入配送" style="background:#0F172A; color:#FFFFFF; border-color:#0F172A; padding:6px 10px;">
-                    <i class="ph ph-truck" style="font-size:16px;"></i>
-                  </button>
+                  ${canEditTab('tab5') ? `
+                    <button type="button" class="icon-btn" onclick="rollbackDispatchOrder('${o.orderId}', '${outId}')" title="退回重新撿貨" style="color:var(--text-muted); border-color:#CBD5E1; padding:6px 10px;">
+                      <i class="ph ph-arrow-u-up-left" style="font-size:16px;"></i>
+                    </button>
+                    <button type="button" class="icon-btn" id="btn-dispatch-${outId}" onclick="executeDirectDispatch('${o.orderId}', '${outId}')" title="確認出庫進入配送" style="background:#0F172A; color:#FFFFFF; border-color:#0F172A; padding:6px 10px;">
+                      <i class="ph ph-truck" style="font-size:16px;"></i>
+                    </button>
+                  ` : ''}
                   </div>
                 </div>
               </div>
@@ -13906,10 +14121,11 @@
               <button type="button" class="icon-btn" onclick="openShippingLabelModal('${pOrder.orderId}')" title="出貨資訊預覽 (橫式 A4 1/8)" style="padding:6px 10px;">
                 <i class="ph ph-receipt" style="font-size:18px;"></i>
               </button>
-              <!-- 3. 打包出貨 (純圖示) -->
-              <button type="button" class="icon-btn" id="btn-pack-${pOrder.orderId}" onclick="packOrderDispatched('${pOrder.orderId}')" title="打包出貨 (已完成 ${checkedItems.length} 項)" style="background:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; color:#FFFFFF; border-color:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; padding:6px 10px;">
-                <i class="ph ph-package" style="font-size:18px;"></i>
-              </button>
+              ${canEditTab('tab5') ? `
+                <button type="button" class="icon-btn" id="btn-pack-${pOrder.orderId}" onclick="packOrderDispatched('${pOrder.orderId}')" title="打包出貨 (已完成 ${checkedItems.length} 項)" style="background:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; color:#FFFFFF; border-color:${checkedItems.length > 0 ? '#0F172A' : '#94A3B8'}; padding:6px 10px;">
+                  <i class="ph ph-package" style="font-size:18px;"></i>
+                </button>
+              ` : ''}
               <!-- 4. 展開/收合 (純圖示) -->
               <button type="button" class="icon-btn" onclick="togglePickingExpand('${pOrder.orderId}')" title="展開明細" style="padding:6px 10px;">
                 <i class="ph ${pOrder.isOpen ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size:16px;"></i>
@@ -17152,6 +17368,340 @@
         btn.disabled = false;
         btn.innerHTML = '<i class="ph ph-floppy-disk" style="font-size:20px;"></i>';
       }
+    }
+  }
+
+  // ============================================================
+  // 分頁 8：總部人員與動態頁籤權限管理 (Jobs 極簡線條單欄卡片)
+  // ============================================================
+  let tab8CurrentSeg = 'hq';
+  let tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' };
+  let tab8OpenCardId = null;
+  let tab8PendingDeleteId = null;
+
+  function isTab8HqMember(m) {
+    const id = String(m.memberId || '').trim().toUpperCase();
+    const type = String(m.memberType || '').trim();
+    return id === 'TW-NAMIS' || id.startsWith('TW-NAMIS-') || id === 'HQ' || id === 'ADMIN' || type === '總部人員';
+  }
+
+  function isTab8DistMember(m) {
+    if (!m || isTab8HqMember(m)) return false;
+    const id = String(m.memberId || '').trim().toUpperCase();
+    if (!id || id.startsWith('MEM-')) return false;
+    return /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id);
+  }
+
+  function parseTab8MemberPerms(m, isHq) {
+    const fallback = isHq
+      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' }
+      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none' };
+    if (!m || !m.permissions) return fallback;
+    if (typeof m.permissions === 'object') return Object.assign({}, fallback, m.permissions);
+    try {
+      const parsed = JSON.parse(String(m.permissions).trim());
+      return (parsed && typeof parsed === 'object') ? Object.assign({}, fallback, parsed) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  async function loadTab8Permissions() {
+    if (!isHeadquartersUser()) return;
+    const addBtn = document.getElementById('btnOpenTab8AddHq');
+    if (addBtn) addBtn.style.display = (tab8CurrentSeg === 'hq' && canEditTab('tab8')) ? 'inline-flex' : 'none';
+    const container = document.getElementById('tab8MemberListContainer');
+    if (container && (!memberCache || memberCache.length === 0)) {
+      container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">載入權限資料中...</div>';
+    }
+    try {
+      const s = getActiveDistributorSession() || {};
+      const res = await apiCall('getMemberList', { operatorId: s.memberId || '', operatorName: s.memberName || '' });
+      if (res && res.status === 'success' && Array.isArray(res.data)) {
+        memberCache = res.data;
+        renderTab8List();
+      } else {
+        showToast((res && res.data && res.data.message) || '無法載入人員權限清單');
+      }
+    } catch (e) {
+      showToast('權限清單載入失敗：' + (e.message || e));
+    }
+  }
+
+  function switchTab8Segment(seg) {
+    tab8CurrentSeg = seg;
+    const btnHq = document.getElementById('tab8SegHq');
+    const btnDist = document.getElementById('tab8SegDist');
+    if (btnHq) btnHq.classList.toggle('active', seg === 'hq');
+    if (btnDist) btnDist.classList.toggle('active', seg === 'dist');
+    const addBtn = document.getElementById('btnOpenTab8AddHq');
+    if (addBtn) addBtn.style.display = (seg === 'hq' && canEditTab('tab8')) ? 'inline-flex' : 'none';
+    renderTab8List();
+  }
+
+  async function openTab8AddHqForm() {
+    if (!canEditTab('tab8')) {
+      showToast('您沒有權限新增總部人員');
+      return;
+    }
+    const form = document.getElementById('tab8AddHqForm');
+    if (!form) return;
+    form.style.display = 'block';
+    document.getElementById('tab8NewHqName').value = '';
+    document.getElementById('tab8NewHqPhone').value = '';
+    document.getElementById('tab8NewHqEmail').value = '';
+    document.getElementById('tab8NewHqId').value = '配發中...';
+    tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' };
+    renderTab8NewHqPermGrid();
+
+    try {
+      const res = await apiCall('getHqIdPreview', {});
+      if (res && res.status === 'success' && res.data && res.data.distId) {
+        document.getElementById('tab8NewHqId').value = res.data.distId;
+      } else {
+        document.getElementById('tab8NewHqId').value = 'TW-NAMIS-NEW';
+      }
+    } catch (e) {
+      document.getElementById('tab8NewHqId').value = 'TW-NAMIS-NEW';
+    }
+  }
+
+  function closeTab8AddHqForm() {
+    const form = document.getElementById('tab8AddHqForm');
+    if (form) form.style.display = 'none';
+  }
+
+  function renderTab8NewHqPermGrid() {
+    const grid = document.getElementById('tab8NewHqPermGrid');
+    if (!grid) return;
+    grid.innerHTML = Object.keys(TAB_LABELS_MAP).map(tid => {
+      const cur = tab8NewHqPerms[tid] || 'edit';
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border:1px solid var(--border-subtle); border-radius:8px; background:#FFFFFF;">
+          <span style="font-size:13px; font-weight:700; color:var(--text);">${TAB_LABELS_MAP[tid]}</span>
+          <div style="display:flex; gap:4px;">
+            ${['none', 'view', 'edit'].map(lv => {
+              const active = cur === lv;
+              const lvText = lv === 'none' ? '關閉' : (lv === 'view' ? '檢視' : '編輯');
+              return `<button type="button" onclick="setTab8NewHqPerm('${tid}','${lv}')" style="padding:4px 10px; font-size:12px; border-radius:6px; border:1px solid ${active ? '#0F172A' : '#CBD5E1'}; background:${active ? '#0F172A' : '#FFFFFF'}; color:${active ? '#FFFFFF' : '#64748B'}; font-weight:600; cursor:pointer;">${lvText}</button>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function setTab8NewHqPerm(tid, lv) {
+    tab8NewHqPerms[tid] = lv;
+    renderTab8NewHqPermGrid();
+  }
+
+  async function saveTab8NewHqMember() {
+    const btn = document.getElementById('btnSaveTab8NewHq');
+    const memberName = (document.getElementById('tab8NewHqName')?.value || '').trim();
+    const phone = (document.getElementById('tab8NewHqPhone')?.value || '').trim();
+    const email = (document.getElementById('tab8NewHqEmail')?.value || '').trim();
+    if (!memberName || !phone || !email) {
+      showToast('姓名、電話與 Email 皆為必填！');
+      return;
+    }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph ph-circle-notch ph-spin" style="font-size:20px;"></i>';
+    }
+    const s = getActiveDistributorSession() || {};
+    const payload = {
+      operatorId: s.memberId || '',
+      operatorName: s.memberName || '',
+      memberName: memberName,
+      phone: phone,
+      email: email,
+      permissions: tab8NewHqPerms
+    };
+    try {
+      const res = await apiCall('createHqMember', payload);
+      if (res && res.status === 'success') {
+        showToast((res.data && res.data.message) || '總部人員建立成功！');
+        closeTab8AddHqForm();
+        await loadTab8Permissions();
+      } else {
+        showToast((res && res.data && res.data.message) || '建立失敗');
+      }
+    } catch (e) {
+      showToast(e.message || '建立總部人員失敗');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ph ph-check" style="font-size:22px;"></i>';
+      }
+    }
+  }
+
+  function renderTab8List() {
+    const container = document.getElementById('tab8MemberListContainer');
+    if (!container) return;
+    const kw = (document.getElementById('tab8SearchInput')?.value || '').trim().toLowerCase();
+    const editable = canEditTab('tab8');
+
+    const filtered = (memberCache || []).filter(m => {
+      const isHq = isTab8HqMember(m);
+      const isDist = isTab8DistMember(m);
+      if (tab8CurrentSeg === 'hq' && !isHq) return false;
+      if (tab8CurrentSeg === 'dist' && !isDist) return false;
+      if (!kw) return true;
+      return [m.memberId, m.memberName, m.name, m.phone, m.email].some(v => String(v || '').toLowerCase().includes(kw));
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">查無符合條件的人員資料</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(m => {
+      const id = String(m.memberId || '').trim();
+      const idUpper = id.toUpperCase();
+      const isMaster = (idUpper === 'TW-NAMIS');
+      const isHq = isTab8HqMember(m);
+      const isOpen = (tab8OpenCardId === id);
+      const isPendingDel = (tab8PendingDeleteId === id);
+      const perms = parseTab8MemberPerms(m, isHq);
+
+      const permRowsHtml = Object.keys(TAB_LABELS_MAP).map(tid => {
+        if (!isHq && tid === 'tab8') return '';
+        const curLv = (isMaster && tid === 'tab8') ? 'edit' : (perms[tid] || (isHq ? 'edit' : 'view'));
+        const locked = !editable || (isMaster && tid === 'tab8');
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px dashed var(--border-subtle);">
+            <span style="font-size:13px; color:var(--text); font-weight:700;">${TAB_LABELS_MAP[tid]}</span>
+            <div style="display:flex; gap:4px;">
+              ${['none', 'view', 'edit'].map(lv => {
+                const active = curLv === lv;
+                const lvText = lv === 'none' ? '關閉' : (lv === 'view' ? '檢視' : '編輯');
+                return `<button type="button" ${locked ? 'disabled' : ''} onclick="selectTab8Perm('${id}','${tid}','${lv}')" style="padding:4px 10px; font-size:12px; border-radius:6px; border:1px solid ${active ? '#0F172A' : '#CBD5E1'}; background:${active ? '#0F172A' : '#FFFFFF'}; color:${active ? '#FFFFFF' : '#64748B'}; opacity:${locked && !active ? '0.45' : '1'}; cursor:${locked ? 'not-allowed' : 'pointer'}; font-weight:600;">${lvText}</button>`;
+              }).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      return `
+        <div class="inv-card" style="margin-bottom:0; cursor:default;">
+          <div onclick="toggleTab8Card('${id}')" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+            <div>
+              <div style="font-size:15px; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span>${m.memberName || m.name || '未命名'}</span>
+                <span class="id-chip" style="font-size:11px;">${id}</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">${m.email || m.phone || '無聯絡資訊'}</div>
+            </div>
+            <i class="ph ${isOpen ? 'ph-caret-up' : 'ph-caret-down'}" style="color:var(--text-muted); font-size:18px;"></i>
+          </div>
+
+          ${isOpen ? `
+            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-subtle);">
+              ${permRowsHtml}
+              ${editable ? `
+                <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:12px;">
+                  ${isHq && !isMaster ? (
+                    isPendingDel ? `
+                      <div class="inline-confirm-box" style="margin-right:auto;">
+                        <span style="font-size:11px; color:var(--danger); font-weight:700;">確認刪除？</span>
+                        <button type="button" class="icon-btn" onclick="confirmInlineDeleteHqMember('${id}', ${m._rowId})" title="確認刪除" style="padding:2px 6px; color:var(--danger); border-color:var(--danger);"><i class="ph ph-check" style="font-size:14px;"></i></button>
+                        <button type="button" class="icon-btn" onclick="cancelInlineDeleteHqMember()" title="取消" style="padding:2px 6px;"><i class="ph ph-x" style="font-size:14px;"></i></button>
+                      </div>
+                    ` : `
+                      <button type="button" class="icon-btn danger" onclick="askInlineDeleteHqMember('${id}')" title="刪除總部人員" style="margin-right:auto; padding:6px 10px;">
+                        <i class="ph ph-trash" style="font-size:18px;"></i>
+                      </button>
+                    `
+                  ) : ''}
+                  <button type="button" class="action-btn-primary" onclick="saveTab8MemberPerm('${id}', ${m._rowId})" title="儲存權限" style="width:40px; height:40px; margin-top:0; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                    <i class="ph ph-floppy-disk" style="font-size:22px;"></i>
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  function toggleTab8Card(memberId) {
+    tab8OpenCardId = (tab8OpenCardId === memberId) ? null : memberId;
+    tab8PendingDeleteId = null;
+    renderTab8List();
+  }
+
+  function selectTab8Perm(memberId, tabId, level) {
+    const target = (memberCache || []).find(m => String(m.memberId || '').trim() === memberId);
+    if (!target) return;
+    const isHq = isTab8HqMember(target);
+    const perms = parseTab8MemberPerms(target, isHq);
+    perms[tabId] = level;
+    target.permissions = perms;
+    renderTab8List();
+  }
+
+  async function saveTab8MemberPerm(memberId, rowId) {
+    const target = (memberCache || []).find(m => String(m.memberId || '').trim() === memberId);
+    if (!target) return;
+    const isHq = isTab8HqMember(target);
+    const perms = parseTab8MemberPerms(target, isHq);
+    const s = getActiveDistributorSession() || {};
+
+    showToast('權限儲存中...');
+    try {
+      const res = await apiCall('updateMemberPermissions', {
+        operatorId: s.memberId || '',
+        operatorName: s.memberName || '',
+        _rowId: rowId,
+        memberId: memberId,
+        permissions: perms
+      });
+      if (res && res.status === 'success') {
+        target.permissions = perms;
+        showToast('權限已更新！');
+        if (String(s.memberId || '').trim() === memberId) {
+          s.permissions = perms;
+          localStorage.setItem('YCH_DISTRIBUTOR_SESSION', JSON.stringify(s));
+          applyTabVisibilityAndPermissions();
+        }
+      } else {
+        showToast((res && res.data && res.data.message) || '權限更新失敗');
+      }
+    } catch (e) {
+      showToast(e.message || '權限更新失敗');
+    }
+  }
+
+  function askInlineDeleteHqMember(memberId) {
+    tab8PendingDeleteId = memberId;
+    renderTab8List();
+  }
+
+  function cancelInlineDeleteHqMember() {
+    tab8PendingDeleteId = null;
+    renderTab8List();
+  }
+
+  async function confirmInlineDeleteHqMember(memberId, rowId) {
+    const s = getActiveDistributorSession() || {};
+    try {
+      const res = await apiCall('deleteHqMember', {
+        operatorId: s.memberId || '',
+        operatorName: s.memberName || '',
+        _rowId: rowId,
+        memberId: memberId
+      });
+      if (res && res.status === 'success') {
+        showToast('總部人員已刪除');
+        memberCache = (memberCache || []).filter(m => String(m.memberId || '').trim() !== memberId);
+        tab8PendingDeleteId = null;
+        tab8OpenCardId = null;
+        renderTab8List();
+      } else {
+        showToast((res && res.data && res.data.message) || '刪除失敗');
+      }
+    } catch (e) {
+      showToast(e.message || '刪除失敗');
     }
   }
 
