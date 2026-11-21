@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>妍之馨商城 - 營運管理系統</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap');
@@ -2815,7 +2815,114 @@
         gap: 10px !important;
       }
     }
-
+     
+     
+     
+    .mem-bell-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .mem-bell-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9999px;
+      background: var(--danger);
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 800;
+      font-family: monospace;
+      line-height: 18px;
+      text-align: center;
+      border: 1.5px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+      pointer-events: none;
+      display: none;
+    }
+    .mem-notify-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      background: #FFFFFF;
+      border: 1.5px solid var(--accent-line);
+      border-radius: 10px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+      z-index: 9990;
+      overflow: hidden;
+      animation: fadeIn 0.15s ease;
+    }
+    .mem-notify-dropdown.active {
+      display: flex;
+      flex-direction: column;
+    }
+    .mem-notify-header {
+      padding: 10px 14px;
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .mem-notify-list {
+      max-height: 320px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+    }
+    .mem-notify-item {
+      padding: 11px 14px;
+      border-bottom: 1px dashed var(--border-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.15s ease;
+      text-align: left;
+    }
+    .mem-notify-item:last-child {
+      border-bottom: none;
+    }
+    .mem-notify-item:hover {
+      background: var(--accent-soft);
+    }
+    .mem-notify-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .mem-notify-item-time {
+      font-size: 10.5px;
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mem-notify-item-who {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .mem-notify-item-desc {
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.5;
+      word-break: break-word;
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Material&#43;Symbols&#43;Outlined" rel="stylesheet" />
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -3558,6 +3665,10 @@
         <i class="ph ph-shield-check" style="font-size: 18px; vertical-align: middle;"></i> 權限
       </button>
       
+      <button class="tab-btn" id="navBtnTab9" style="display:none;" onclick="switchTab('tab9', this)" title="經銷商獎金撥款明細與核對">
+        <i class="ph ph-currency-circle-dollar" style="font-size: 18px; vertical-align: middle;"></i> 撥款
+      </button>
+      
       <button type="button" class="tab-btn" onclick="logoutDistributorAction()" title="登出經銷商後台" style="margin-left: auto; color: var(--danger);">
         <i class="ph ph-sign-out" style="font-size: 18px; vertical-align: middle;"></i>
       </button>
@@ -3597,9 +3708,10 @@
 
           <div id="invImgBox" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; border-radius: 12px; background-color: transparent; padding: 16px; margin-bottom: 20px;">
             <input type="file" id="invFileInput" accept="image/*" multiple onchange="handleInvImageSelect(this)" style="display: none;">
+            <input type="file" id="invReplaceFileInput" accept="image/*" onchange="handleReplaceImageFile(this, 'inv')" style="display: none;">
             <div id="invImgPreviewContainer" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%;"></div>
+            <div id="invImgSyncStatus" style="font-size: 11px; color: var(--text-muted); margin-top: 8px; min-height: 16px;"></div>
           </div>
-
           
           <div class="input-row">
             <div class="input-col">
@@ -3612,11 +3724,12 @@
               <input type="text" id="invId" class="login-input" placeholder="IN-yyyymmddhhmmss">
             </div>
           </div>
-
           <div class="input-row">
             <div class="input-col">
               <label class="form-label">品名</label>
-              <input type="text" id="invName" class="login-input" placeholder="完整商品名稱">
+              <select id="invName" class="login-input">
+                <option value="">-- 請選擇商品名稱（來自產品費用表） --</option>
+              </select>
             </div>
           </div>
 
@@ -3737,7 +3850,9 @@
 
           <div id="mallImgBox" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; border-radius: 12px; background-color: transparent; padding: 16px; margin-bottom: 20px;">
             <input type="file" id="mallFileInput" accept="image/*" multiple onchange="handleMallImageSelect(this)" style="display: none;">
+            <input type="file" id="mallReplaceFileInput" accept="image/*" onchange="handleReplaceImageFile(this, 'mall')" style="display: none;">
             <div id="mallImgPreviewContainer" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%;"></div>
+            <div id="mallImgSyncStatus" style="font-size: 11px; color: var(--text-muted); margin-top: 8px; min-height: 16px;"></div>
           </div>
 
           
@@ -3981,9 +4096,26 @@
     <div class="settings-section">
       <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center;">
         <span><i class="ph ph-users" style="vertical-align: middle; font-size: 22px;"></i> 會員管理總覽</span>
-        <button class="icon-btn" onclick="openNewForm('mem')" style="color: var(--accent); border-color: var(--accent); padding: 8px;" title="新增會員">
-          <i class="ph ph-plus" style="font-size: 20px;"></i>
-        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="mem-bell-wrapper" id="memBellWrapper">
+            <button type="button" class="icon-btn" id="btnMemBell" onclick="toggleMemberBellDropdown(event)" style="color: var(--accent); border-color: var(--accent); padding: 8px; position: relative;" title="會員資料更新通知">
+              <i class="ph ph-bell" style="font-size: 20px;"></i>
+              <span id="memBellBadge" class="mem-bell-badge">0</span>
+            </button>
+            <div id="memNotificationDropdown" class="mem-notify-dropdown" onclick="event.stopPropagation()">
+              <div class="mem-notify-header">
+                <span><i class="ph ph-bell-ringing" style="color:var(--accent); vertical-align:middle; margin-right:4px;"></i>未讀更新通知</span>
+                <span id="memNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+              </div>
+              <div id="memNotificationList" class="mem-notify-list">
+                <div style="padding:18px; text-align:center; font-size:12px; color:var(--text-muted);">目前無未讀通知</div>
+              </div>
+            </div>
+          </div>
+          <button class="icon-btn" onclick="openNewForm('mem')" style="color: var(--accent); border-color: var(--accent); padding: 8px;" title="新增會員">
+            <i class="ph ph-plus" style="font-size: 20px;"></i>
+          </button>
+        </div>
       </div>
 
       <div class="filter-bar" style="align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -4030,9 +4162,9 @@
             <div class="input-col">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <label class="form-label" style="margin-bottom: 0;">類型</label>
-                <span class="sealed-badge"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
+                <span class="sealed-badge" id="badgeMemTypeLock" style="display:none;"><i class="ph ph-lock-key"></i> 封印不可編輯</span>
               </div>
-              <select id="memType" class="login-input" disabled style="background:var(--bg) !important; color:var(--text-muted); cursor:not-allowed;" onchange="handleMemTypeChange()">
+              <select id="memType" class="login-input" onchange="handleMemTypeChange()">
                 <option value="一般會員">一般會員</option>
                 <option value="VIP會員">VIP會員</option>
                 <option value="經銷會員">經銷會員</option>
@@ -4689,9 +4821,26 @@
           <span style="font-weight: 800; font-size: 17px;">經銷總覽</span>
           <span id="distRefreshStatus" style="font-size: 12px; color: var(--text-muted); margin-left: 6px;"></span>
         </div>
-        <button type="button" class="icon-btn" onclick="loadDistributorTab(true)" title="重新整理">
-          <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
-        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="mem-bell-wrapper" id="distPayoutBellWrapper">
+            <button type="button" class="icon-btn" id="btnDistPayoutBell" onclick="toggleDistPayoutBellDropdown(event)" style="color: var(--accent); border-color: var(--accent); padding: 8px; position: relative;" title="總部撥款紀錄通知">
+              <i class="ph ph-bell" style="font-size: 20px;"></i>
+              <span id="distPayoutBellBadge" class="mem-bell-badge">0</span>
+            </button>
+            <div id="distPayoutNotifyDropdown" class="mem-notify-dropdown" onclick="event.stopPropagation()">
+              <div class="mem-notify-header">
+                <span><i class="ph ph-currency-circle-dollar" style="color:var(--success); vertical-align:middle; margin-right:4px;"></i>總部撥款紀錄</span>
+                <span id="distPayoutNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+              </div>
+              <div id="distPayoutNotifyList" class="mem-notify-list">
+                <div style="padding:18px; text-align:center; font-size:12px; color:var(--text-muted);">目前無撥款紀錄</div>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="icon-btn" onclick="loadDistributorTab(true)" title="重新整理">
+            <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
+          </button>
+        </div>
       </div>
 
       
@@ -5106,8 +5255,8 @@
               <span>應領未稅：</span>
               <strong id="valPayoutTotalUntaxed" style="font-family:monospace; color:var(--text);">NT$ 0</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#DC2626; background:#FEF2F2; padding:2px 6px; border-radius:4px;">
-              <span>5% 營業稅：</span>
+            <div id="rowPayoutTaxOrNhi" style="display:flex; justify-content:space-between; font-size:11.5px; color:#DC2626; background:#FEF2F2; padding:2px 6px; border-radius:4px;">
+              <span id="lblPayoutTaxOrNhi">5% 營業稅：</span>
               <strong id="valPayoutTax5Percent" style="font-family:monospace;">- NT$ 0</strong>
             </div>
             <div style="display:flex; justify-content:space-between; border-top:1.5px solid #0F172A; padding-top:5px; font-size:13.5px; font-weight:800;">
@@ -5152,9 +5301,14 @@
             <i class="ph ph-users-three" style="font-size:20px; color:var(--accent);"></i>
             <span style="font-size:15px; font-weight:800; color:var(--text);">組織圖</span>
           </div>
-          <span style="font-size:12px; color:var(--text-muted); font-family:monospace;">
-            一代: <strong id="cntGen1" style="color:var(--accent);">0</strong> 位 ｜ 二代: <strong id="cntGen2" style="color:var(--text);">0</strong> 位
-          </span>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <button type="button" id="btnDistFilterGen1" class="icon-btn" onclick="toggleDistGenFilter('gen1')" title="點擊切換顯示/隱藏直推一代" style="padding:4px 10px; border-radius:16px; font-size:12px; font-family:monospace; border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent); font-weight:700;">
+              一代: <strong id="cntGen1">0</strong> 位
+            </button>
+            <button type="button" id="btnDistFilterGen2" class="icon-btn" onclick="toggleDistGenFilter('gen2')" title="點擊切換顯示/隱藏推薦二代" style="padding:4px 10px; border-radius:16px; font-size:12px; font-family:monospace; border:1px solid #7C3AED; background:rgba(124, 58, 237, 0.1); color:#7C3AED; font-weight:700;">
+              二代: <strong id="cntGen2">0</strong> 位
+            </button>
+          </div>
         </div>
 
         <div class="dist-tree-wrapper" id="distTreeContainer">
@@ -5245,6 +5399,81 @@
       
       <div id="tab8MemberListContainer" style="display:flex; flex-direction:column; gap:10px;">
         <div style="text-align:center; color:var(--text-muted); padding:20px;">載入中...</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="tab9" class="tab-content">
+    <div class="settings-section">
+      <div class="settings-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i class="ph ph-currency-circle-dollar" style="font-size: 22px; color: var(--accent);"></i>
+          <span style="font-weight: 800; font-size: 17px;">獎金撥款總覽</span>
+          <span id="tab9RefreshStatus" style="font-size: 12px; color: var(--text-muted); margin-left: 6px;"></span>
+        </div>
+        <button type="button" class="icon-btn" onclick="loadTab9PayoutTab(true)" title="重新整理">
+          <i class="ph ph-arrows-clockwise" style="font-size: 18px;"></i>
+        </button>
+      </div>
+
+      
+      <div style="background:#FFFFFF; border:1.5px solid var(--accent-line); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="icon-btn" onclick="stepTab9Month(-1)" title="上月" style="padding:5px 8px;">
+              <i class="ph ph-caret-left" style="font-size:16px;"></i>
+            </button>
+            <span id="lblTab9SelectedMonth" style="font-size:15px; font-weight:800; color:var(--text); font-family:monospace; letter-spacing:0.5px;">-- 年 -- 月</span>
+            <button type="button" class="icon-btn" onclick="stepTab9Month(1)" title="下月" style="padding:5px 8px;">
+              <i class="ph ph-caret-right" style="font-size:16px;"></i>
+            </button>
+          </div>
+
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="icon-btn" onclick="setTab9DateRange('thisYear')" title="篩選年度" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">年度</button>
+              <button type="button" class="icon-btn" onclick="setTab9DateRange('all')" title="篩選全部" style="padding:4px 8px; font-size:11px; font-weight:700; border-radius:6px;">全部</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <div style="position:relative; display:inline-flex; align-items:center;">
+                <input type="text" id="tab9StartDateDisplay" readonly class="login-input" style="padding:5px 6px; font-size:12px; font-family:monospace; font-weight:700; width:96px; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+                <input type="date" id="tab9StartDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncTab9DateChange('start', this.value)">
+              </div>
+              <span style="font-size:11px; color:var(--text-muted);">至</span>
+              <div style="position:relative; display:inline-flex; align-items:center;">
+                <input type="text" id="tab9EndDateDisplay" readonly class="login-input" style="padding:5px 6px; font-size:12px; font-family:monospace; font-weight:700; width:96px; text-align:center; background:#FFFFFF; cursor:pointer;" placeholder="yyyy/mm/dd">
+                <input type="date" id="tab9EndDate" style="position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; -webkit-appearance:none;" onchange="syncTab9DateChange('end', this.value)">
+              </div>
+              <button type="button" class="icon-btn" onclick="applyTab9CustomDateFilter()" title="執行過篩" style="padding:5px 8px; background:var(--accent); color:#fff; border-color:var(--accent);">
+                <i class="ph ph-funnel" style="font-size:14px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="filter-bar" style="margin-bottom: 12px; flex-direction: column; gap: 10px;">
+        <div style="position:relative; width:100%;">
+          <i class="ph ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:18px;"></i>
+          <input type="text" id="filterTab9Keyword" class="filter-input" style="width:100%; padding-left:36px; border-radius:20px;" placeholder="搜尋經銷商編號、姓名、電話或公司抬頭..." oninput="renderTab9PayoutList()">
+        </div>
+        <div id="tab9SortBar" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <button type="button" class="icon-btn" id="btnTab9SortJoin" onclick="toggleTab9Sort('join')" style="padding:5px 10px; border-radius:16px; font-size:12px;">加入時間</button>
+          <button type="button" class="icon-btn" id="btnTab9SortBonus" onclick="toggleTab9Sort('bonus')" style="padding:5px 10px; border-radius:16px; font-size:12px;">實領獎金</button>
+          <button type="button" class="icon-btn" id="btnTab9SortSales" onclick="toggleTab9Sort('sales')" style="padding:5px 10px; border-radius:16px; font-size:12px;">售貨業績</button>
+          <button type="button" class="icon-btn" id="btnTab9SortRec" onclick="toggleTab9Sort('rec')" style="padding:5px 10px; border-radius:16px; font-size:12px;">推薦人數</button>
+        </div>
+        <div id="tab9BonusFilterBar" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <button type="button" class="icon-btn" id="btnTab9FilterHasBonus" onclick="toggleTab9BonusFilter('has')" style="padding:5px 11px; border-radius:16px; font-size:12px; font-weight:700; border:1px solid #10B981; background:rgba(16, 185, 129, 0.12); color:#059669;">有獎金 (<span id="cntTab9HasBonus">0</span>)</button>
+          <button type="button" class="icon-btn" id="btnTab9FilterNoBonus" onclick="toggleTab9BonusFilter('none')" style="padding:5px 11px; border-radius:16px; font-size:12px; font-weight:700; border:1px solid #64748B; background:#F1F5F9; color:#475569;">無獎金 (<span id="cntTab9NoBonus">0</span>)</button>
+        </div>
+      </div>
+
+      
+      <div id="tab9PayoutListContainer" class="dist-tree-wrapper">
+        <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">撥款資料載入中...</div>
       </div>
     </div>
   </div>
@@ -6398,7 +6627,7 @@
         </div>
 
         <!-- 契約末頁立約雙方正式簽署 (左下我方公司 / 右下簽約方) -->
-        <div style="margin-top:auto; padding-top:16px; border-top:1.5px solid #0F172A; display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+        <div style="border-top:1.5px solid #0F172A; padding-top:12px; margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px;">
           <!-- 左下角：我方（甲方）妍之馨生技有限公司登記資訊 ＋ 預留大小章蓋章區 -->
           <div style="font-size:10.5px; line-height:1.75; color:#1E293B; max-width:48%;">
             <div style="font-weight:800; font-size:11.5px; margin-bottom:3px; color:#0F172A;">【授權甲方】：</div>
@@ -6646,7 +6875,7 @@
                 <div style="font-size:11.5px; font-weight:800; text-align:center; margin-bottom:6px; border-bottom:1px solid #CBD5E1; padding-bottom:4px; letter-spacing:0.5px;">
                   Signatures / Execution (立約簽署)
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; font-size:9.5px; line-height:1.65; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; font-size:9.5px; line-height:1.65; gap:12px;">
                   <!-- 左下角：我方（Party A）妍之馨生技有限公司完整登記資訊 -->
                   <div style="width:50%; text-align:left;">
                     <strong>Party A: Yan Zhi Xin Biotechnology Co., Ltd.</strong><br>
@@ -8059,7 +8288,8 @@
     tab5: '物流',
     tab6: '總覽',
     tab7: '經銷',
-    tab8: '權限'
+    tab8: '權限',
+    tab9: '撥款'
   };
 
   function getCurrentUserPermissions() {
@@ -8067,13 +8297,16 @@
     const userId = String(session.memberId || '').trim().toUpperCase();
     const isHq = isHeadquartersUser();
     const fallback = isHq
-      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' }
-      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none' };
+      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit', tab9: 'view' }
+      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none', tab9: 'none' };
 
     if (session.permissions && typeof session.permissions === 'object') {
       const merged = Object.assign({}, fallback, session.permissions);
       if (!isHq) merged.tab8 = 'none';
-      if (userId === 'TW-NAMIS') merged.tab8 = 'edit';
+      if (userId === 'TW-NAMIS') {
+        merged.tab8 = 'edit';
+        merged.tab9 = 'edit';
+      }
       return merged;
     }
     return fallback;
@@ -8091,7 +8324,7 @@
   function applyTabVisibilityAndPermissions() {
     const perms = getCurrentUserPermissions();
     const isHq = isHeadquartersUser();
-    const tabIds = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5', 'tab6', 'tab7', 'tab8'];
+    const tabIds = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5', 'tab6', 'tab7', 'tab8', 'tab9'];
 
     let firstVisibleTab = null;
     let activeTabStillVisible = false;
@@ -8205,6 +8438,7 @@
   window.addEventListener('DOMContentLoaded', function() {
     checkExistingSession();
     resetDistCurrentMonth(); 
+    loadProductFeeList(true);
     loadInventoryDropdown(true);
     loadMallList(true);
     loadMemberList(true);
@@ -8306,6 +8540,8 @@
       loadDistributorTab();
     } else if (tabId === 'tab8') {
       loadTab8Permissions();
+    } else if (tabId === 'tab9') {
+      loadTab9PayoutTab();
     }
   }
 
@@ -8948,6 +9184,31 @@
         if (icon) icon.className = 'ph ph-caret-down';
       }
     });
+
+    // 組織圖卡片點別處自動收合機制
+    if (typeof distExpandedNodes !== 'undefined' && distExpandedNodes.size > 0) {
+      const clickedDistCard = e.target.closest && e.target.closest('.dist-node-card');
+      if (!clickedDistCard) {
+        distExpandedNodes.clear();
+        renderDistributorGenealogy();
+      }
+    }
+
+    // 撥款頁卡片點別處自動收合機制
+    if (typeof tab9ExpandedIds !== 'undefined' && tab9ExpandedIds.size > 0) {
+      const clickedTab9Card = e.target.closest && e.target.closest('.tab9-node-card');
+      if (!clickedTab9Card) {
+        tab9ExpandedIds.clear();
+        renderTab9PayoutList();
+      }
+    }
+
+    // 經銷頁撥款小鈴鐺點外部關閉
+    const distBellWrap = document.getElementById('distPayoutBellWrapper');
+    const distBellDrop = document.getElementById('distPayoutNotifyDropdown');
+    if (distBellDrop && distBellDrop.classList.contains('active') && distBellWrap && !distBellWrap.contains(e.target)) {
+      distBellDrop.classList.remove('active');
+    }
   });
 
   function toggleGenericSubSection(secId) {
@@ -8985,20 +9246,17 @@
   
   
   async function handleMallImageSelect(input) {
-    let files = Array.from(input.files);
+    let files = Array.from(input.files || []);
     if (files.length === 0) return;
-
     if (mallImageStateArray.length + files.length > 10) {
       files = files.slice(0, 10 - mallImageStateArray.length);
       showToast("最多只能上傳 10 張圖片！");
     }
-
-    for (let file of files) {
-      const base64Str = await processImageTo1x1(file);
-      mallImageStateArray.push(base64Str);
-    }
+    const processed = await Promise.all(files.map(file => processImageTo1x1(file)));
+    processed.forEach(base64Str => mallImageStateArray.push(base64Str));
     renderMallImages();
-    input.value = ''; 
+    triggerInstantImageSync('mall');
+    input.value = '';
   }
 
   function processImageTo1x1(file) {
@@ -9051,6 +9309,7 @@
   function removeMallImage(index) {
     mallImageStateArray.splice(index, 1);
     renderMallImages();
+    triggerInstantImageSync('mall');
   }
 
   
@@ -9208,8 +9467,15 @@
       delBtn.style.fontSize = '11px';
       delBtn.onclick = (e) => { e.stopPropagation(); removeInvImage(index); };
 
+      const replaceBtn = document.createElement('div');
+      replaceBtn.innerHTML = '<i class="ph ph-arrows-clockwise"></i>';
+      replaceBtn.title = '替換此張照片';
+      replaceBtn.style.cssText = 'position:absolute; bottom:-5px; right:-5px; width:18px; height:18px; background:#ffffff; color:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2); font-size:11px;';
+      replaceBtn.onclick = (e) => { e.stopPropagation(); triggerReplaceImage('inv', index); };
+
       box.appendChild(img);
       box.appendChild(delBtn);
+      box.appendChild(replaceBtn);
       container.appendChild(box);
     });
 
@@ -9275,8 +9541,15 @@
       delBtn.style.fontSize = '11px';
       delBtn.onclick = (e) => { e.stopPropagation(); removeMallImage(index); };
 
+      const replaceBtn = document.createElement('div');
+      replaceBtn.innerHTML = '<i class="ph ph-arrows-clockwise"></i>';
+      replaceBtn.title = '替換此張照片';
+      replaceBtn.style.cssText = 'position:absolute; bottom:-5px; right:-5px; width:18px; height:18px; background:#ffffff; color:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2); font-size:11px;';
+      replaceBtn.onclick = (e) => { e.stopPropagation(); triggerReplaceImage('mall', index); };
+
       box.appendChild(img);
       box.appendChild(delBtn);
+      box.appendChild(replaceBtn);
       container.appendChild(box);
     });
 
@@ -9302,27 +9575,31 @@
   
   
   function handleInvImageSelect(input) {
-    let files = Array.from(input.files);
+    let files = Array.from(input.files || []);
     if (files.length === 0) return;
     if (invImageStateArray.length + files.length > 10) {
       files = files.slice(0, 10 - invImageStateArray.length);
       showToast("最多只能上傳 10 張圖片！");
     }
-
+    let loaded = 0;
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = function(e) {
-        invImageStateArray.push(e.target.result); 
-        renderInvImages(); 
+        invImageStateArray.push(e.target.result);
+        loaded++;
+        if (loaded === files.length) {
+          renderInvImages();
+          triggerInstantImageSync('inv');
+        }
       };
       reader.readAsDataURL(file);
     });
-    input.value = ''; 
+    input.value = '';
   }
-
   function removeInvImage(index) {
-    invImageStateArray.splice(index, 1); 
-    renderInvImages(); 
+    invImageStateArray.splice(index, 1);
+    renderInvImages();
+    triggerInstantImageSync('inv');
   }
 
   function openImageModal(src) {
@@ -9561,7 +9838,17 @@
     const item = inventoryCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
       document.getElementById('invId').value = item.productId || '';
-      document.getElementById('invName').value = item.productName || '';
+      const invNameEl = document.getElementById('invName');
+      if (invNameEl) {
+        const targetName = String(item.productName || '').trim();
+        if (targetName && !Array.from(invNameEl.options).some(o => o.value === targetName)) {
+          const opt = document.createElement('option');
+          opt.value = targetName;
+          opt.text = targetName + ' (既有)';
+          invNameEl.add(opt);
+        }
+        invNameEl.value = targetName;
+      }
       document.getElementById('invCategory').value = item.category || '';
       document.getElementById('invType').value = item.type || '';
       document.getElementById('invColor').value = item.color || '';
@@ -9925,19 +10212,21 @@
     if (type === 'mem') {
       const isHQ = canEditTab('tab3');
       const btnSubmitMem = document.getElementById('btnSubmitMem');
+      const memTypeEl = document.getElementById('memType');
+      const badgeTypeLock = document.getElementById('badgeMemTypeLock');
       const memNameEl = document.getElementById('memName');
       const memPhoneEl = document.getElementById('memPhone');
       const memEmailEl = document.getElementById('memEmail');
       const bdayInput = document.getElementById('memBirthday');
       const memStatusEl = document.getElementById('memStatus');
-
+      if (memTypeEl) { memTypeEl.disabled = false; memTypeEl.style.background = '#FFFFFF'; memTypeEl.style.cursor = 'pointer'; }
+      if (badgeTypeLock) badgeTypeLock.style.display = 'none';
       if (memNameEl) { memNameEl.disabled = false; memNameEl.style.removeProperty('background'); }
       if (memPhoneEl) { memPhoneEl.disabled = false; memPhoneEl.style.removeProperty('background'); }
       if (memEmailEl) { memEmailEl.disabled = false; memEmailEl.style.removeProperty('background'); }
       if (bdayInput) { bdayInput.disabled = false; bdayInput.style.removeProperty('background'); }
       if (memStatusEl) { memStatusEl.disabled = false; memStatusEl.style.background = '#FFFFFF'; }
       if (btnSubmitMem) btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
-
       generateMemId();
       fillMemTime('memRegTime');
     }
@@ -11221,7 +11510,17 @@
       if (shelfQtyEl && (!shelfQtyEl.value || shelfQtyEl.value === '0')) {
         shelfQtyEl.value = item.availableStock || 0;
       }
-
+      // 自動對應「產品費用表」A 欄＋國碼 TW 帶入台灣售價（保持可編輯）
+      if (typeof getTwPriceByProductName === 'function') {
+        const twPrice = getTwPriceByProductName(item.productName);
+        if (twPrice !== null && twPrice !== undefined) {
+          const priceEl = document.getElementById('mallPrice');
+          if (priceEl) {
+            priceEl.value = twPrice;
+            calcVipPrice(true);
+          }
+        }
+      }
       if (item.imageUrl && (!mallImageStateArray || mallImageStateArray.length === 0)) {
         const urls = item.imageUrl.split('\n').filter(u => u.trim() !== '');
         mallImageStateArray = urls.map(url => {
@@ -11521,8 +11820,9 @@
     const expiryInput = document.getElementById('memExpiryDate');
     const regLabel = document.getElementById('lblMemRegTime');
 
-    // 自動校正編號前綴：經銷商一律以 DIS- 開頭，一般與 VIP 一律以 MEM- 開頭
-    if (memIdEl && memIdEl.value) {
+    // 僅在新增會員時依類型調整編號前綴，編輯既有會員時嚴格保留原編號
+    const isEditingExisting = Boolean(document.getElementById('editMemRowId')?.value);
+    if (!isEditingExisting && memIdEl && memIdEl.value) {
       if (typeVal === '經銷會員' && memIdEl.value.startsWith('MEM-')) {
         memIdEl.value = 'DIS-' + memIdEl.value.slice(4);
       } else if (typeVal !== '經銷會員' && memIdEl.value.startsWith('DIS-')) {
@@ -11769,7 +12069,9 @@
     });
 
     updateMemberTypeFilterUI();
-
+    if (typeof updateMemberBellNotifications === 'function') {
+      updateMemberBellNotifications();
+    }
     const container = document.getElementById('memberListContainer');
     if (!container) return;
     if (filtered.length === 0) {
@@ -12075,13 +12377,40 @@
     document.getElementById('editMemRowId').value = rowId;
     const item = memberCache.find(x => Number(x._rowId) === Number(rowId));
     if (item) {
-      const isHQ = canEditTab('tab3');
+      const isHQ = canEditTab('tab3') || isHeadquartersUser();
+      const session = getActiveDistributorSession();
+      const myIdUpper = String(session.memberId || '').trim().toUpperCase();
       const itemIdUpper = String(item.memberId || '').trim().toUpperCase();
+      const isSelfTarget = Boolean(myIdUpper && itemIdUpper === myIdUpper);
+      const bloodline = getDistributorBloodline();
+      const itemRefUpper = String(item.lineId || item.referrerId || '').trim().toUpperCase();
+      const isUnderMyBloodline = !isSelfTarget && (
+        itemRefUpper === myIdUpper ||
+        (bloodline.gen1DistIds && bloodline.gen1DistIds.has(itemIdUpper)) ||
+        (bloodline.gen2DistIds && bloodline.gen2DistIds.has(itemIdUpper))
+      );
+      const canEditMemType = isHQ || (getTabPermission('tab3') !== 'none' && isUnderMyBloodline);
       const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(itemIdUpper);
       const isDistMember = !isGenMem && (item.memberType === '經銷會員' || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(itemIdUpper) || itemIdUpper.startsWith('TW-NAMIS'));
-
       document.getElementById('memId').value = item.memberId || '';
-      document.getElementById('memType').value = item.memberType || '一般會員';
+      const memTypeEl = document.getElementById('memType');
+      const badgeTypeLock = document.getElementById('badgeMemTypeLock');
+      if (memTypeEl) {
+        memTypeEl.value = item.memberType || '一般會員';
+        if (canEditMemType) {
+          memTypeEl.disabled = false;
+          memTypeEl.style.background = '#FFFFFF';
+          memTypeEl.style.color = 'var(--text)';
+          memTypeEl.style.cursor = 'pointer';
+          if (badgeTypeLock) badgeTypeLock.style.display = 'none';
+        } else {
+          memTypeEl.disabled = true;
+          memTypeEl.style.setProperty('background', 'var(--bg)', 'important');
+          memTypeEl.style.color = 'var(--text-muted)';
+          memTypeEl.style.cursor = 'not-allowed';
+          if (badgeTypeLock) badgeTypeLock.style.display = 'inline-flex';
+        }
+      }
       document.getElementById('memLineId').value = item.lineId || '';
       document.getElementById('memRegTime').value = item.registerTime || '';
       document.getElementById('memVipTime').value = item.vipTime || '';
@@ -12149,10 +12478,10 @@
         }
       }
 
-      // 5. 儲存按鈕權限：總部帳號解鎖顯示，非總部帳號隱藏
+      // 5. 儲存按鈕權限：總部帳號或經銷商編輯底下會員類型時顯示
       const btnSubmitMem = document.getElementById('btnSubmitMem');
       if (btnSubmitMem) {
-        btnSubmitMem.style.display = isHQ ? 'inline-flex' : 'none';
+        btnSubmitMem.style.display = (isHQ || canEditMemType) ? 'inline-flex' : 'none';
       }
 
       if (memStatusEl) {
@@ -12180,6 +12509,9 @@
       const memIcon = document.getElementById('iconSubSecMemLogs');
       if (memIcon) memIcon.className = 'ph ph-caret-down';
       renderGenericLogBox('memFormLogView', item.memLog || '');
+      if (typeof markMemberNotificationAsRead === 'function') {
+        markMemberNotificationAsRead(rowId, true);
+      }
     }
     if (slot) {
       slot.appendChild(form);
@@ -12236,6 +12568,8 @@
       _rowId: rowId,
       isHQ: isHeadquartersUser(),
       distId: currentDist.memberId || '',
+      operatorId: currentDist.memberId || '',
+      operatorName: currentDist.memberName || '',
       memberId: document.getElementById('memId').value.trim(),
       memberType: memberType,
       memberName: document.getElementById('memName').value.trim(),
@@ -16411,6 +16745,7 @@
 
     renderDistributorSelfProfile();
     renderDistributorGenealogy();
+    if (typeof updateDistPayoutBellUI === 'function') updateDistPayoutBellUI();
 
     // 💥 啟動當月五大獲利戰報與 5% 營業稅精算
     resetDistCurrentMonth();
@@ -16922,8 +17257,96 @@
     return { thisMonth, lastMonth: lastMonthSales, thisYear, lifetime };
   }
 
+  // 組織圖一代/二代過篩狀態（預設皆為開啟）
+  let distGenFilter = { gen1: true, gen2: true };
+
+  function toggleDistGenFilter(genKey) {
+    distGenFilter[genKey] = !distGenFilter[genKey];
+    updateDistGenFilterUI();
+    renderDistributorGenealogy();
+  }
+
+  function updateDistGenFilterUI() {
+    const btn1 = document.getElementById('btnDistFilterGen1');
+    const btn2 = document.getElementById('btnDistFilterGen2');
+    if (btn1) {
+      if (distGenFilter.gen1) {
+        btn1.style.borderColor = 'var(--accent)';
+        btn1.style.background = 'var(--accent-soft)';
+        btn1.style.color = 'var(--accent)';
+        btn1.style.opacity = '1';
+      } else {
+        btn1.style.borderColor = '#CBD5E1';
+        btn1.style.background = '#FFFFFF';
+        btn1.style.color = 'var(--text-muted)';
+        btn1.style.opacity = '0.65';
+      }
+    }
+    if (btn2) {
+      if (distGenFilter.gen2) {
+        btn2.style.borderColor = '#7C3AED';
+        btn2.style.background = 'rgba(124, 58, 237, 0.1)';
+        btn2.style.color = '#7C3AED';
+        btn2.style.opacity = '1';
+      } else {
+        btn2.style.borderColor = '#CBD5E1';
+        btn2.style.background = '#FFFFFF';
+        btn2.style.color = 'var(--text-muted)';
+        btn2.style.opacity = '0.65';
+      }
+    }
+  }
+
+  // 計算單一經銷商底下的經銷會員（一代/二代）與消費會員（一般/VIP）人數
+  function calculateOrgCountsForDistributor(distributorId) {
+    const cleanDistId = String(distributorId || '').trim();
+    if (!cleanDistId) return { gen1: 0, gen2: 0, normal: 0, vip: 0 };
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const isDist = (m) => {
+      const mId = String(m.memberId || '').trim().toUpperCase();
+      const mType = String(m.memberType || '').trim();
+      if (!mId || /^(?:[A-Z]{2}-)?MEM-/.test(mId)) return false;
+      return (mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS');
+    };
+
+    const gen1Ids = new Set();
+    let normal = 0;
+    let vip = 0;
+
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      if (!mId || mId === cleanDistId || ref !== cleanDistId) return;
+      if (isDist(m)) {
+        gen1Ids.add(mId);
+      } else {
+        const mType = String(m.memberType || '').trim();
+        if (mType.includes('VIP')) vip++;
+        else normal++;
+      }
+    });
+
+    const gen2Ids = new Set();
+    members.forEach(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      if (!mId || mId === cleanDistId || gen1Ids.has(mId)) return;
+      if (isDist(m) && gen1Ids.has(ref)) {
+        gen2Ids.add(mId);
+      }
+    });
+
+    return {
+      gen1: gen1Ids.size,
+      gen2: gen2Ids.size,
+      normal: normal,
+      vip: vip
+    };
+  }
+
   // 3. 渲染兩代組織族譜（直屬一代 ＆ 推薦二代）
   function renderDistributorGenealogy() {
+    updateDistGenFilterUI();
     const session = getActiveDistributorSession();
     const myId = String(session.memberId || '').trim();
     const container = document.getElementById('distTreeContainer');
@@ -16997,10 +17420,29 @@
       return g1Match || g2MatchedChildren.length > 0;
     });
 
-    if (cnt1El) cnt1El.innerText = filteredGen1List.length;
-    if (cnt2El) cnt2El.innerText = totalGen2Count;
+    let matchedGen2Count = 0;
+    const flatMatchedGen2List = [];
+    gen1List.forEach(g1 => {
+      const g1Id = String(g1.memberId).trim();
+      const g2Matched = (gen2Map[g1Id] || []).filter(g2 => isDistMatch(g2));
+      matchedGen2Count += g2Matched.length;
+      g2Matched.forEach(g2 => flatMatchedGen2List.push(g2));
+    });
 
-    if (filteredGen1List.length === 0) {
+    if (cnt1El) cnt1El.innerText = filteredGen1List.length;
+    if (cnt2El) cnt2El.innerText = distWords.length > 0 ? matchedGen2Count : totalGen2Count;
+
+    if (!distGenFilter.gen1 && !distGenFilter.gen2) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:13px; line-height:1.8; border:1px dashed #CBD5E1; border-radius:8px;">
+          <i class="ph ph-funnel" style="font-size:28px; color:var(--accent-line); margin-bottom:6px;"></i><br>
+          已取消一代與二代過篩顯示，請點選右上角按鈕以檢視組織成員。
+        </div>
+      `;
+      return;
+    }
+
+    if (filteredGen1List.length === 0 && (!distGenFilter.gen2 || flatMatchedGen2List.length === 0)) {
       container.innerHTML = `
         <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:13px; line-height:1.8; border:1px dashed #CBD5E1; border-radius:8px;">
           <i class="ph ph-tree" style="font-size:32px; color:var(--accent-line); margin-bottom:8px;"></i><br>
@@ -17013,21 +17455,25 @@
     const fmtMoney = (n) => `NT$ ${Number(n || 0).toLocaleString()}`;
 
     // 渲染卡片輔助器
-    const renderNodeHtml = (m, genLevel) => {
+    const renderNodeHtml = (m, genLevel, useIndent = true) => {
       const mId = String(m.memberId).trim();
       const isExpanded = distExpandedNodes.has(mId);
       const sales = calculateSalesForDistributor(mId);
+      const orgCounts = calculateOrgCountsForDistributor(mId);
       const joinDate = m.registerTime || m.timestamp || '-';
       const expDate = m.distExpiry || m.vipExpiry || '常態有效';
       const statusText = m.status || '有效';
+      const cardStyle = genLevel === 2
+        ? (useIndent ? 'margin-left: 20px; ' : '') + 'border-left: 3px solid #7C3AED; background: #FAF5FF;'
+        : 'background: #FFFFFF;';
 
       return `
-        <div class="dist-node-card" style="${genLevel === 2 ? 'margin-left: 20px; border-left: 3px solid #7C3AED; background: #FAF5FF;' : 'background: #FFFFFF;'}">
-          <div class="dist-node-header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;">
+        <div class="dist-node-card" style="${cardStyle}">
+          <div class="dist-node-header" onclick="toggleDistNodeExpand('${mId}')" title="點擊${isExpanded ? '收合' : '展開'}此經銷商詳細資料" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; cursor: pointer; user-select: none;">
             
-            <!-- 左側：圓頭點擊展開按鈕 ＋ 姓名 ＋ 代數標籤 -->
+            <!-- 左側：圓頭圖示 ＋ 姓名 ＋ 代數標籤 -->
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div class="dist-avatar-head ${isExpanded ? 'open' : ''}" onclick="toggleDistNodeExpand('${mId}')" title="點擊${isExpanded ? '收合' : '展開'}此經銷商詳細資料">
+              <div class="dist-avatar-head ${isExpanded ? 'open' : ''}">
                 <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-user'}" style="font-size: 20px;"></i>
               </div>
               <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -17045,12 +17491,12 @@
             </div>
 
             <!-- 右側：展開箭頭純 Icon 按鈕 -->
-            <button type="button" class="icon-btn" onclick="toggleDistNodeExpand('${mId}')" title="${isExpanded ? '收合' : '展開'}" style="border: none; padding: 6px;">
+            <button type="button" class="icon-btn" title="${isExpanded ? '收合' : '展開'}" style="border: none; padding: 6px;">
               <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size: 18px;"></i>
             </button>
           </div>
 
-          <!-- 圓頭點擊展開的詳細內容：加入到期資訊 ＋ 四大銷售額面盤 -->
+          <!-- 圓頭點擊展開的詳細內容：加入到期資訊 ＋ 四大銷售額 ＋ 經銷與消費會員人數 -->
           ${isExpanded ? `
             <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-subtle); animation: fadeIn 0.15s ease;">
               
@@ -17080,34 +17526,63 @@
                 </div>
               </div>
 
+              <!-- 組織人數面盤：先顯示總人數，再顯示一代/二代與一般/VIP明細 -->
+              <div class="dist-sales-grid" style="margin-top: 8px;">
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">經銷會員</span>
+                  <span class="dist-sales-val">共 ${orgCounts.gen1 + orgCounts.gen2} 位</span>
+                  <span style="font-size: 12px; color: var(--text-muted); font-family: monospace; font-weight: 600;">一代 ${orgCounts.gen1} 位 ｜ 二代 ${orgCounts.gen2} 位</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">消費會員</span>
+                  <span class="dist-sales-val">共 ${orgCounts.normal + orgCounts.vip} 位</span>
+                  <span style="font-size: 12px; color: var(--text-muted); font-family: monospace; font-weight: 600;">一般 ${orgCounts.normal} 位 ｜ VIP ${orgCounts.vip} 位</span>
+                </div>
+              </div>
+
             </div>
           ` : ''}
         </div>
       `;
     };
 
-    // 依一代 ➔ 其所屬二代循序巢狀排版 (採用過篩後名單)
-    container.innerHTML = filteredGen1List.map(g1 => {
-      const g1Id = String(g1.memberId).trim();
-      const g2List = (gen2Map[g1Id] || []).filter(g2 => isDistMatch(g2));
+    if (distGenFilter.gen1) {
+      // 顯示一代（若二代也有點選則巢狀展開於下方）
+      container.innerHTML = filteredGen1List.map(g1 => {
+        const g1Id = String(g1.memberId).trim();
+        const g2List = distGenFilter.gen2 ? (gen2Map[g1Id] || []).filter(g2 => isDistMatch(g2)) : [];
 
-      return `
-        <div style="display:flex; flex-direction:column; gap:10px; border-bottom:1.5px dashed #CBD5E1; padding-bottom:16px;">
-          ${renderNodeHtml(g1, 1)}
-          ${g2List.length > 0 ? `
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
-              ${g2List.map(g2 => renderNodeHtml(g2, 2)).join('')}
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }).join('');
+        return `
+          <div style="display:flex; flex-direction:column; gap:10px; border-bottom:1.5px dashed #CBD5E1; padding-bottom:16px;">
+            ${renderNodeHtml(g1, 1, true)}
+            ${g2List.length > 0 ? `
+              <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
+                ${g2List.map(g2 => renderNodeHtml(g2, 2, true)).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    } else {
+      // 僅顯示二代
+      if (flatMatchedGen2List.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:13px; line-height:1.8; border:1px dashed #CBD5E1; border-radius:8px;">
+            <i class="ph ph-tree" style="font-size:32px; color:var(--accent-line); margin-bottom:8px;"></i><br>
+            目前尚無符合條件的推薦二代經銷夥伴。
+          </div>
+        `;
+      } else {
+        container.innerHTML = flatMatchedGen2List.map(g2 => renderNodeHtml(g2, 2, false)).join('');
+      }
+    }
   }
 
   function toggleDistNodeExpand(memberId) {
     if (distExpandedNodes.has(memberId)) {
       distExpandedNodes.delete(memberId);
     } else {
+      distExpandedNodes.clear();
       distExpandedNodes.add(memberId);
     }
     renderDistributorGenealogy();
@@ -17465,13 +17940,15 @@
     // 撥款應領未稅總額
     const scheduledPayoutUntaxed = payoutReferralUntaxed + payoutRestockUntaxed;
 
-    // 7. 💥【核心對位截圖處】：5% 營業稅精算與撥款總額分流
-    // 公司申請人：撥發獎金要加 5% 營業稅讓公司開立發票請款；自然人：依法未稅核發免開發票
+    // 7. 💥 公司戶(+5%營業稅) 與 個人戶(-2.11%二代健保) 精算分流，上下區塊數值 100% 對齊
     const bonusTaxAmount = (isCompany && !isOverseasDistributor) ? Math.round(scheduledPayoutUntaxed * 0.05) : 0;
-    const finalPayoutTotal = scheduledPayoutUntaxed + bonusTaxAmount; // 公司 = 未稅 * 1.05；自然人 = 未稅
+    const nhiDeductionAmount = (!isCompany && !isOverseasDistributor) ? Math.round(scheduledPayoutUntaxed * 0.0211) : 0;
+    const finalPayoutTotal = isOverseasDistributor
+      ? 0
+      : (isCompany ? (scheduledPayoutUntaxed + bonusTaxAmount) : Math.max(0, scheduledPayoutUntaxed - nhiDeductionAmount));
 
-    // 預估總淨收益 = 零售毛利 (含稅互減差價，不加稅) + 撥發未稅獎金
-    const totalEstimatedEarnings = retailGrossProfit + (isOverseasDistributor ? 0 : scheduledPayoutUntaxed);
+    // 預估總淨收益 = 商城零售利潤 + 預計撥發獎金（與上方卡片及下方實領請款完全對齊）
+    const totalEstimatedEarnings = retailGrossProfit + finalPayoutTotal;
 
     // 8. 賦值更新前端 UI 畫面
     // (1) 收益總覽
@@ -17564,18 +18041,26 @@
     if (elReSum) elReSum.innerText = fmtMoney(payoutRestockUntaxed);
     if (elUntaxed) elUntaxed.innerText = fmtMoney(scheduledPayoutUntaxed);
 
-    // 💥 截圖粉紅底「5% 營業稅」欄位精確連動：
+    // 💥 公司戶僅顯示 5% 營業稅；個人戶僅顯示二代健保 2.11% 扣款
+    const rowTaxOrNhi = document.getElementById('rowPayoutTaxOrNhi');
+    const lblTaxOrNhi = document.getElementById('lblPayoutTaxOrNhi');
     if (isOverseasDistributor) {
-      if (elTax5) elTax5.innerText = '海外免計營業稅';
+      if (lblTaxOrNhi) lblTaxOrNhi.innerText = '稅務與健保：';
+      if (rowTaxOrNhi) { rowTaxOrNhi.style.background = '#F8FAFC'; rowTaxOrNhi.style.color = '#64748B'; }
+      if (elTax5) elTax5.innerText = '海外免計';
       if (elNetOrInv) elNetOrInv.innerText = '海外免提撥 (NT$ 0)';
     } else if (isCompany) {
-      // 公司申請人：顯示 +5% 稅額與發票開立總額
+      // 公司申請人：僅顯示 +5% 營業稅，不顯示二代健保
+      if (lblTaxOrNhi) lblTaxOrNhi.innerText = '5% 營業稅：';
+      if (rowTaxOrNhi) { rowTaxOrNhi.style.background = '#EFF6FF'; rowTaxOrNhi.style.color = '#1D4ED8'; }
       if (elTax5) elTax5.innerHTML = `+ ${fmtMoney(bonusTaxAmount)} <span style="font-size:11px; color:#2563EB; font-weight:normal;">(外加 5% 營業稅額)</span>`;
       if (elNetOrInv) elNetOrInv.innerHTML = `${fmtMoney(finalPayoutTotal)} <span style="font-size:12px; font-weight:normal; color:#475569;">(公司撥款含稅總額)</span>`;
     } else {
-      // 自然人：依法免開營業稅發票
-      if (elTax5) elTax5.innerHTML = `依法免開營業稅發票 <span style="font-size:11px; color:#64748B; font-weight:normal;">(未稅核發)</span>`;
-      if (elNetOrInv) elNetOrInv.innerHTML = `${fmtMoney(scheduledPayoutUntaxed)} <span style="font-size:12px; font-weight:normal; color:#475569;">(未稅應發總額)</span>`;
+      // 個人戶（自然人）：僅顯示二代健保 2.11% 扣款，不顯示 5% 營業稅
+      if (lblTaxOrNhi) lblTaxOrNhi.innerText = '二代健保 (2.11%)：';
+      if (rowTaxOrNhi) { rowTaxOrNhi.style.background = '#FEF2F2'; rowTaxOrNhi.style.color = '#DC2626'; }
+      if (elTax5) elTax5.innerHTML = `- ${fmtMoney(nhiDeductionAmount)} <span style="font-size:11px; color:#DC2626; font-weight:normal;">(代扣 2.11% 補充保費)</span>`;
+      if (elNetOrInv) elNetOrInv.innerHTML = `${fmtMoney(finalPayoutTotal)} <span style="font-size:12px; font-weight:normal; color:#475569;">(扣除二代健保實領)</span>`;
     }
 
     // 撥款說明抽屜
@@ -17678,7 +18163,7 @@
   // 分頁 8：總部人員與動態頁籤權限管理 (Jobs 極簡線條單欄卡片)
   // ============================================================
   let tab8CurrentSeg = 'hq';
-  let tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' };
+  let tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit', tab9: 'view' };
   let tab8OpenCardId = null;
   let tab8PendingDeleteId = null;
 
@@ -17697,8 +18182,8 @@
 
   function parseTab8MemberPerms(m, isHq) {
     const fallback = isHq
-      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' }
-      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none' };
+      ? { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit', tab9: 'view' }
+      : { tab1: 'edit', tab2: 'view', tab3: 'view', tab4: 'view', tab5: 'edit', tab6: 'view', tab7: 'edit', tab8: 'none', tab9: 'none' };
     if (!m || !m.permissions) return fallback;
     if (typeof m.permissions === 'object') return Object.assign({}, fallback, m.permissions);
     try {
@@ -17754,7 +18239,7 @@
     document.getElementById('tab8NewHqPhone').value = '';
     document.getElementById('tab8NewHqEmail').value = '';
     document.getElementById('tab8NewHqId').value = '配發中...';
-    tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit' };
+    tab8NewHqPerms = { tab1: 'edit', tab2: 'edit', tab3: 'edit', tab4: 'edit', tab5: 'edit', tab6: 'edit', tab7: 'edit', tab8: 'edit', tab9: 'view' };
     renderTab8NewHqPermGrid();
 
     try {
@@ -17916,6 +18401,9 @@
                       </button>
                     `
                   ) : ''}
+                  <button type="button" class="icon-btn" onclick="batchSyncTab8GroupPerm('${id}', '${isHq ? 'hq' : 'dist'}')" title="${isHq ? '同步套用至所有總部人員（不含主帳號 TW-NAMIS）' : '同步套用至所有經銷商'}" style="width:40px; height:40px; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center; border-color:var(--accent); color:var(--accent); background:#FFFFFF;">
+                    <i class="ph ph-users-three" style="font-size:20px;"></i>
+                  </button>
                   <button type="button" class="action-btn-primary" onclick="saveTab8MemberPerm('${id}', ${m._rowId})" title="儲存權限" style="width:40px; height:40px; margin-top:0; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center;">
                     <i class="ph ph-floppy-disk" style="font-size:22px;"></i>
                   </button>
@@ -17961,7 +18449,9 @@
       });
       if (res && res.status === 'success') {
         target.permissions = perms;
-        showToast('權限已更新！');
+        showToast(res.data && res.data.isDistDefaultUpdated
+          ? '權限已更新，並已設為新經銷商預設權限！'
+          : '權限已更新！');
         if (String(s.memberId || '').trim() === memberId) {
           s.permissions = perms;
           localStorage.setItem('YCH_DISTRIBUTOR_SESSION', JSON.stringify(s));
@@ -17972,6 +18462,60 @@
       }
     } catch (e) {
       showToast(e.message || '權限更新失敗');
+    }
+  }
+
+  async function batchSyncTab8GroupPerm(sourceMemberId, targetGroup) {
+    const source = (memberCache || []).find(m => String(m.memberId || '').trim() === sourceMemberId);
+    if (!source) return;
+
+    const isHqTarget = (targetGroup === 'hq');
+    const templatePerms = parseTab8MemberPerms(source, isHqTarget);
+    if (!isHqTarget) templatePerms.tab8 = 'none';
+
+    const backupCache = JSON.parse(JSON.stringify(memberCache || []));
+    const s = getActiveDistributorSession() || {};
+    const myIdUpper = String(s.memberId || '').trim().toUpperCase();
+    let syncCount = 0;
+
+    // 0ms 樂觀 UI：即時套用至快取中所有目標人員（主帳號 TW-NAMIS 絕對排除）
+    (memberCache || []).forEach(m => {
+      const mIdUpper = String(m.memberId || '').trim().toUpperCase();
+      if (mIdUpper === 'TW-NAMIS') return;
+      const isRowHq = isTab8HqMember(m);
+      const isRowDist = isTab8DistMember(m);
+      if ((isHqTarget && isRowHq) || (!isHqTarget && isRowDist)) {
+        m.permissions = Object.assign({}, templatePerms);
+        syncCount++;
+        if (mIdUpper === myIdUpper) {
+          s.permissions = Object.assign({}, templatePerms);
+          localStorage.setItem('YCH_DISTRIBUTOR_SESSION', JSON.stringify(s));
+          applyTabVisibilityAndPermissions();
+        }
+      }
+    });
+
+    renderTab8List();
+    showToast(isHqTarget
+      ? `已套用至 ${syncCount} 位總部人員（主帳號 TW-NAMIS 不受影響），背景同步中...`
+      : `已套用至 ${syncCount} 位經銷商，背景同步中...`);
+
+    try {
+      const res = await apiCall('batchSyncGroupPermissions', {
+        operatorId: s.memberId || '',
+        operatorName: s.memberName || '',
+        targetGroup: targetGroup,
+        permissions: templatePerms
+      });
+      if (res && res.status === 'success') {
+        showToast((res.data && res.data.message) || '試算表群組權限已秒速同步完成！');
+      } else {
+        throw new Error((res && res.data && res.data.message) || '同步失敗');
+      }
+    } catch (e) {
+      memberCache = backupCache;
+      renderTab8List();
+      showToast('群組同步失敗已還原：' + (e.message || e));
     }
   }
 
@@ -18008,7 +18552,1229 @@
     }
   }
 
-</script>
+  // ============================================================
+  // 會員頁右上角：資訊通知小鈴鐺引擎 (K 欄解析、滑動定位與已讀同步)
+  // ============================================================
+  function getScopedMembersForBell() {
+    const bloodline = getDistributorBloodline();
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    if (bloodline.isHQ) return members;
+    return members.filter(m => {
+      const mId = String(m.memberId || '').trim().toUpperCase();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      const mType = String(m.memberType || '').trim();
+      const isGenMem = /^(?:[A-Z]{2}-)?MEM-/.test(mId);
+      const isDist = !isGenMem && ((mType === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(mId) || mId.startsWith('TW-NAMIS'));
+      if (isDist) {
+        if (mId === bloodline.myId) return true;
+        return (bloodline.gen1DistIds && bloodline.gen1DistIds.has(mId)) ||
+               (bloodline.gen2DistIds && bloodline.gen2DistIds.has(mId));
+      } else {
+        return (ref === bloodline.myId);
+      }
+    });
+  }
 
+  function parseMemberKLogs(memLogStr) {
+    if (!memLogStr || String(memLogStr).trim() === '') return [];
+    const blocks = String(memLogStr).split(/(?=\[\d{4}\/\d{2}\/\d{2})/g).filter(b => b.trim() !== '');
+    return blocks.map(blk => {
+      const lines = blk.trim().split('\n').map(l => l.trim()).filter(Boolean);
+      const header = lines[0] || '';
+      const timeMatch = header.match(/\[(\d{4}\/\d{2}\/\d{2})[\s-](\d{2}:\d{2}:\d{2})(?:\s*\|\s*([^\]]+))?(?:\s+([^\]]+))?\]/);
+      let timeStr = '';
+      let timestampMs = 0;
+      let actor = '';
+      if (timeMatch) {
+        timeStr = `${timeMatch[1]} ${timeMatch[2]}`;
+        const parsed = new Date(`${timeMatch[1].replace(/\//g, '-')}T${timeMatch[2]}`);
+        timestampMs = isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+        actor = (timeMatch[3] || timeMatch[4] || '').trim();
+      }
+      const isReadReceipt = header.includes('已檢視更新通知') || lines.slice(1).some(l => l.includes('已檢視更新通知'));
+      const summaryLines = lines.slice(1).filter(l => !l.includes('已檢視更新通知'));
+      return {
+        header,
+        timeStr,
+        timestampMs,
+        actor,
+        isReadReceipt,
+        summary: summaryLines.join('；') || '會員資料已更新'
+      };
+    }).filter(x => x.timestampMs > 0);
+  }
+
+  let memDeleteEventsCache = [];
+  let lastMemVersionToken = '';
+  let memSyncIntervalTimer = null;
+  let isMemSyncingNow = false;
+
+  function getUnreadMemberNotifications() {
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim().toUpperCase();
+    if (!myId) return [];
+    const bloodline = getDistributorBloodline();
+    const scopedMembers = getScopedMembersForBell();
+    const unreadList = [];
+
+    // 1. 解析「新增 / 修改」未讀通知（來自 K 欄）
+    scopedMembers.forEach(m => {
+      const entries = parseMemberKLogs(m.memLog || '');
+      if (entries.length === 0) return;
+
+      const updateEntries = entries.filter(e => !e.isReadReceipt);
+      if (updateEntries.length === 0) return;
+      const latestUpdate = updateEntries[updateEntries.length - 1];
+
+      const myReadEntries = entries.filter(e => {
+        if (!e.isReadReceipt) return false;
+        const actorUpper = String(e.actor || '').toUpperCase();
+        return actorUpper.startsWith(myId + '_') || actorUpper === myId;
+      });
+      const lastReadMs = myReadEntries.length > 0
+        ? Math.max(...myReadEntries.map(e => e.timestampMs))
+        : 0;
+
+      if (latestUpdate.timestampMs > lastReadMs) {
+        unreadList.push({
+          kind: 'klog',
+          _rowId: m._rowId,
+          memberId: m.memberId || '',
+          memberName: m.memberName || '未命名會員',
+          memberType: m.memberType || '一般會員',
+          timeStr: latestUpdate.timeStr,
+          timestampMs: latestUpdate.timestampMs,
+          actor: latestUpdate.actor || '系統紀錄',
+          summary: latestUpdate.summary
+        });
+      }
+    });
+
+    // 2. 解析「刪除」未讀通知（來自刪除事件佇列）
+    (memDeleteEventsCache || []).forEach(ev => {
+      const readList = Array.isArray(ev.readBy) ? ev.readBy : [];
+      if (readList.includes(myId)) return;
+
+      const refUpper = String(ev.referrerId || '').trim().toUpperCase();
+      const canSee = bloodline.isHQ ||
+        refUpper === myId ||
+        (bloodline.gen1DistIds && bloodline.gen1DistIds.has(String(ev.memberId || '').toUpperCase())) ||
+        (bloodline.gen2DistIds && bloodline.gen2DistIds.has(String(ev.memberId || '').toUpperCase()));
+
+      if (canSee) {
+        unreadList.push({
+          kind: 'delete',
+          eventId: ev.eventId,
+          memberId: ev.memberId || '',
+          memberName: ev.memberName || '已刪除會員',
+          timeStr: ev.timeStr || '',
+          timestampMs: Number(ev.timestampMs) || 0,
+          actor: ev.actor || '系統操作',
+          summary: '該筆會員資料已被刪除'
+        });
+      }
+    });
+
+    return unreadList.sort((a, b) => b.timestampMs - a.timestampMs);
+  }
+
+  function updateMemberBellNotifications() {
+    const badge = document.getElementById('memBellBadge');
+    const countText = document.getElementById('memNotifyCountText');
+    const listEl = document.getElementById('memNotificationList');
+    const unread = getUnreadMemberNotifications();
+
+    if (badge) {
+      if (unread.length > 0) {
+        badge.innerText = unread.length > 99 ? '99+' : String(unread.length);
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    if (countText) {
+      countText.innerText = `${unread.length} 筆`;
+    }
+    if (listEl) {
+      if (unread.length === 0) {
+        listEl.innerHTML = '<div style="padding:20px; text-align:center; font-size:12px; color:var(--text-muted);">目前無未讀更新通知</div>';
+      } else {
+        const esc = (s) => String(s || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        listEl.innerHTML = unread.map(n => {
+          const clickAttr = n.kind === 'delete'
+            ? `onClickDeleteMemberNotification('${n.eventId}')`
+            : `onClickMemberNotification(${n._rowId})`;
+          const badgeTag = n.kind === 'delete'
+            ? `<span style="font-size:10px; background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; padding:1px 5px; border-radius:4px; margin-right:4px;">刪除</span>`
+            : '';
+          return `
+            <div class="mem-notify-item" onclick="${clickAttr}">
+              <div class="mem-notify-item-top">
+                <span>${badgeTag}${esc(n.memberId)} ${esc(n.memberName)}</span>
+                <span class="mem-notify-item-time">${esc(n.timeStr)}</span>
+              </div>
+              <div class="mem-notify-item-who">操作者：${esc(n.actor)}</div>
+              <div class="mem-notify-item-desc">${esc(n.summary)}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  }
+
+  function toggleMemberBellDropdown(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('memNotificationDropdown');
+    if (!dropdown) return;
+    updateMemberBellNotifications();
+    dropdown.classList.toggle('active');
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('memBellWrapper');
+    const dropdown = document.getElementById('memNotificationDropdown');
+    if (dropdown && dropdown.classList.contains('active') && wrapper && !wrapper.contains(e.target)) {
+      dropdown.classList.remove('active');
+    }
+  });
+
+  function onClickMemberNotification(rowId) {
+    const dropdown = document.getElementById('memNotificationDropdown');
+    if (dropdown) dropdown.classList.remove('active');
+
+    // 若搜尋或類型篩選有值，先重置確保目標會員卡片顯示在列表中
+    const kwEl = document.getElementById('filterMemberKeyword');
+    const needResetFilter = (kwEl && kwEl.value.trim() !== '') || currentMemberTypeFilter !== '';
+    if (needResetFilter) {
+      if (kwEl) kwEl.value = '';
+      currentMemberTypeFilter = '';
+      renderMemberList();
+    }
+
+    // 展開該會員卡片並平滑滑動至該筆資料（toggleMemEdit 內已串接 markMemberNotificationAsRead）
+    const card = document.getElementById(`mem-card-${rowId}`);
+    if (card && !card.classList.contains('editing')) {
+      toggleMemEdit(rowId);
+    } else {
+      markMemberNotificationAsRead(rowId, false);
+    }
+    setTimeout(() => {
+      const targetCard = document.getElementById(`mem-card-${rowId}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 80);
+  }
+
+  async function markMemberNotificationAsRead(rowId, silent = false) {
+    const target = (memberCache || []).find(m => Number(m._rowId) === Number(rowId));
+    if (!target) return;
+
+    const session = getActiveDistributorSession();
+    const opId = String(session.memberId || '').trim();
+    const opName = String(session.memberName || '').trim();
+    if (!opId) return;
+
+    // 檢查是否確實有未讀更新，避免重複寫入多餘的已檢視紀錄
+    const unread = getUnreadMemberNotifications();
+    const hasUnreadForTarget = unread.some(u => Number(u._rowId) === Number(rowId));
+    if (!hasUnreadForTarget) return;
+
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const nowStr = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const opTag = `${opId}_${opName || '經銷夥伴'}`;
+    const readBlock = `[${nowStr} | ${opTag}] 已檢視更新通知`;
+
+    // 0ms 樂觀更新本地 memLog 與小鈴鐺紅色數字
+    const existingLog = String(target.memLog || '').trim();
+    target.memLog = existingLog ? `${existingLog}\n\n${readBlock}` : readBlock;
+    updateMemberBellNotifications();
+
+    const memForm = document.getElementById('memAddFormContainer');
+    const editRowIdEl = document.getElementById('editMemRowId');
+    if (memForm && memForm.style.display !== 'none' && editRowIdEl && Number(editRowIdEl.value) === Number(rowId)) {
+      renderGenericLogBox('memFormLogView', target.memLog);
+    }
+
+    try {
+      const res = await apiCall('markMemberLogRead', {
+        _rowId: Number(rowId),
+        memberId: target.memberId || '',
+        operatorId: opId,
+        operatorName: opName || '經銷夥伴'
+      });
+      if (res && res.status === 'success' && res.data && res.data.memLog) {
+        target.memLog = res.data.memLog;
+        updateMemberBellNotifications();
+      }
+    } catch (e) {
+      if (!silent) showToast('已檢視紀錄背景同步延遲');
+    }
+  }
+
+  async function onClickDeleteMemberNotification(eventId) {
+    const dropdown = document.getElementById('memNotificationDropdown');
+    if (dropdown) dropdown.classList.remove('active');
+
+    const session = getActiveDistributorSession();
+    const myId = String(session.memberId || '').trim().toUpperCase();
+    if (!myId) return;
+
+    const targetEv = (memDeleteEventsCache || []).find(ev => ev.eventId === eventId);
+    if (targetEv) {
+      if (!Array.isArray(targetEv.readBy)) targetEv.readBy = [];
+      if (!targetEv.readBy.includes(myId)) targetEv.readBy.push(myId);
+    }
+    updateMemberBellNotifications();
+    showToast('已檢視會員刪除通知，紅色數字已清除');
+
+    try {
+      await apiCall('markDeleteEventRead', { eventId: eventId, operatorId: myId });
+    } catch (e) {}
+  }
+
+  // 跨裝置即時同步引擎（每 10 秒背景輪詢 + 視窗切換即時喚醒）
+  async function pollMemberUpdatesSilently() {
+    const session = getActiveDistributorSession();
+    if (!session || !session.memberId || isMemSyncingNow) return;
+    isMemSyncingNow = true;
+    try {
+      const res = await apiCall('syncMemberUpdates', { versionToken: lastMemVersionToken });
+      if (res && res.status === 'success' && res.data) {
+        if (res.data.versionToken) lastMemVersionToken = res.data.versionToken;
+        if (res.data.hasChanges) {
+          const prevUnreadCount = getUnreadMemberNotifications().length;
+          if (Array.isArray(res.data.members)) memberCache = res.data.members;
+          if (Array.isArray(res.data.deleteEvents)) memDeleteEventsCache = res.data.deleteEvents;
+
+          updateMemberBellNotifications();
+          const newUnreadCount = getUnreadMemberNotifications().length;
+          if (newUnreadCount > prevUnreadCount) {
+            showToast(`🔔 收到 ${newUnreadCount - prevUnreadCount} 筆會員資料更新通知`);
+          }
+
+          // 若使用者未正在編輯會員表單，才背景重繪列表避免打斷輸入
+          const memForm = document.getElementById('memAddFormContainer');
+          const isEditingMem = memForm && memForm.style.display !== 'none';
+          const tab3 = document.getElementById('tab3');
+          if (tab3 && tab3.classList.contains('active') && !isEditingMem) {
+            renderMemberList();
+          }
+        }
+      }
+    } catch (e) {
+      // 背景輪詢靜默容錯，不跳錯誤打擾操作
+    } finally {
+      isMemSyncingNow = false;
+    }
+  }
+
+  function startMemberCrossDeviceSync() {
+    if (memSyncIntervalTimer) clearInterval(memSyncIntervalTimer);
+    memSyncIntervalTimer = setInterval(pollMemberUpdatesSilently, 10000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) pollMemberUpdatesSilently();
+    });
+    window.addEventListener('focus', pollMemberUpdatesSilently);
+  }
+
+  window.addEventListener('DOMContentLoaded', startMemberCrossDeviceSync);
+
+  // ============================================================
+  // 產品費用表載入、進貨品名下拉選單 & 上架自動帶入台灣售價
+  // ============================================================
+  let productFeeNamesCache = [];
+  let productFeeTwPriceMap = {};
+
+  async function loadProductFeeList(forceReload = false) {
+    if (productFeeNamesCache.length > 0 && !forceReload) {
+      syncProductNameDropdownUI();
+      return;
+    }
+    try {
+      const res = await apiCall('getProductFeeList', {});
+      if (res && res.status === 'success' && res.data) {
+        productFeeNamesCache = Array.isArray(res.data.uniqueNames) ? res.data.uniqueNames : [];
+        productFeeTwPriceMap = res.data.twPriceMap || {};
+        syncProductNameDropdownUI();
+      }
+    } catch (e) {
+      console.warn('讀取產品費用表延遲:', e);
+    }
+  }
+
+  function syncProductNameDropdownUI() {
+    const sel = document.getElementById('invName');
+    if (!sel) return;
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">-- 請選擇商品名稱（來自產品費用表） --</option>';
+    productFeeNamesCache.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.text = name;
+      sel.add(opt);
+    });
+    if (currentVal) {
+      if (!Array.from(sel.options).some(o => o.value === currentVal)) {
+        const opt = document.createElement('option');
+        opt.value = currentVal;
+        opt.text = currentVal + ' (既有)';
+        sel.add(opt);
+      }
+      sel.value = currentVal;
+    }
+  }
+
+  function getTwPriceByProductName(productName) {
+    const clean = String(productName || '').trim();
+    if (!clean) return null;
+    if (productFeeTwPriceMap[clean] !== undefined) return productFeeTwPriceMap[clean];
+    const matchedKey = Object.keys(productFeeTwPriceMap).find(k => k.trim() === clean);
+    return matchedKey !== undefined ? productFeeTwPriceMap[matchedKey] : null;
+  }
+
+  // ============================================================
+  // 進貨／上架照片：單張替換 & 0 秒樂觀即時同步至試算表儲存格
+  // ============================================================
+  let pendingReplaceImgTarget = { type: null, index: -1 };
+
+  function triggerReplaceImage(type, index) {
+    pendingReplaceImgTarget = { type: type, index: index };
+    const input = document.getElementById(type === 'mall' ? 'mallReplaceFileInput' : 'invReplaceFileInput');
+    if (input) input.click();
+  }
+
+  async function handleReplaceImageFile(input, type) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const idx = pendingReplaceImgTarget.index;
+    const arr = (type === 'mall') ? mallImageStateArray : invImageStateArray;
+    if (pendingReplaceImgTarget.type !== type || idx < 0 || idx >= arr.length) {
+      input.value = '';
+      return;
+    }
+
+    let resultDataUrl = '';
+    if (type === 'mall') {
+      resultDataUrl = await processImageTo1x1(file);
+    } else {
+      resultDataUrl = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    arr[idx] = resultDataUrl;
+    if (type === 'mall') renderMallImages();
+    else renderInvImages();
+
+    triggerInstantImageSync(type);
+    input.value = '';
+  }
+
+  async function triggerInstantImageSync(type) {
+    if (type !== 'inv' && type !== 'mall') return;
+    const rowId = document.getElementById(type === 'mall' ? 'editMallRowId' : 'editRowId')?.value;
+    const statusEl = document.getElementById(type === 'mall' ? 'mallImgSyncStatus' : 'invImgSyncStatus');
+    const arr = (type === 'mall') ? mallImageStateArray : invImageStateArray;
+
+    // 尚未建檔的新增表單：僅更新預覽，待按下儲存時一併建檔
+    if (!rowId) {
+      if (statusEl) statusEl.innerText = `已選 ${arr.length} 張，儲存時自動上傳`;
+      return;
+    }
+
+    // 0ms 樂觀 UI：立即更新本地快取的圖片與卡片縮圖
+    const cacheList = (type === 'mall') ? mallCache : inventoryCache;
+    const cacheIdx = (cacheList || []).findIndex(x => Number(x._rowId) === Number(rowId));
+    if (cacheIdx !== -1) {
+      cacheList[cacheIdx].imageUrl = arr.join('\n');
+    }
+
+    if (statusEl) {
+      statusEl.innerHTML = '<span style="color:var(--accent);"><i class="ph ph-circle-notch ph-spin"></i> 照片同步試算表中...</span>';
+    }
+
+    const session = getActiveDistributorSession() || {};
+    const itemCode = (type === 'mall')
+      ? (document.getElementById('mallPrdId')?.value || 'SEL')
+      : (document.getElementById('invId')?.value || 'IN');
+
+    try {
+      const res = await apiCall('syncItemImagesInstant', {
+        type: type,
+        _rowId: Number(rowId),
+        images: [...arr],
+        itemCode: itemCode,
+        operatorId: session.memberId || '',
+        operatorName: session.memberName || '',
+        distId: session.memberId || '',
+        distName: session.memberName || ''
+      });
+      if (res && res.status === 'success' && res.data) {
+        if (Array.isArray(res.data.urlsList)) {
+          const thumbUrls = res.data.urlsList.map(url => {
+            const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/d\/([a-zA-Z0-9_-]+)/);
+            return (match && match[1]) ? ('https://drive.google.com/thumbnail?id=' + match[1] + '&sz=w800') : url;
+          });
+          if (type === 'mall') {
+            mallImageStateArray = thumbUrls;
+            renderMallImages();
+          } else {
+            invImageStateArray = thumbUrls;
+            renderInvImages();
+          }
+        }
+        if (cacheIdx !== -1 && res.data.imageUrl !== undefined) {
+          cacheList[cacheIdx].imageUrl = res.data.imageUrl;
+        }
+        if (statusEl) {
+          statusEl.innerHTML = '<span style="color:var(--success); font-weight:700;"><i class="ph ph-check-circle"></i> 照片已即時同步至試算表</span>';
+          setTimeout(() => { if (statusEl) statusEl.innerText = ''; }, 2500);
+        }
+      } else {
+        throw new Error((res && res.data && res.data.message) || '同步失敗');
+      }
+    } catch (e) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--danger);">照片同步失敗，請重試或點擊儲存</span>';
+    }
+  }
+
+  // ============================================================
+  // 分頁 9：總部經銷商獎金撥款核算、7 欄明細表與銀行帳戶核對引擎
+  // ============================================================
+  let tab9ActiveYear = new Date().getFullYear();
+  let tab9ActiveMonth = new Date().getMonth();
+  let tab9StartDateObj = null;
+  let tab9EndDateObj = null;
+  let tab9SortState = { key: 'bonus', dir: 'desc' }; // join | bonus | sales | rec
+  let tab9BonusFilter = { has: true, none: true };
+  let tab9ExpandedIds = new Set();
+
+  function toggleTab9BonusFilter(key) {
+    tab9BonusFilter[key] = !tab9BonusFilter[key];
+    renderTab9PayoutList();
+  }
+
+  function updateTab9BonusFilterUI(hasCount, noCount) {
+    const cntHas = document.getElementById('cntTab9HasBonus');
+    const cntNo = document.getElementById('cntTab9NoBonus');
+    if (cntHas) cntHas.innerText = hasCount;
+    if (cntNo) cntNo.innerText = noCount;
+
+    const btnHas = document.getElementById('btnTab9FilterHasBonus');
+    const btnNo = document.getElementById('btnTab9FilterNoBonus');
+    if (btnHas) {
+      if (tab9BonusFilter.has) {
+        btnHas.style.borderColor = '#10B981';
+        btnHas.style.background = 'rgba(16, 185, 129, 0.12)';
+        btnHas.style.color = '#059669';
+        btnHas.style.opacity = '1';
+      } else {
+        btnHas.style.borderColor = '#CBD5E1';
+        btnHas.style.background = '#FFFFFF';
+        btnHas.style.color = 'var(--text-muted)';
+        btnHas.style.opacity = '0.65';
+      }
+    }
+    if (btnNo) {
+      if (tab9BonusFilter.none) {
+        btnNo.style.borderColor = '#64748B';
+        btnNo.style.background = '#F1F5F9';
+        btnNo.style.color = '#334155';
+        btnNo.style.opacity = '1';
+      } else {
+        btnNo.style.borderColor = '#CBD5E1';
+        btnNo.style.background = '#FFFFFF';
+        btnNo.style.color = 'var(--text-muted)';
+        btnNo.style.opacity = '0.65';
+      }
+    }
+  }
+
+  async function loadTab9PayoutTab(forceReload = false) {
+    const statusEl = document.getElementById('tab9RefreshStatus');
+    if (statusEl) statusEl.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> 核算中...';
+
+    if (!isMemberLoaded || forceReload) await loadMemberList(forceReload);
+    if (!isOrderLoaded || forceReload) await loadOrderList(forceReload);
+
+    if (!tab9StartDateObj || !tab9EndDateObj) {
+      const now = new Date();
+      tab9ActiveYear = now.getFullYear();
+      tab9ActiveMonth = now.getMonth();
+      syncTab9MonthRange();
+    } else {
+      renderTab9PayoutList();
+    }
+
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="ph ph-check" style="color:var(--success);"></i> 已同步';
+      setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 2000);
+    }
+  }
+
+  function stepTab9Month(delta) {
+    tab9ActiveMonth += delta;
+    if (tab9ActiveMonth < 0) {
+      tab9ActiveMonth = 11;
+      tab9ActiveYear -= 1;
+    } else if (tab9ActiveMonth > 11) {
+      tab9ActiveMonth = 0;
+      tab9ActiveYear += 1;
+    }
+    syncTab9MonthRange();
+  }
+
+  function syncTab9MonthRange() {
+    const pad = (n) => String(n).padStart(2, '0');
+    tab9StartDateObj = new Date(tab9ActiveYear, tab9ActiveMonth, 1, 0, 0, 0);
+    tab9EndDateObj = new Date(tab9ActiveYear, tab9ActiveMonth + 1, 0, 23, 59, 59);
+
+    const lbl = document.getElementById('lblTab9SelectedMonth');
+    if (lbl) lbl.innerText = `${tab9ActiveYear} 年 ${tab9ActiveMonth + 1} 月`;
+
+    const sInput = document.getElementById('tab9StartDate');
+    const eInput = document.getElementById('tab9EndDate');
+    const sDisp = document.getElementById('tab9StartDateDisplay');
+    const eDisp = document.getElementById('tab9EndDateDisplay');
+    const sIso = `${tab9ActiveYear}-${pad(tab9ActiveMonth + 1)}-01`;
+    const eIso = `${tab9ActiveYear}-${pad(tab9ActiveMonth + 1)}-${pad(tab9EndDateObj.getDate())}`;
+    if (sInput) sInput.value = sIso;
+    if (eInput) eInput.value = eIso;
+    if (sDisp) sDisp.value = sIso.replace(/-/g, '/');
+    if (eDisp) eDisp.value = eIso.replace(/-/g, '/');
+
+    renderTab9PayoutList();
+  }
+
+  function setTab9DateRange(type) {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    let sIso = '', eIso = '';
+    if (type === 'thisYear') {
+      const y = now.getFullYear();
+      sIso = `${y}-01-01`;
+      eIso = `${y}-12-31`;
+      tab9StartDateObj = new Date(y, 0, 1, 0, 0, 0);
+      tab9EndDateObj = new Date(y, 11, 31, 23, 59, 59);
+    } else {
+      sIso = '2020-01-01';
+      eIso = '2035-12-31';
+      tab9StartDateObj = new Date(2020, 0, 1, 0, 0, 0);
+      tab9EndDateObj = new Date(2035, 11, 31, 23, 59, 59);
+    }
+    const sInput = document.getElementById('tab9StartDate');
+    const eInput = document.getElementById('tab9EndDate');
+    const sDisp = document.getElementById('tab9StartDateDisplay');
+    const eDisp = document.getElementById('tab9EndDateDisplay');
+    const lbl = document.getElementById('lblTab9SelectedMonth');
+    if (sInput) sInput.value = sIso;
+    if (eInput) eInput.value = eIso;
+    if (sDisp) sDisp.value = sIso.replace(/-/g, '/');
+    if (eDisp) eDisp.value = eIso.replace(/-/g, '/');
+    if (lbl) lbl.innerText = type === 'thisYear' ? `${now.getFullYear()} 全年度` : '全部期間';
+    renderTab9PayoutList();
+  }
+
+  function syncTab9DateChange(type, val) {
+    if (!val) return;
+    const disp = document.getElementById(type === 'start' ? 'tab9StartDateDisplay' : 'tab9EndDateDisplay');
+    if (disp) disp.value = val.replace(/-/g, '/');
+    applyTab9CustomDateFilter();
+  }
+
+  function applyTab9CustomDateFilter() {
+    const sVal = document.getElementById('tab9StartDate')?.value;
+    const eVal = document.getElementById('tab9EndDate')?.value;
+    if (!sVal || !eVal) return;
+    tab9StartDateObj = new Date(sVal + 'T00:00:00');
+    tab9EndDateObj = new Date(eVal + 'T23:59:59');
+    const lbl = document.getElementById('lblTab9SelectedMonth');
+    if (lbl) lbl.innerText = `${sVal.replace(/-/g, '/')} ~ ${eVal.replace(/-/g, '/')}`;
+    renderTab9PayoutList();
+  }
+
+  function toggleTab9Sort(key) {
+    if (tab9SortState.key === key) {
+      tab9SortState.dir = (tab9SortState.dir === 'desc') ? 'asc' : 'desc';
+    } else {
+      tab9SortState.key = key;
+      tab9SortState.dir = (key === 'join') ? 'asc' : 'desc';
+    }
+    renderTab9PayoutList();
+  }
+
+  function parseTab9FullTimestampMs(dateTimeStr) {
+    if (!dateTimeStr) return 0;
+    const raw = String(dateTimeStr).trim();
+    const m = raw.match(/(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?:[\sT-]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+    if (m) {
+      const y = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const d = Number(m[3]);
+      const hh = Number(m[4] || 0);
+      const mm = Number(m[5] || 0);
+      const ss = Number(m[6] || 0);
+      return new Date(y, mo, d, hh, mm, ss).getTime();
+    }
+    const fallback = new Date(raw).getTime();
+    return isNaN(fallback) ? 0 : fallback;
+  }
+
+  function updateTab9SortButtonsUI() {
+    const map = [
+      { id: 'btnTab9SortJoin', key: 'join', label: '加入時間', ascText: '早→晚', descText: '晚→早' },
+      { id: 'btnTab9SortBonus', key: 'bonus', label: '實領獎金', ascText: '低→高', descText: '高→低' },
+      { id: 'btnTab9SortSales', key: 'sales', label: '售貨業績', ascText: '低→高', descText: '高→低' },
+      { id: 'btnTab9SortRec', key: 'rec', label: '推薦人數', ascText: '低→高', descText: '高→低' }
+    ];
+    map.forEach(item => {
+      const btn = document.getElementById(item.id);
+      if (!btn) return;
+      const isActive = (tab9SortState.key === item.key);
+      if (isActive) {
+        const dirText = (tab9SortState.dir === 'asc') ? item.ascText : item.descText;
+        btn.innerHTML = `${item.label} <span style="font-family:monospace;">(${dirText})</span>`;
+        btn.style.background = 'var(--accent-soft)';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        btn.style.fontWeight = '700';
+      } else {
+        btn.innerText = item.label;
+        btn.style.background = '#FFFFFF';
+        btn.style.borderColor = '#CBD5E1';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.fontWeight = '600';
+      }
+    });
+  }
+
+  function toggleTab9CardExpand(memberId) {
+    if (tab9ExpandedIds.has(memberId)) {
+      tab9ExpandedIds.delete(memberId);
+    } else {
+      tab9ExpandedIds.clear();
+      tab9ExpandedIds.add(memberId);
+    }
+    renderTab9PayoutList();
+  }
+
+  // 台灣國稅與健保規格：逐筆計算經銷商於指定區間的獎金來源明細
+  function computeDistributorBonusLedgerForPeriod(distMember, startDate, endDate) {
+    const distId = String(distMember.memberId || '').trim();
+    const members = Array.isArray(memberCache) ? memberCache : [];
+    const orders = Array.isArray(orderCache) ? orderCache : [];
+    const parseNum = (v) => {
+      const n = Number(String(v || 0).replace(/[^\d.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    };
+    const isPaidOrder = (st) => ['收款', '出貨', '配送', '到貨', '收貨'].includes(String(st || '').trim());
+    const isDistId = (m) => {
+      const id = String(m.memberId || '').trim().toUpperCase();
+      if (!id || /^(?:[A-Z]{2}-)?MEM-/.test(id)) return false;
+      return (String(m.memberType || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(id);
+    };
+
+    const isCompany = Boolean(
+      (distMember.identityType && (String(distMember.identityType).includes('公司') || String(distMember.identityType).includes('法人'))) ||
+      (distMember.companyTaxId && String(distMember.companyTaxId).trim() !== '') ||
+      (distMember.companyTitle && String(distMember.companyTitle).trim() !== '')
+    );
+    const distEntityLabel = isCompany ? '公司' : '個人';
+
+    const gen1Members = members.filter(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      return (ref === distId) && isDistId(m) && (mId !== distId);
+    });
+    const gen1Ids = new Set(gen1Members.map(m => String(m.memberId).trim()));
+    const gen2Members = members.filter(m => {
+      const mId = String(m.memberId || '').trim();
+      const ref = String(m.lineId || m.referrerId || '').trim();
+      return gen1Ids.has(ref) && isDistId(m) && (mId !== distId);
+    });
+
+    // 當期一代新推薦人數決定一代首購推薦階梯 (0-2人:8.8%, 3-4人:11.8%, 5人+:13.8%)
+    let gen1NewCount = 0;
+    gen1Members.forEach(g1 => {
+      const jd = parseOrderDateString(g1.registerTime || g1.timestamp);
+      if (jd && (!startDate || jd >= startDate) && (!endDate || jd <= endDate)) {
+        gen1NewCount++;
+      }
+    });
+    const gen1FirstRate = gen1NewCount >= 5 ? 0.138 : (gen1NewCount >= 3 ? 0.118 : 0.088);
+
+    const rows = [];
+    const appendOrdersForChild = (childMember, genNum) => {
+      const childId = String(childMember.memberId || '').trim();
+      const joinD = parseOrderDateString(childMember.registerTime || childMember.timestamp);
+      const isNewInPeriod = joinD && (!startDate || joinD >= startDate) && (!endDate || joinD <= endDate);
+
+      const childOrders = orders.filter(o => {
+        if (!isPaidOrder(o.status)) return false;
+        const od = parseOrderDateString(o.orderTime);
+        if (od) {
+          if (startDate && od < startDate) return false;
+          if (endDate && od > endDate) return false;
+        }
+        return (String(o.memberId || '').trim() === childId || String(o.referrerId || '').trim() === childId);
+      });
+
+      childOrders.forEach((ord, idx) => {
+        const isFirst = isNewInPeriod && idx === 0;
+        const bonusType = isFirst ? '推薦' : '補貨';
+        const genLabel = (genNum === 1) ? '一代' : '二代';
+        const rate = (genNum === 1)
+          ? (isFirst ? gen1FirstRate : 0.03)
+          : (isFirst ? 0.03 : 0.02);
+
+        const grossSales = parseNum(ord.totalAmount);
+        // 售貨金額（扣除5%營業稅）
+        const untaxedSales = Math.round(grossSales / 1.05);
+        const baseBonus = Math.round((untaxedSales * 0.5) * rate);
+        const tax5 = isCompany ? Math.round(baseBonus * 0.05) : 0;
+        const nhi211 = !isCompany ? Math.round(untaxedSales * 0.0211) : 0;
+        const netBonus = Math.max(0, baseBonus + tax5 - nhi211);
+
+        rows.push({
+          orderId: ord.orderId || '-',
+          childName: childMember.memberName || childId,
+          bonusType,
+          genLabel,
+          ratePct: (rate * 100).toFixed(1).replace(/\.0$/, '') + '%',
+          untaxedSales,
+          distEntityLabel,
+          baseBonus,
+          tax5,
+          nhi211,
+          netBonus
+        });
+      });
+    };
+
+    gen1Members.forEach(g1 => appendOrdersForChild(g1, 1));
+    gen2Members.forEach(g2 => appendOrdersForChild(g2, 2));
+
+    const totalBase = rows.reduce((s, r) => s + r.baseBonus, 0);
+    const totalTax5 = rows.reduce((s, r) => s + r.tax5, 0);
+    const totalNhi211 = rows.reduce((s, r) => s + r.nhi211, 0);
+    const totalNetBonus = rows.reduce((s, r) => s + r.netBonus, 0);
+    const totalRecBonus = rows.filter(r => r.bonusType === '推薦').reduce((s, r) => s + r.netBonus, 0);
+    const totalRestockBonus = rows.filter(r => r.bonusType === '補貨').reduce((s, r) => s + r.netBonus, 0);
+
+    return {
+      isCompany,
+      distEntityLabel,
+      rows,
+      totalBase,
+      totalTax5,
+      totalNhi211,
+      totalNetBonus,
+      totalRecBonus,
+      totalRestockBonus
+    };
+  }
+
+  function renderTab9PayoutList() {
+    updateTab9SortButtonsUI();
+    const container = document.getElementById('tab9PayoutListContainer');
+    if (!container) return;
+
+    const kw = (document.getElementById('filterTab9Keyword')?.value || '').trim().toLowerCase();
+    const members = Array.isArray(memberCache) ? memberCache : [];
+
+    // 篩選出所有經銷商（排除一般/VIP會員與總部主帳號 TW-NAMIS）
+    const distMembers = members.filter(m => {
+      const id = String(m.memberId || '').trim();
+      const idUpper = id.toUpperCase();
+      if (!id || /^(?:[A-Z]{2}-)?MEM-/.test(idUpper) || idUpper === 'TW-NAMIS') return false;
+      const isDist = (String(m.memberType || '').trim() === '經銷會員') || /^[A-Z]{2}-\d{2}-\d{4}-\d{3}$/.test(idUpper);
+      if (!isDist) return false;
+      if (!kw) return true;
+      const blob = [id, m.memberName, m.phone, m.email, m.companyTitle].map(x => String(x || '').toLowerCase()).join(' ');
+      return blob.includes(kw);
+    });
+
+    if (distMembers.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:13px;">查無符合條件的經銷商資料</div>';
+      return;
+    }
+
+    const enriched = distMembers.map(m => {
+      const mId = String(m.memberId || '').trim();
+      const sales = calculateSalesForDistributor(mId);
+      const orgCounts = calculateOrgCountsForDistributor(mId);
+      const ledger = computeDistributorBonusLedgerForPeriod(m, tab9StartDateObj, tab9EndDateObj);
+      const joinDateStr = m.registerTime || m.timestamp || '-';
+      const joinMs = parseTab9FullTimestampMs(joinDateStr);
+      const recTotal = orgCounts.gen1 + orgCounts.gen2 + orgCounts.normal + orgCounts.vip;
+      return { m, mId, sales, orgCounts, ledger, joinDateStr, joinMs, recTotal };
+    });
+
+    const hasBonusCount = enriched.filter(x => x.ledger.totalNetBonus > 0).length;
+    const noBonusCount = enriched.filter(x => x.ledger.totalNetBonus <= 0).length;
+    updateTab9BonusFilterUI(hasBonusCount, noBonusCount);
+
+    if (!tab9BonusFilter.has && !tab9BonusFilter.none) {
+      container.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:13px;">已取消有獎金與無獎金過篩顯示，請點選上方按鈕以檢視經銷商。</div>';
+      return;
+    }
+
+    const visibleList = enriched.filter(x => {
+      const hasBonus = x.ledger.totalNetBonus > 0;
+      return hasBonus ? tab9BonusFilter.has : tab9BonusFilter.none;
+    });
+
+    if (visibleList.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:13px;">目前沒有符合該獎金條件的經銷商</div>';
+      return;
+    }
+
+    // 依選定維度排序（加入時間同秒時依編號穩定排序）
+    visibleList.sort((a, b) => {
+      const dir = (tab9SortState.dir === 'asc') ? 1 : -1;
+      if (tab9SortState.key === 'join') {
+        const diff = (a.joinMs - b.joinMs) * dir;
+        return diff !== 0 ? diff : a.mId.localeCompare(b.mId) * dir;
+      }
+      if (tab9SortState.key === 'bonus') return (a.ledger.totalNetBonus - b.ledger.totalNetBonus) * dir;
+      if (tab9SortState.key === 'sales') return (a.sales.thisMonth - b.sales.thisMonth) * dir;
+      if (tab9SortState.key === 'rec') return (a.recTotal - b.recTotal) * dir;
+      return 0;
+    });
+
+    const fmtMoney = (n) => `NT$ ${Math.round(n || 0).toLocaleString()}`;
+
+    container.innerHTML = visibleList.map(item => {
+      const { m, mId, sales, orgCounts, ledger, joinDateStr } = item;
+      const isExpanded = tab9ExpandedIds.has(mId);
+      const expDate = m.distExpiry || m.vipExpiry || '常態有效';
+      const statusText = m.status || '有效';
+
+      // 收合狀態累加說明摘要
+      const accSummary = ledger.rows.length > 0
+        ? `推薦 ${fmtMoney(ledger.totalRecBonus)} ＋ 補貨 ${fmtMoney(ledger.totalRestockBonus)}`
+        : '本期尚無獎金紀錄';
+
+      const periodKey = getTab9PeriodKey();
+      const isPaidPeriod = isDistPaidForPeriod(m.payoutLog || '', periodKey);
+      const canTogglePayout = canEditTab('tab9');
+      const cardVisualStyle = isPaidPeriod
+        ? 'cursor:pointer; user-select:none; border-color:#10B981; background:#F0FDF4;'
+        : 'cursor:pointer; user-select:none; background:#FFFFFF;';
+
+      // 銀行圖片解析（不裁切原比例，放大至與區塊等寬）
+      const bankUrls = String(m.bankUrl || '').split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+      const bankImgsHtml = bankUrls.length > 0
+        ? bankUrls.map(url => {
+            const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/file\/d\/([a-zA-Z0-9_-]+)/);
+            const thumb = (match && match[1]) ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600` : url;
+            return `<img src="${thumb}" onclick="event.stopPropagation(); openImageModal('${thumb}')" style="width:100%; height:auto; max-width:100%; object-fit:contain; border-radius:8px; border:1px solid #CBD5E1; display:block; background:#FFFFFF; cursor:zoom-in;" title="點擊全螢幕檢視存摺封面">`;
+          }).join('')
+        : '<span style="font-size:12px; color:var(--text-muted);">尚未上傳銀行存摺封面圖片</span>';
+
+      // 被撥款歷史紀錄清單
+      const payoutEntries = parseDistPayoutLogEntries(m.payoutLog || '');
+      const payoutHistoryHtml = payoutEntries.length > 0
+        ? payoutEntries.map(e => `
+            <div class="log-entry-card" style="background:${e.isCancel ? '#FEF2F2' : '#FFFFFF'}; border-color:${e.isCancel ? '#FECACA' : '#E2E8F0'};">
+              <div class="log-entry-header" style="color:${e.isCancel ? 'var(--danger)' : '#059669'};">
+                <i class="ph ${e.isCancel ? 'ph-x-circle' : 'ph-check-circle'}"></i>
+                <span>${e.timestamp} ｜ ${e.action}</span>
+              </div>
+              <div class="log-entry-item">${e.detail}</div>
+            </div>
+          `).join('')
+        : '<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:12px;">尚無被撥款紀錄</div>';
+
+      const rowsHtml = ledger.rows.length > 0
+        ? ledger.rows.map(r => `
+            <tr style="border-bottom:1px solid #F1F5F9;">
+              <td style="padding:8px 8px; font-weight:700; white-space:nowrap;">${r.bonusType} <span style="font-size:10.5px; color:var(--text-muted);">(${r.ratePct})</span></td>
+              <td style="padding:8px 8px; white-space:nowrap;">${r.genLabel}</td>
+              <td style="padding:8px 8px; font-family:monospace; white-space:nowrap;">${fmtMoney(r.untaxedSales)}</td>
+              <td style="padding:8px 8px; white-space:nowrap;">${r.distEntityLabel}</td>
+              <td style="padding:8px 8px; font-family:monospace; white-space:nowrap; color:${r.tax5 > 0 ? 'var(--accent)' : 'var(--text-muted)'};">${r.tax5 > 0 ? '+ ' + fmtMoney(r.tax5) : 'NT$ 0'}</td>
+              <td style="padding:8px 8px; font-family:monospace; white-space:nowrap; color:${r.nhi211 > 0 ? 'var(--danger)' : 'var(--text-muted)'};">${r.nhi211 > 0 ? '- ' + fmtMoney(r.nhi211) : 'NT$ 0'}</td>
+              <td style="padding:8px 8px; font-family:monospace; font-weight:800; white-space:nowrap; color:var(--text);">${fmtMoney(r.netBonus)}</td>
+            </tr>
+          `).join('')
+        : `<tr><td colspan="7" style="padding:18px 8px; text-align:center; color:var(--text-muted); font-size:12px; white-space:nowrap;">該期間尚無可核算之獎金來源明細</td></tr>`;
+
+      return `
+        <div class="dist-node-card tab9-node-card" onclick="toggleTab9CardExpand('${mId}')" style="${cardVisualStyle}">
+          <div class="dist-node-header" style="display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="dist-avatar-head ${isExpanded ? 'open' : ''}" style="${isPaidPeriod ? 'border-color:#10B981; color:#059669;' : ''}">
+                <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-user'}" style="font-size:20px;"></i>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <strong style="font-size:15px; color:var(--text);">${m.memberName || '經銷夥伴'}</strong>
+                  <span class="dist-level-badge" data-gen="${ledger.isCompany ? '2' : '1'}">${ledger.distEntityLabel}</span>
+                  <span class="id-chip" style="font-size:11px;"><i class="ph ph-identification-card"></i> ${mId}</span>
+                  ${isPaidPeriod ? `<span style="font-size:11px; padding:2px 8px; border-radius:10px; background:#DCFCE7; color:#059669; border:1px solid #86EFAC; font-weight:800;">已撥款</span>` : ''}
+                </div>
+                <div style="font-size:12px; color:var(--text-muted);">
+                  加入: <span style="font-family:monospace;">${joinDateStr}</span> ｜ ${accSummary}
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;" onclick="event.stopPropagation()">
+              <div style="text-align:right; cursor:pointer;" onclick="toggleTab9CardExpand('${mId}')">
+                <div style="font-size:11px; color:var(--text-muted);">該月實領獎金</div>
+                <div style="font-size:16px; font-weight:900; font-family:monospace; color:${isPaidPeriod ? '#059669' : 'var(--accent)'};">${fmtMoney(ledger.totalNetBonus)}</div>
+              </div>
+              ${canTogglePayout ? `
+                <button type="button" class="icon-btn" onclick="toggleTab9PayoutCheck('${mId}', '${periodKey}', ${ledger.totalNetBonus}, ${m._rowId})" title="${isPaidPeriod ? '點擊取消該期撥款標記' : '點擊標記該期已完成撥款'}" style="padding:6px 8px; ${isPaidPeriod ? 'background:#059669; color:#FFFFFF; border-color:#059669;' : 'background:#FFFFFF; color:#64748B; border-color:#CBD5E1;'}">
+                  <i class="ph ${isPaidPeriod ? 'ph-check-square' : 'ph-square'}" style="font-size:20px;"></i>
+                </button>
+              ` : ''}
+              <button type="button" class="icon-btn" onclick="toggleTab9CardExpand('${mId}')" style="border:none; padding:4px;">
+                <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-caret-down'}" style="font-size:18px; color:var(--text-muted);"></i>
+              </button>
+            </div>
+          </div>
+
+          ${isExpanded ? `
+            <div onclick="event.stopPropagation()" style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--border-subtle); cursor:default; user-select:text; animation:fadeIn 0.15s ease;">
+              <!-- 1. 經銷商基本與效期資訊 -->
+              <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; padding:4px 0; border-bottom:1px dashed #F1F5F9; flex-wrap:wrap; gap:6px;">
+                <span style="color:var(--text-muted);">電話：<strong style="font-family:monospace; color:var(--text);">${m.phone || '-'}</strong> ｜ 狀態：<strong style="color:${statusText === '有效' ? 'var(--success)' : 'var(--danger)'};">${statusText}</strong></span>
+                <span style="color:var(--text-muted);">有效到期：<strong style="color:#7C3AED; font-family:monospace;">${expDate}</strong></span>
+              </div>
+
+              <!-- 2. 四大銷售額與組織人數 -->
+              <div class="dist-sales-grid">
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">本月銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.thisMonth)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">上月銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.lastMonth)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">本年度總銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.thisYear)}</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">累積總銷售額</span>
+                  <span class="dist-sales-val">${fmtMoney(sales.lifetime)}</span>
+                </div>
+              </div>
+
+              <div class="dist-sales-grid" style="margin-top:8px;">
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">經銷會員</span>
+                  <span class="dist-sales-val">共 ${orgCounts.gen1 + orgCounts.gen2} 位</span>
+                  <span style="font-size:12px; color:var(--text-muted); font-family:monospace; font-weight:600;">一代 ${orgCounts.gen1} 位 ｜ 二代 ${orgCounts.gen2} 位</span>
+                </div>
+                <div class="dist-sales-tile">
+                  <span class="dist-sales-label">消費會員</span>
+                  <span class="dist-sales-val">共 ${orgCounts.normal + orgCounts.vip} 位</span>
+                  <span style="font-size:12px; color:var(--text-muted); font-family:monospace; font-weight:600;">一般 ${orgCounts.normal} 位 ｜ VIP ${orgCounts.vip} 位</span>
+                </div>
+              </div>
+
+              <!-- 3. 獎金累加總結與 7 欄位來源明細表格 -->
+              <div style="margin-top:14px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px;">
+                <div style="font-size:12.5px; font-weight:800; color:var(--text); margin-bottom:6px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                  <span>本期應發獎金累加明細</span>
+                  <span style="font-family:monospace; color:var(--accent);">實領合計：${fmtMoney(ledger.totalNetBonus)}</span>
+                </div>
+                <div style="font-size:11.5px; color:var(--text-muted); font-family:monospace; margin-bottom:8px;">
+                  未稅獎金 ${fmtMoney(ledger.totalBase)} ${ledger.isCompany ? `＋ 5%營業稅 ${fmtMoney(ledger.totalTax5)}` : `－ 2.11%二代健保 ${fmtMoney(ledger.totalNhi211)}`} ＝ ${fmtMoney(ledger.totalNetBonus)}
+                </div>
+
+                <div style="width:100%; height:420px; max-height:420px; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:6px; box-sizing:border-box;">
+                  <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                    <thead>
+                      <tr style="background:#F1F5F9; color:var(--text-muted); font-size:11px;">
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">獎金類型</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">代數</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">售貨金額(扣5%稅)</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">經銷類型</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">稅額(+5%)</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">二代健保(2.11%)</th>
+                        <th style="position:sticky; top:0; z-index:2; background:#F1F5F9; padding:8px 8px; white-space:nowrap; border-bottom:1.5px solid #CBD5E1;">實領獎金</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${rowsHtml}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 4. 申請時提供之銀行帳戶與存摺圖片（等寬滿版不變形） -->
+              <div style="margin-top:12px; background:#FAFBFD; border:1px solid #E2E8F0; border-radius:8px; padding:12px; width:100%; box-sizing:border-box;">
+                <div style="font-size:12.5px; font-weight:800; color:var(--text); margin-bottom:6px;">
+                  撥款銀行帳戶資訊
+                </div>
+                <div style="font-size:12.5px; color:var(--text-muted); margin-bottom:10px; font-family:monospace; word-break:break-all; line-height:1.6;">
+                  銀行代碼：<strong style="color:var(--text);">${m.bankCode || '-'}</strong> ｜ 銀行帳號：<strong style="color:var(--text);">${m.bankAccount || '-'}</strong>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                  ${bankImgsHtml}
+                </div>
+              </div>
+
+              <!-- 5. 該經銷商被撥款歷史紀錄 -->
+              <div style="margin-top:12px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px;">
+                <div style="font-size:12.5px; font-weight:800; color:var(--text); margin-bottom:8px;">
+                  被撥款紀錄
+                </div>
+                <div class="log-box" style="max-height:200px;">
+                  ${payoutHistoryHtml}
+                </div>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getTab9PeriodKey() {
+    const lbl = document.getElementById('lblTab9SelectedMonth')?.innerText || '';
+    const m = lbl.match(/(\d{4})\s*年\s*(\d{1,2})\s*月/);
+    if (m) return `${m[1]}/${String(m[2]).padStart(2, '0')}`;
+    return lbl.trim() || `${tab9ActiveYear}/${String(tab9ActiveMonth + 1).padStart(2, '0')}`;
+  }
+
+  function parseDistPayoutLogEntries(payoutLogStr) {
+    if (!payoutLogStr || String(payoutLogStr).trim() === '') return [];
+    const lines = String(payoutLogStr).split('\n').map(l => l.trim()).filter(Boolean);
+    const list = [];
+    lines.forEach(line => {
+      const m = line.match(/^\[([^\]]+)\]\s*(.+)$/);
+      if (!m) return;
+      const timestamp = m[1];
+      const rest = m[2];
+      const isCancel = rest.includes('取消撥款');
+      const action = isCancel ? '取消撥款' : '撥款完成';
+      const periodMatch = rest.match(/期間:\s*([^\s|]+)/);
+      list.push({
+        timestamp,
+        action,
+        isCancel,
+        period: periodMatch ? periodMatch[1] : '',
+        detail: rest
+      });
+    });
+    return list.reverse(); // 最新在最上方
+  }
+
+  function isDistPaidForPeriod(payoutLogStr, periodKey) {
+    const entries = parseDistPayoutLogEntries(payoutLogStr);
+    const latestForPeriod = entries.find(e => e.period === periodKey);
+    return Boolean(latestForPeriod && !latestForPeriod.isCancel);
+  }
+
+  async function toggleTab9PayoutCheck(memberId, periodKey, amount, rowId) {
+    const target = (memberCache || []).find(m => String(m.memberId || '').trim() === memberId);
+    if (!target) return;
+
+    const currentlyPaid = isDistPaidForPeriod(target.payoutLog || '', periodKey);
+    const actionType = currentlyPaid ? 'cancel' : 'pay';
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const nowStamp = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}-${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const session = getActiveDistributorSession() || {};
+    const opLabel = `${session.memberId || 'TW-NAMIS'}_${session.memberName || '總部人員'}`;
+    const newLine = `[${nowStamp}] ${currentlyPaid ? '取消撥款' : '撥款完成'} | 期間: ${periodKey} | 撥款金額: NT$ ${Math.round(amount || 0).toLocaleString()} | 操作者: ${opLabel}`;
+
+    const backupLog = target.payoutLog || '';
+    target.payoutLog = backupLog ? `${backupLog}\n${newLine}` : newLine;
+    renderTab9PayoutList();
+    showToast(currentlyPaid ? `已取消 ${target.memberName} ${periodKey} 撥款標記` : `已標記 ${target.memberName} ${periodKey} 撥款完成`);
+
+    try {
+      const res = await apiCall('recordDistributorPayout', {
+        _rowId: rowId,
+        memberId: memberId,
+        periodKey: periodKey,
+        amount: Math.round(amount || 0),
+        actionType: actionType,
+        timestamp: nowStamp,
+        operatorId: session.memberId || '',
+        operatorName: session.memberName || ''
+      });
+      if (res && res.status === 'success' && res.data && res.data.payoutLog !== undefined) {
+        target.payoutLog = res.data.payoutLog;
+        renderTab9PayoutList();
+      } else if (!res || res.status !== 'success') {
+        throw new Error((res && res.data && res.data.message) || '寫入試算表失敗');
+      }
+    } catch (err) {
+      target.payoutLog = backupLog;
+      renderTab9PayoutList();
+      showToast('撥款狀態同步失敗已還原：' + (err.message || err));
+    }
+  }
+
+  // 經銷頁小鈴鐺：讀取自己的 AD 欄被撥款紀錄
+  function updateDistPayoutBellUI() {
+    const session = getActiveDistributorSession() || {};
+    const myId = String(session.memberId || '').trim();
+    const me = (memberCache || []).find(m => String(m.memberId || '').trim() === myId) || session;
+    const entries = parseDistPayoutLogEntries(me.payoutLog || '');
+
+    const readKey = `YCH_DIST_PAYOUT_READ_${myId}`;
+    const lastReadCount = Number(localStorage.getItem(readKey) || 0);
+    const unreadCount = Math.max(0, entries.length - lastReadCount);
+
+    const badge = document.getElementById('distPayoutBellBadge');
+    const countText = document.getElementById('distPayoutNotifyCountText');
+    const listEl = document.getElementById('distPayoutNotifyList');
+
+    if (badge) {
+      if (unreadCount > 0) {
+        badge.innerText = unreadCount > 99 ? '99+' : String(unreadCount);
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    if (countText) countText.innerText = `${entries.length} 筆`;
+    if (listEl) {
+      if (entries.length === 0) {
+        listEl.innerHTML = '<div style="padding:18px; text-align:center; font-size:12px; color:var(--text-muted);">目前無總部撥款紀錄</div>';
+      } else {
+        listEl.innerHTML = entries.map(e => `
+          <div class="mem-notify-item" style="cursor:default;">
+            <div class="mem-notify-item-top">
+              <span style="color:${e.isCancel ? 'var(--danger)' : '#059669'};">${e.action}</span>
+              <span class="mem-notify-item-time">${e.timestamp}</span>
+            </div>
+            <div class="mem-notify-item-desc">${e.detail}</div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  function toggleDistPayoutBellDropdown(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('distPayoutNotifyDropdown');
+    if (!dropdown) return;
+    updateDistPayoutBellUI();
+    dropdown.classList.toggle('active');
+    if (dropdown.classList.contains('active')) {
+      const session = getActiveDistributorSession() || {};
+      const myId = String(session.memberId || '').trim();
+      const me = (memberCache || []).find(m => String(m.memberId || '').trim() === myId) || session;
+      const entries = parseDistPayoutLogEntries(me.payoutLog || '');
+      localStorage.setItem(`YCH_DIST_PAYOUT_READ_${myId}`, String(entries.length));
+      const badge = document.getElementById('distPayoutBellBadge');
+      if (badge) badge.style.display = 'none';
+    }
+  }
+</script>
 </body>
 </html>
