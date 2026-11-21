@@ -4105,7 +4105,12 @@
             <div id="memNotificationDropdown" class="mem-notify-dropdown" onclick="event.stopPropagation()">
               <div class="mem-notify-header">
                 <span><i class="ph ph-bell-ringing" style="color:var(--accent); vertical-align:middle; margin-right:4px;"></i>未讀更新通知</span>
-                <span id="memNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span id="memNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+                  <button type="button" class="icon-btn" onclick="markAllMemberNotificationsRead(event)" title="全部標為已讀" style="padding:3px 6px; border-color:var(--accent); color:var(--accent);">
+                    <i class="ph ph-checks" style="font-size:15px;"></i>
+                  </button>
+                </div>
               </div>
               <div id="memNotificationList" class="mem-notify-list">
                 <div style="padding:18px; text-align:center; font-size:12px; color:var(--text-muted);">目前無未讀通知</div>
@@ -4830,7 +4835,12 @@
             <div id="distPayoutNotifyDropdown" class="mem-notify-dropdown" onclick="event.stopPropagation()">
               <div class="mem-notify-header">
                 <span><i class="ph ph-currency-circle-dollar" style="color:var(--success); vertical-align:middle; margin-right:4px;"></i>總部撥款紀錄</span>
-                <span id="distPayoutNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span id="distPayoutNotifyCountText" style="font-size:11px; font-family:monospace; color:var(--text-muted);">0 筆</span>
+                  <button type="button" class="icon-btn" onclick="markAllDistPayoutNotificationsRead(event)" title="全部標為已讀" style="padding:3px 6px; border-color:var(--success); color:#059669;">
+                    <i class="ph ph-checks" style="font-size:15px;"></i>
+                  </button>
+                </div>
               </div>
               <div id="distPayoutNotifyList" class="mem-notify-list">
                 <div style="padding:18px; text-align:center; font-size:12px; color:var(--text-muted);">目前無撥款紀錄</div>
@@ -18592,7 +18602,28 @@
         actor = (timeMatch[3] || timeMatch[4] || '').trim();
       }
       const isReadReceipt = header.includes('已檢視更新通知') || lines.slice(1).some(l => l.includes('已檢視更新通知'));
-      const summaryLines = lines.slice(1).filter(l => !l.includes('已檢視更新通知'));
+      const summaryLines = lines.slice(1)
+        .filter(l => !l.includes('已檢視更新通知'))
+        .map(line => {
+          const lvZh = { none: '關閉', view: '檢視', edit: '編輯' };
+          const tabZh = { tab1: '進貨', tab2: '上架', tab3: '會員', tab4: '訂單', tab5: '物流', tab6: '總覽', tab7: '經銷', tab8: '權限', tab9: '撥款' };
+          const jsonMatch = line.match(/(\{[^}]*"tab\d+"[^}]*\})/);
+          if (jsonMatch) {
+            try {
+              const obj = JSON.parse(jsonMatch[1]);
+              const readable = Object.keys(tabZh)
+                .filter(k => obj[k] !== undefined)
+                .map(k => `${tabZh[k]}(${lvZh[obj[k]] || obj[k]})`)
+                .join('、');
+              return '· 權限同步為：' + readable;
+            } catch (e) {}
+          }
+          return line
+            .replace(/\(tab\d+\)/g, '')
+            .replace(/\bnone\b/g, '關閉')
+            .replace(/\bview\b/g, '檢視')
+            .replace(/\bedit\b/g, '編輯');
+        });
       return {
         header,
         timeStr,
@@ -18832,6 +18863,54 @@
     try {
       await apiCall('markDeleteEventRead', { eventId: eventId, operatorId: myId });
     } catch (e) {}
+  }
+
+  async function markAllMemberNotificationsRead(e) {
+    if (e) e.stopPropagation();
+    const unread = getUnreadMemberNotifications();
+    if (unread.length === 0) {
+      showToast('目前無未讀通知');
+      return;
+    }
+
+    const session = getActiveDistributorSession() || {};
+    const opId = String(session.memberId || '').trim();
+    const opName = String(session.memberName || '經銷夥伴').trim();
+    const myIdUpper = opId.toUpperCase();
+    if (!opId) return;
+
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const nowStr = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    const readBlock = `[${nowStr} | ${opId}_${opName}] 已檢視更新通知`;
+
+    const promises = [];
+    unread.forEach(n => {
+      if (n.kind === 'delete') {
+        const ev = (memDeleteEventsCache || []).find(x => x.eventId === n.eventId);
+        if (ev) {
+          if (!Array.isArray(ev.readBy)) ev.readBy = [];
+          if (!ev.readBy.includes(myIdUpper)) ev.readBy.push(myIdUpper);
+        }
+        promises.push(apiCall('markDeleteEventRead', { eventId: n.eventId, operatorId: myIdUpper }).catch(() => {}));
+      } else {
+        const target = (memberCache || []).find(m => Number(m._rowId) === Number(n._rowId));
+        if (target) {
+          const ex = String(target.memLog || '').trim();
+          target.memLog = ex ? `${ex}\n\n${readBlock}` : readBlock;
+        }
+        promises.push(apiCall('markMemberLogRead', {
+          _rowId: Number(n._rowId),
+          memberId: n.memberId || '',
+          operatorId: opId,
+          operatorName: opName
+        }).catch(() => {}));
+      }
+    });
+
+    updateMemberBellNotifications();
+    showToast(`已將 ${unread.length} 筆會員通知全標為已讀`);
+    Promise.all(promises);
   }
 
   // 跨裝置即時同步引擎（每 10 秒背景輪詢 + 視窗切換即時喚醒）
@@ -19765,15 +19844,17 @@
     if (!dropdown) return;
     updateDistPayoutBellUI();
     dropdown.classList.toggle('active');
-    if (dropdown.classList.contains('active')) {
-      const session = getActiveDistributorSession() || {};
-      const myId = String(session.memberId || '').trim();
-      const me = (memberCache || []).find(m => String(m.memberId || '').trim() === myId) || session;
-      const entries = parseDistPayoutLogEntries(me.payoutLog || '');
-      localStorage.setItem(`YCH_DIST_PAYOUT_READ_${myId}`, String(entries.length));
-      const badge = document.getElementById('distPayoutBellBadge');
-      if (badge) badge.style.display = 'none';
-    }
+  }
+
+  function markAllDistPayoutNotificationsRead(e) {
+    if (e) e.stopPropagation();
+    const session = getActiveDistributorSession() || {};
+    const myId = String(session.memberId || '').trim();
+    const me = (memberCache || []).find(m => String(m.memberId || '').trim() === myId) || session;
+    const entries = parseDistPayoutLogEntries(me.payoutLog || '');
+    localStorage.setItem(`YCH_DIST_PAYOUT_READ_${myId}`, String(entries.length));
+    updateDistPayoutBellUI();
+    showToast('已將撥款通知全標為已讀');
   }
 </script>
 </body>
