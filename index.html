@@ -3028,15 +3028,11 @@
                   <span style="font-size:11px; color:var(--text-muted);" id="lblIdCardFrontDesc">身分證正面照片 (限實體正本拍照)</span>
                 </div>
                 <div style="display:flex; gap:6px;">
-                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraRegIdFront').click()" title="拍照正面">
-                    <i class="ph ph-camera" style="font-size:16px;"></i>
-                  </button>
                   <button type="button" class="icon-btn" onclick="document.getElementById('fileRegIdFront').click()" title="上傳正面">
                     <i class="ph ph-upload-simple" style="font-size:16px;"></i>
                   </button>
                 </div>
               </div>
-              <input type="file" id="cameraRegIdFront" accept="image/*" capture="environment" style="display:none;" onchange="handleSingleRegFile(this, 'idFront')">
               <input type="file" id="fileRegIdFront" accept="image/*" style="display:none;" onchange="handleSingleRegFile(this, 'idFront')">
               <div id="previewRegIdFront" class="auth-file-preview-strip"></div>
             </div>
@@ -3049,15 +3045,11 @@
                   <span style="font-size:11px; color:var(--text-muted);" id="lblIdCardBackDesc">身分證反面照片 (限實體正本拍照)</span>
                 </div>
                 <div style="display:flex; gap:6px;">
-                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraRegIdBack').click()" title="拍照反面">
-                    <i class="ph ph-camera" style="font-size:16px;"></i>
-                  </button>
                   <button type="button" class="icon-btn" onclick="document.getElementById('fileRegIdBack').click()" title="上傳反面">
                     <i class="ph ph-upload-simple" style="font-size:16px;"></i>
                   </button>
                 </div>
               </div>
-              <input type="file" id="cameraRegIdBack" accept="image/*" capture="environment" style="display:none;" onchange="handleSingleRegFile(this, 'idBack')">
               <input type="file" id="fileRegIdBack" accept="image/*" style="display:none;" onchange="handleSingleRegFile(this, 'idBack')">
               <div id="previewRegIdBack" class="auth-file-preview-strip"></div>
             </div>
@@ -3098,6 +3090,23 @@
         </div>
 
         
+        <div class="input-row">
+          <div class="input-col">
+            <label class="form-label" id="lblRegCompanySeal">印鑑章</label>
+            <div class="auth-file-box">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; color:var(--text-muted);" id="descRegCompanySeal">個人印鑑章圖片檔 (限實體用印正本)</span>
+                <button type="button" class="icon-btn" id="btnUploadCompanySeal" onclick="document.getElementById('fileRegCompanySeal').click()" title="上傳個人印鑑章">
+                  <i class="ph ph-upload-simple" style="font-size:16px;"></i>
+                </button>
+              </div>
+              <input type="file" id="fileRegCompanySeal" accept="image/*" multiple style="display:none;" onchange="handleRegFileSelect(this, 'companySeal')">
+              <div id="previewRegCompanySeal" class="auth-file-preview-strip"></div>
+            </div>
+          </div>
+        </div>
+
+        
         <div id="overseasWireTransferNotice" style="display:none; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:6px; padding:10px 12px; margin-bottom:14px; font-size:11.5px; line-height:1.6; color:#1E40AF;">
           <div style="display:flex; align-items:flex-start; gap:6px;">
             <i class="ph ph-info" style="font-size:16px; flex-shrink:0; margin-top:2px;"></i>
@@ -3115,15 +3124,11 @@
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:11px; color:var(--text-muted);" id="descRegSelfie">拍正面照 (本人正面頭像存證)</span>
                 <div style="display:flex; gap:6px;">
-                  <button type="button" class="icon-btn" onclick="document.getElementById('cameraRegSelfie').click()" title="拍照自拍">
-                    <i class="ph ph-camera" style="font-size:16px;"></i>
-                  </button>
                   <button type="button" class="icon-btn" onclick="document.getElementById('fileRegSelfie').click()" title="上傳自拍">
                     <i class="ph ph-upload-simple" style="font-size:16px;"></i>
                   </button>
                 </div>
               </div>
-              <input type="file" id="cameraRegSelfie" accept="image/*" capture="user" style="display:none;" onchange="handleSingleRegFile(this, 'selfie')">
               <input type="file" id="fileRegSelfie" accept="image/*" style="display:none;" onchange="handleSingleRegFile(this, 'selfie')">
               <div id="previewRegSelfie" class="auth-file-preview-strip"></div>
             </div>
@@ -5731,6 +5736,8 @@
   let regIdCardBackImage = "";
   let regLicenseImages = [];
   let regBankImages = [];
+  let regCompanySealImages = [];
+  let regBase64ToDriveUrlMap = new Map(); 
   let regSelfieImage = "";
   let regSignatureImageBase64 = "";
   let regSignatureWesternDate = "";
@@ -5832,18 +5839,6 @@
       return;
     }
 
-    
-    const dpr = window.devicePixelRatio || 1;
-    sigCtx.save();
-    sigCtx.font = '10px monospace';
-    sigCtx.fillStyle = '#64748B';
-    sigCtx.textAlign = 'right';
-    const box = document.getElementById('signatureCanvasBox');
-    const w = box.clientWidth;
-    const h = box.clientHeight;
-    sigCtx.fillText(regSignatureWesternDate, w - 16, h - 12);
-    sigCtx.restore();
-
     regSignatureImageBase64 = sigCanvas.toDataURL('image/png');
     closeSignaturePadModal();
 
@@ -5904,8 +5899,12 @@
     const idBackSrc = typeof regIdCardBackImage !== 'undefined' ? regIdCardBackImage : "";
     const bankImgs = (typeof regBankImages !== 'undefined' && Array.isArray(regBankImages)) ? regBankImages : [];
     const licenseFiles = (typeof regLicenseImages !== 'undefined' && Array.isArray(regLicenseImages)) ? regLicenseImages : [];
+    const companySealImgs = (typeof regCompanySealImages !== 'undefined' && Array.isArray(regCompanySealImages)) ? regCompanySealImages : [];
+    const sealImgsHtml = companySealImgs.length > 0
+      ? `<div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">${companySealImgs.map(s => `<img src="${s}" style="height:168px; max-width:270px; object-fit:contain;" alt="印鑑章/大小章">`).join('')}</div>`
+      : '';
 
-    
+    // 高清大圖槽位渲染器 (高度大幅擴增至 150px~160px，清晰瞭然)
     const renderAttachmentSlot = (fileData, defaultLabel = "文件", forceLink = false) => {
       if (!fileData) {
         return `<div style="font-size:10px; color:#94A3B8; font-style:italic; padding:8px 0; text-align:center;">[ 尚未上傳 ${defaultLabel}，待核對補件 ]</div>`;
@@ -6398,27 +6397,45 @@
           </div>
         </div>
 
-        <!-- 契約末頁立約雙方正式簽署 -->
-        <div style="border-top:1.5px solid #0F172A; padding-top:12px; margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end;">
-          <div style="font-size:11px; line-height:1.8; color:#1E293B;">
-            <div style="font-weight:800; font-size:12px; margin-bottom:3px;">【立契約人】：</div>
-            <div>授權甲方：<strong>妍之馨生技有限公司</strong> (統編: 60559503)</div>
-            <div>代表人：執行長 / 營運總監</div>
-            <div>簽約經銷商（乙方）：<strong>${memberName}</strong></div>
+        <!-- 契約末頁立約雙方正式簽署 (左下我方公司 / 右下簽約方) -->
+        <div style="margin-top:auto; padding-top:16px; border-top:1.5px solid #0F172A; display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+          <!-- 左下角：我方（甲方）妍之馨生技有限公司登記資訊 ＋ 預留大小章蓋章區 -->
+          <div style="font-size:10.5px; line-height:1.75; color:#1E293B; max-width:48%;">
+            <div style="font-weight:800; font-size:11.5px; margin-bottom:3px; color:#0F172A;">【授權甲方】：</div>
+            <div>公司名稱：<strong>妍之馨生技有限公司</strong></div>
+            <div>統一編號：<strong style="font-family:monospace;">60559503</strong></div>
+            <div>代表人：<strong>楊婷安</strong></div>
+            <div>登記地址：南投縣南投市彰仁里龍井街 53 號 1 樓</div>
+            <div style="margin-top:12px;">
+              <div style="font-size:9.5px; font-weight:700; color:#475569; margin-bottom:6px;">甲方用印處（公司大小章）：</div>
+              <div style="display:flex; align-items:flex-end; gap:10px;">
+                <div style="width:96px; height:96px; border:1.5px dashed #94A3B8; border-radius:4px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px; color:#94A3B8; background:#FAFBFD; line-height:1.4;">
+                  公司大章<br>(用印處)
+                </div>
+                <div style="width:54px; height:54px; border:1.5px dashed #94A3B8; border-radius:4px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9.5px; color:#94A3B8; background:#FAFBFD; line-height:1.3;">
+                  負責人<br>小章
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 最右下角：簽約方（乙方）資訊 ＋ 親筆簽名 ＋ 大小章 -->
+          <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; font-size:10.5px; line-height:1.7; color:#1E293B;">
+            <div style="font-weight:800; font-size:11.5px; margin-bottom:2px; color:#0F172A;">【簽約乙方（經銷商）】：</div>
+            <div>簽約人：<strong>${memberName}</strong>${compTitle ? `（${compTitle}）` : ''}</div>
             <div>${isTaiwan ? '身分證字號' : '護照號碼'}：<strong style="font-family:monospace;">${idOrPassport || '-'}</strong></div>
             <div>經銷商註冊編號：<strong style="font-family:monospace;">${distId}</strong></div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px; font-weight:800; color:#0F172A; margin-bottom:4px;">經銷申請人親筆數位簽署：</div>
-            ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:56px; max-width:200px; object-fit:contain;">` : '<div style="color:#DC2626; font-size:11.5px; font-weight:700;">(申請人尚未手寫簽署)</div>'}
-            <div style="font-size:10px; font-family:monospace; color:#64748B;">簽署時間：${regSignatureWesternDate || nowYMD}</div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; margin:10px 0 8px 0; max-width:100%;">
+              ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:97px; max-width:100%; object-fit:contain;">` : '<div style="color:#DC2626; font-size:11px; font-weight:700;">(申請人尚未手寫簽署)</div>'}
+              ${sealImgsHtml}
+            </div>
+            <div style="font-size:9.5px; font-family:monospace; color:#64748B;">簽署時間：${regSignatureWesternDate || nowYMD}</div>
           </div>
         </div>
         ${renderFooter(7, 7)}
       </div>
     `;
 
-    // 判斷是否為外國經銷商或英文版
+    
     const isOverseasContract = (!isTaiwan) || currentRegLang === 'en';
 
     if (isOverseasContract) {
@@ -6629,17 +6646,36 @@
                 <div style="font-size:11.5px; font-weight:800; text-align:center; margin-bottom:6px; border-bottom:1px solid #CBD5E1; padding-bottom:4px; letter-spacing:0.5px;">
                   Signatures / Execution (立約簽署)
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:10px; line-height:1.75;">
-                  <div style="width:48%;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; font-size:9.5px; line-height:1.65; gap:12px;">
+                  <!-- 左下角：我方（Party A）妍之馨生技有限公司完整登記資訊 -->
+                  <div style="width:50%; text-align:left;">
                     <strong>Party A: Yan Zhi Xin Biotechnology Co., Ltd.</strong><br>
-                    Representative: CEO / General Director<br>
-                    Official Seal: <u>[Yan Zhi Xin Biotech Official Seal]</u>
+                    Unified Business No.: <span style="font-family:monospace; font-weight:700;">60559503</span><br>
+                    Representative: <strong>Yang, Ting-An (楊婷安)</strong><br>
+                    Registered Address: 1F., No. 53, Longjing St., Zhangren Vil., Nantou City, Nantou County, Taiwan
+                    <div style="margin-top:10px;">
+                      <div style="font-size:9px; font-weight:700; color:#475569; margin-bottom:4px;">Party A Official Seal & Chop:</div>
+                      <div style="display:flex; align-items:flex-end; gap:8px;">
+                        <div style="width:84px; height:84px; border:1.5px dashed #94A3B8; border-radius:4px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:9px; color:#94A3B8; background:#FAFBFD; line-height:1.3;">
+                          Company<br>Seal
+                        </div>
+                        <div style="width:48px; height:48px; border:1.5px dashed #94A3B8; border-radius:4px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:8.5px; color:#94A3B8; background:#FAFBFD; line-height:1.2;">
+                          Rep.<br>Chop
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div style="width:48%;">
-                    <strong>Party B (Distributor):</strong><br>
-                    Name: <u>${memberName || compTitle || '-'}</u><br>
-                    Authorized Signature: ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:40px; vertical-align:middle;">` : '______________________'}<br>
-                    Execution Date: <u>${nowYMD}</u>
+                  <!-- 最右下角：簽約方（Party B）資訊 ＋ 親筆簽名 ＋ 大小章 -->
+                  <div style="width:48%; text-align:right; display:flex; flex-direction:column; align-items:flex-end;">
+                    <strong>Party B (Distributor):</strong>
+                    <span>Name: <u>${memberName || '-'}</u>${compTitle ? ` (${compTitle})` : ''}</span>
+                    <span>Passport / ID No.: <span style="font-family:monospace; font-weight:700;">${passportVal}</span></span>
+                    <span>Distributor ID: <span style="font-family:monospace; font-weight:700;">${distId}</span></span>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; margin:8px 0; max-width:100%;">
+                      ${regSignatureImageBase64 ? `<img src="${regSignatureImageBase64}" style="height:79px; max-width:100%; object-fit:contain;">` : '<span>______________________</span>'}
+                      ${companySealImgs.length > 0 ? `<div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">${companySealImgs.map(s => `<img src="${s}" style="height:132px; max-width:226px; object-fit:contain;" alt="Seal">`).join('')}</div>` : ''}
+                    </div>
+                    <span>Execution Date: <u>${nowYMD}</u></span>
                   </div>
                 </div>
               </div>
@@ -6681,13 +6717,16 @@
         renderSingleRegPreview('previewRegIdFront', regIdCardFrontImage, () => {
           regIdCardFrontImage = '';
           renderSingleRegPreview('previewRegIdFront', '', null);
+          triggerRegAutoSaveDebounced();
         });
         showToast('證件【正面】已載入！');
+        triggerRegAutoSaveDebounced();
       } else if (type === 'idBack') {
         regIdCardBackImage = base64Str;
         renderSingleRegPreview('previewRegIdBack', regIdCardBackImage, () => {
           regIdCardBackImage = '';
           renderSingleRegPreview('previewRegIdBack', '', null);
+          triggerRegAutoSaveDebounced();
         });
         const isEn = (currentRegLang === 'en');
         const sel = document.getElementById('regCountryCode');
@@ -6696,13 +6735,16 @@
           ? (isTw ? 'National ID Back photo loaded!' : 'Passport Cover photo loaded!')
           : (isTw ? '身分證【反面】已載入！' : '護照【封面】已載入！');
         showToast(msg);
+        triggerRegAutoSaveDebounced();
       } else if (type === 'selfie') {
         regSelfieImage = base64Str;
         renderSingleRegPreview('previewRegSelfie', regSelfieImage, () => {
           regSelfieImage = '';
           renderSingleRegPreview('previewRegSelfie', '', null);
+          triggerRegAutoSaveDebounced();
         });
         showToast('自拍正面大頭照已載入！');
+        triggerRegAutoSaveDebounced();
       }
     };
     reader.readAsDataURL(file);
@@ -6727,7 +6769,7 @@
   }
   let sendCodeCountdownTimer = null;
 
-  
+  // ==========================================
   
   
   function initCountryCodeDropdowns() {
@@ -6767,14 +6809,25 @@
 
   function handleRegIdentityChange() {
     const type = document.getElementById('regIdentityType').value;
+    const isEn = (typeof currentRegLang !== 'undefined' && currentRegLang === 'en');
     const compSlot = document.getElementById('regCompanyFieldsSlot');
     const lblName = document.getElementById('lblRegName');
+    const lblSeal = document.getElementById('lblRegCompanySeal');
+    const descSeal = document.getElementById('descRegCompanySeal');
+    const btnSeal = document.getElementById('btnUploadCompanySeal');
+
     if (type === '公司') {
       if (compSlot) compSlot.style.display = 'block';
-      if (lblName) lblName.innerText = '負責人';
+      if (lblName) lblName.innerText = isEn ? 'Applicant Name' : '申請人';
+      if (lblSeal) lblSeal.innerText = isEn ? 'Company Seal' : '大小章';
+      if (descSeal) descSeal.innerText = isEn ? 'Company Seal & Chop Image (Original stamp)' : '公司大小章圖片檔 (限實體用印正本)';
+      if (btnSeal) btnSeal.title = isEn ? 'Upload Company Seal' : '上傳公司大小章';
     } else {
       if (compSlot) compSlot.style.display = 'none';
-      if (lblName) lblName.innerText = '姓名';
+      if (lblName) lblName.innerText = isEn ? 'Full Legal Name' : '姓名';
+      if (lblSeal) lblSeal.innerText = isEn ? 'Personal Seal' : '印鑑章';
+      if (descSeal) descSeal.innerText = isEn ? 'Personal Seal / Stamp Image (Original stamp)' : '個人印鑑章圖片檔 (限實體用印正本)';
+      if (btnSeal) btnSeal.title = isEn ? 'Upload Personal Seal' : '上傳個人印鑑章';
     }
   }
 
@@ -6795,9 +6848,7 @@
     const idBackDesc = document.getElementById('lblIdCardBackDesc');
     const idBackBox = document.getElementById('boxRegIdBackWrapper');
 
-    const btnCamFront = document.querySelector("button[onclick*='cameraRegIdFront']");
     const btnFileFront = document.querySelector("button[onclick*='fileRegIdFront']");
-    const btnCamBack = document.querySelector("button[onclick*='cameraRegIdBack']");
     const btnFileBack = document.querySelector("button[onclick*='fileRegIdBack']");
 
     if (isTaiwan) {
@@ -6814,14 +6865,12 @@
       if (badgeFront) badgeFront.innerText = isEn ? 'Front' : '正面';
       if (idFrontDesc) idFrontDesc.innerText = isEn ? 'National ID Front Photo (Original document only)' : '身分證正面照片 (限實體正本拍照)';
 
-      
+      // 台灣身分證：反面（切換英文版時 100% 轉英文，消除中文殘留）
       if (idBackBox) idBackBox.style.display = 'block';
       if (badgeBack) badgeBack.innerText = isEn ? 'Back' : '反面';
       if (idBackDesc) idBackDesc.innerText = isEn ? 'National ID Back Photo (Original document only)' : '身分證反面照片 (限實體正本拍照)';
 
-      if (btnCamFront) btnCamFront.title = isEn ? 'Take Front Photo' : '拍照正面';
       if (btnFileFront) btnFileFront.title = isEn ? 'Upload Front Photo' : '上傳正面';
-      if (btnCamBack) btnCamBack.title = isEn ? 'Take Back Photo' : '拍照反面';
       if (btnFileBack) btnFileBack.title = isEn ? 'Upload Back Photo' : '上傳反面';
     } else {
       if (badgeHint) {
@@ -6833,25 +6882,23 @@
       if (bankSection) bankSection.style.display = 'none';
       if (overseasNotice) overseasNotice.style.display = 'block';
 
-      
+      // 非台灣：護照正面 (Passport Front)
       if (badgeFront) badgeFront.innerText = isEn ? 'Front' : '正面';
       if (idFrontDesc) idFrontDesc.innerText = isEn ? 'Passport Front Photo (Original document only)' : '護照正面照片 (限實體正本拍照)';
 
-      
+      // 非台灣：護照封面 (Passport Cover)
       if (idBackBox) idBackBox.style.display = 'block';
       if (badgeBack) badgeBack.innerText = isEn ? 'Cover' : '封面';
       if (idBackDesc) idBackDesc.innerText = isEn ? 'Passport Cover Photo (Original document only)' : '護照封面照片 (限實體正本拍照)';
 
-      if (btnCamFront) btnCamFront.title = isEn ? 'Take Passport Front Photo' : '拍照護照正面';
       if (btnFileFront) btnFileFront.title = isEn ? 'Upload Passport Front Photo' : '上傳護照正面';
-      if (btnCamBack) btnCamBack.title = isEn ? 'Take Passport Cover Photo' : '拍照護照封面';
       if (btnFileBack) btnFileBack.title = isEn ? 'Upload Passport Cover Photo' : '上傳護照封面';
     }
   }
 
-  
-  
-  
+  // ==========================================
+  // 全域雙向中英文多國語系核心引擎 (100% 完整雙語化)
+  // ==========================================
   let currentRegLang = 'zh';
 
   const I18N_CONTRACT_ZH = `
@@ -7097,8 +7144,8 @@
   `;
 
   // ==========================================
-  
-  
+  // 🌟 英文國際合約全文與中譯（100% 一字不漏・極致雙語排版美學）
+  // ==========================================
   const I18N_CONTRACT_EN = `
     <!-- Preamble -->
     <div style="background:#F8FAFC; border-left:3.5px solid #0F172A; padding:12px 14px; font-size:12px; line-height:1.8; color:#1E293B; border-radius: 0 6px 6px 0; margin-bottom:12px;">
@@ -7282,7 +7329,7 @@
     currentRegLang = lang;
     const isEn = (lang === 'en');
 
-    
+    // 切換按鈕高亮樣式
     const btnZh = document.getElementById('btnLangZh');
     const btnEn = document.getElementById('btnLangEn');
     if (btnZh) {
@@ -7296,24 +7343,24 @@
       btnEn.style.borderColor = isEn ? 'var(--accent)' : 'var(--border)';
     }
 
-    
+    // 輔助函式：快速設置文字與 Placeholder
     const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
     const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
     const setPh = (id, ph) => { const el = document.getElementById(id); if (el) el.placeholder = ph; };
 
-    
+    // 1. 欄位標籤 (Labels) 全面中英轉換
     setTxt('lblRegIdentityType', isEn ? 'Applicant Type' : '身分');
     setTxt('optIdentityPersonal', isEn ? 'Individual Distributor' : '個人經銷夥伴');
     setTxt('optIdentityCompany', isEn ? 'Corporate / Legal Entity' : '公司法人組織');
     
-    setTxt('lblRegName', isEn ? (document.getElementById('regIdentityType')?.value === '公司' ? 'Representative Name' : 'Full Legal Name') : (document.getElementById('regIdentityType')?.value === '公司' ? '負責人' : '姓名'));
+    setTxt('lblRegName', isEn ? (document.getElementById('regIdentityType')?.value === '公司' ? 'Applicant Name' : 'Full Legal Name') : (document.getElementById('regIdentityType')?.value === '公司' ? '申請人' : '姓名'));
     setTxt('lblRegPhone', isEn ? 'Mobile / TEL' : '電話');
     setTxt('lblRegEmail', isEn ? 'Email Address' : 'Email');
     setTxt('lblRegAddress', isEn ? 'Mailing Address' : '地址');
     setTxt('lblRegBirthday', isEn ? 'Date of Birth' : '生日');
     setTxt('lblRegIdOrPassport', isEn ? 'ID / Passport No.' : '證號');
     
-    
+    // 公司欄位
     setTxt('lblRegCompanyTitle', isEn ? 'Company Legal Name (Registered Business Name)' : '抬頭 (公司完整法定名稱)');
     setTxt('txtCompanyTitleAlert', isEn ? 'Notice: Corporate applicants must provide full legal registered name!' : '提醒：公司註冊請務必寫入完整公司法定抬頭，不得填寫個人姓名或簡稱！');
     setTxt('lblRegCompanyTaxId', isEn ? 'Tax ID / Registration No. (8 digits)' : '統編 (8碼純數字)');
@@ -7321,27 +7368,34 @@
     setTxt('lblRegCompanyLicense', isEn ? 'Business License' : '營登');
     setTxt('descRegCompanyLicense', isEn ? 'Business Registration / Incorporation Certificate' : '公司設立登記表 / 商業登記核准函正本');
 
-    
+    // 證件上傳提示
     setTxt('lblDocSectionTitle', isEn ? 'ID Documents' : '證件照片');
     setHtml('badgeStrictNotice', isEn ? '<i class="ph ph-shield-warning"></i> Original Documents Only, No Copies!' : '<i class="ph ph-shield-warning"></i> 限正本證件拍攝，嚴禁影本！');
     setTxt('strictOriginalNotice', isEn 
       ? '[IMPORTANT NOTICE] Uploaded photos MUST be original physical documents taken on the spot! Photocopies, black-and-white prints, or screen captures are STRICTLY PROHIBITED and will fail verification.'
       : '【審核重要備註】照片繳交上傳部分，只能是「正本證件」實體拍照！絕對不能是影本、黑白複印本或翻拍螢幕！！！上傳影本者將無法通過審核。');
 
-    
+    // 銀行帳戶與公司大小章
     setTxt('lblRegBankCode', isEn ? 'Bank Code (3 digits)' : '銀行代碼 (3碼純數字)');
     setTxt('lblRegBankAccount', isEn ? 'Bank Account Number' : '銀行帳號 (10-16碼純數字)');
     setTxt('lblRegPassbook', isEn ? 'Passbook Cover' : '存摺');
     setTxt('descRegPassbook', isEn ? 'Passbook Cover Photo (Original physical document)' : '銀行存摺帳戶封面照片 (限實體正本)');
+    const isCompany = (document.getElementById('regIdentityType')?.value === '公司');
+    setTxt('lblRegCompanySeal', isEn ? (isCompany ? 'Company Seal' : 'Personal Seal') : (isCompany ? '大小章' : '印鑑章'));
+    setTxt('descRegCompanySeal', isEn
+      ? (isCompany ? 'Company Seal & Chop Image (Original stamp)' : 'Personal Seal / Stamp Image (Original stamp)')
+      : (isCompany ? '公司大小章圖片檔 (限實體用印正本)' : '個人印鑑章圖片檔 (限實體用印正本)'));
+    const btnSeal = document.getElementById('btnUploadCompanySeal');
+    if (btnSeal) btnSeal.title = isEn ? (isCompany ? 'Upload Company Seal' : 'Upload Personal Seal') : (isCompany ? '上傳公司大小章' : '上傳個人印鑑章');
 
-    
+    // 自拍與推薦人
     setTxt('lblRegSelfie', isEn ? 'Facial Photo' : '自拍');
     setTxt('descRegSelfie', isEn ? 'Applicant Facial Photo for Verification' : '拍正面照 (本人正面頭像存證)');
     setTxt('lblRegReferrerId', isEn ? 'Referring Distributor ID' : '推薦人編號');
     setTxt('lblRegDistributorId', isEn ? 'Distributor ID' : '編號');
     setHtml('badgeDistIdLock', isEn ? '<i class="ph ph-lock-key"></i> Auto-Generated' : '<i class="ph ph-lock-key"></i> 封印不可編輯');
 
-    
+    // 合約閱讀器
     setTxt('lblRegContract', isEn ? 'Agreement' : '合約');
     setTxt('lblContractReaderTitle', isEn ? 'International Distributor Agreement Terms' : '經銷申請合作契約條款');
     setTxt('lblContractClauseMeta', isEn ? 'Articles 1 ~ 8 Comprehensive · Scroll to read' : '共 9 章 36 條款 ‧ 支援滑動閱讀');
@@ -7350,7 +7404,7 @@
       ? 'I have carefully read, fully understood, and agree to abide by all terms of the Distributor Agreement, and I voluntarily provide my digital signature.'
       : '本人已詳閱、充分理解並同意遵守上述經銷商合作協議及營運規章之全部條款，並願承擔相應之法律責任與親筆數位簽署');
 
-    
+    // 按鈕與提示狀態
     const hasSigned = regSignatureImageBase64 !== '';
     setTxt('badgeSignStatus', isEn ? (hasSigned ? 'Signed' : 'Signature Required') : (hasSigned ? '已完成手寫簽名' : '尚未手寫簽署'));
     setTxt('lblSignedBadgeSuccess', isEn ? 'Signed Successfully' : '親筆簽署完成');
@@ -7364,7 +7418,7 @@
     const btnRegSubmit = document.getElementById('btnRegSubmit');
     if (btnRegSubmit) btnRegSubmit.title = isEn ? 'Submit Distributor Application (Under Review)' : '送出經銷商申請 (審核中)';
 
-    
+    // 2. 輸入引導 (Placeholders) 全面中英轉換
     setPh('regMemberName', isEn ? 'Enter your full legal name' : '請輸入完整繁體中文全名');
     setPh('regPhone', isEn ? 'e.g. 0912345678 or mobile number' : '例如: 0912345678');
     setPh('regEmail', isEn ? 'Email for notifications and login' : '用以接收通知與登入驗證');
@@ -7376,7 +7430,7 @@
     setPh('regBankAccount', isEn ? 'Bank Account digits (10-16 digits)' : '請輸入金融機構存摺帳號純數字');
     setPh('regReferrerId', isEn ? 'Enter Referrer ID (Default TW-NAMIS)' : '請輸入推薦人編號 (預設 TW-NAMIS)');
 
-    
+    // 3. 證件號碼與提示動態同步
     updateIdOrPassportFieldUI();
   }
 
@@ -7389,9 +7443,9 @@
     autoComputeDistributorId();
   }
 
-  
-  
-  
+  // ============================================================
+  // 0ms 樂觀秒算經銷商編號：跨日期偵測該國歷史第幾位申請
+  // ============================================================
   async function autoComputeDistributorId() {
     const sel = document.getElementById('regCountryCode');
     const opt = sel ? sel.options[sel.selectedIndex] : null;
@@ -7402,7 +7456,7 @@
     const yy = String(now.getFullYear()).slice(-2);
     const mmdd = pad(now.getMonth() + 1) + pad(now.getDate());
 
-    
+    // 1. 💥 0ms 樂觀運算：直接從前端已載入的 memberCache 快速掃描該國歷史人次
     let localMaxSeq = 0;
     let localCount = 0;
     if (typeof memberCache !== 'undefined' && Array.isArray(memberCache)) {
@@ -7428,7 +7482,7 @@
     const distIdInput = document.getElementById('regDistributorId');
     if (distIdInput) distIdInput.value = optimisticId;
 
-    
+    // 2. 背景非同步向試算表校驗，確保多用戶併發時序號 100% 精準對齊
     try {
       const res = await apiCall('getDistributorIdPreview', { countryCode: iso });
       if (res && res.status === 'success' && res.data && res.data.distId) {
@@ -7442,7 +7496,6 @@
   function handleRegFileSelect(input, targetType) {
     const files = Array.from(input.files || []);
     if (files.length === 0) return;
-
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -7456,30 +7509,65 @@
         } else if (targetType === 'bank') {
           regBankImages.push(base64Str);
           renderRegFileStrip('previewRegBank', regBankImages);
+        } else if (targetType === 'companySeal') {
+          regCompanySealImages.push(base64Str);
+          renderRegFileStrip('previewRegCompanySeal', regCompanySealImages);
         } else if (targetType === 'selfie') {
           regSelfieImage = base64Str;
           renderRegFileStrip('previewRegSelfie', [regSelfieImage]);
         }
+        triggerRegAutoSaveDebounced();
       };
       reader.readAsDataURL(file);
     });
     input.value = '';
-    showToast('檔案已成功載入！');
+    showToast(currentRegLang === 'en' ? 'Image loaded!' : '檔案已成功載入！');
+  }
+  function openRegPdfPreview(containerId, idx) {
+    let src = '';
+    if (containerId === 'previewRegLicense') src = regLicenseImages[idx] || '';
+    else if (containerId === 'previewRegBank') src = regBankImages[idx] || '';
+    else if (containerId === 'previewRegCompanySeal') src = regCompanySealImages[idx] || '';
+    if (!src) return;
+    if (src.startsWith('http')) {
+      window.open(src, '_blank');
+      return;
+    }
+    try {
+      const parts = src.split(',');
+      const byteString = atob(parts[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+      const blob = new Blob([ab], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    } catch (e) {
+      showToast('PDF 預覽開啟失敗');
+    }
   }
 
   function renderRegFileStrip(containerId, array) {
     const box = document.getElementById(containerId);
     if (!box) return;
-    box.innerHTML = array.map((imgSrc, idx) => `
-      <div style="position:relative; width:54px; height:54px; flex-shrink:0;">
-        <img src="${imgSrc}" class="auth-file-thumb" onclick="openImageModal('${imgSrc}')">
-        <span onclick="removeRegImage('${containerId}', ${idx})" style="position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:#EF4444; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;">
-          <i class="ph ph-x"></i>
-        </span>
-      </div>
-    `).join('');
+    box.innerHTML = array.map((imgSrc, idx) => {
+      const isPdf = typeof imgSrc === 'string' && (imgSrc.startsWith('data:application/pdf') || /\.pdf(\?|$)/i.test(imgSrc));
+      const thumbHtml = isPdf
+        ? `<div onclick="openRegPdfPreview('${containerId}', ${idx})" title="點擊預覽 PDF" style="width:54px; height:54px; border-radius:6px; border:1px solid #FECACA; background:#FEF2F2; color:#DC2626; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer;">
+             <i class="ph ph-file-pdf" style="font-size:24px;"></i>
+             <span style="font-size:9px; font-weight:800; line-height:1;">PDF</span>
+           </div>`
+        : `<img src="${imgSrc}" class="auth-file-thumb" onclick="openImageModal('${imgSrc}')">`;
+      return `
+        <div style="position:relative; width:54px; height:54px; flex-shrink:0;">
+          ${thumbHtml}
+          <span onclick="removeRegImage('${containerId}', ${idx})" style="position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:#EF4444; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;">
+            <i class="ph ph-x"></i>
+          </span>
+        </div>
+      `;
+    }).join('');
   }
-
   function removeRegImage(containerId, idx) {
     if (containerId === 'previewRegIdCard') {
       regIdCardImages.splice(idx, 1);
@@ -7490,10 +7578,14 @@
     } else if (containerId === 'previewRegBank') {
       regBankImages.splice(idx, 1);
       renderRegFileStrip(containerId, regBankImages);
+    } else if (containerId === 'previewRegCompanySeal') {
+      regCompanySealImages.splice(idx, 1);
+      renderRegFileStrip(containerId, regCompanySealImages);
     } else if (containerId === 'previewRegSelfie') {
       regSelfieImage = '';
       renderRegFileStrip(containerId, []);
     }
+    triggerRegAutoSaveDebounced();
   }
 
   // 登入瞬間寄送 6 碼驗證碼
@@ -7524,7 +7616,7 @@
       });
       if (res && res.status === 'success') {
         showToast(res.data.message || '6 碼驗證碼已寄發！');
-        
+        // 啟動 60 秒倒數防刷
         let countdown = 60;
         if (sendCodeCountdownTimer) clearInterval(sendCodeCountdownTimer);
         sendCodeCountdownTimer = setInterval(() => {
@@ -7628,8 +7720,14 @@
     const distId = document.getElementById('regDistributorId')?.value || '';
     const indicator = document.getElementById('regAutoSaveIndicator');
 
+    const hasAnyFile = !!(
+      regIdCardFrontImage || regIdCardBackImage || regSelfieImage ||
+      (regLicenseImages && regLicenseImages.length > 0) ||
+      (regBankImages && regBankImages.length > 0) ||
+      (regCompanySealImages && regCompanySealImages.length > 0)
+    );
     
-    if (!email && !phone && !memberName) {
+    if (!email && !phone && !memberName && !hasAnyFile) {
       if (indicator) indicator.innerHTML = '';
       return;
     }
@@ -7657,22 +7755,56 @@
       distId: distId,
       contractSigned: document.getElementById('regContractAgreement')?.checked || false,
       signatureImage: regSignatureImageBase64 || '',
-      idCardFrontImage: regIdCardFrontImage || '',
-      idCardBackImage: regIdCardBackImage || '',
-      licenseImages: regLicenseImages || [],
-      bankImages: regBankImages || [],
-      photoImage: regSelfieImage || '',
+      idCardFrontImage: regIdCardFrontImage ? (regBase64ToDriveUrlMap.get(regIdCardFrontImage) || regIdCardFrontImage) : '',
+      idCardBackImage: regIdCardBackImage ? (regBase64ToDriveUrlMap.get(regIdCardBackImage) || regIdCardBackImage) : '',
+      idCardSync: true,
+      licenseImages: (regLicenseImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      licenseSync: true,
+      bankImages: (regBankImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      bankSync: true,
+      companySealImages: (regCompanySealImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      companySealSync: true,
+      photoImage: regSelfieImage ? (regBase64ToDriveUrlMap.get(regSelfieImage) || regSelfieImage) : '',
+      photoSync: true,
       isAutoSave: true
     };
-
     if (indicator) {
       indicator.innerHTML = '<span style="color:var(--accent);"><i class="ph ph-circle-notch ph-spin"></i> 自動儲存中...</span>';
     }
-
     try {
       const res = await apiCall('autoSaveDistributorDraft', payload);
       if (res && res.status === 'success' && res.data) {
         if (res.data._rowId) regCurrentDraftRowId = res.data._rowId;
+        if (regIdCardFrontImage && regIdCardFrontImage.startsWith('data:image') && res.data.idCardFrontUrl) {
+          regBase64ToDriveUrlMap.set(regIdCardFrontImage, res.data.idCardFrontUrl);
+        }
+        if (regIdCardBackImage && regIdCardBackImage.startsWith('data:image') && res.data.idCardBackUrl) {
+          regBase64ToDriveUrlMap.set(regIdCardBackImage, res.data.idCardBackUrl);
+        }
+        if (Array.isArray(res.data.licenseUrlsList)) {
+          regLicenseImages.forEach((src, i) => {
+            if (src && src.startsWith('data:') && res.data.licenseUrlsList[i]) {
+              regBase64ToDriveUrlMap.set(src, res.data.licenseUrlsList[i]);
+            }
+          });
+        }
+        if (Array.isArray(res.data.bankUrlsList)) {
+          regBankImages.forEach((src, i) => {
+            if (src && src.startsWith('data:image') && res.data.bankUrlsList[i]) {
+              regBase64ToDriveUrlMap.set(src, res.data.bankUrlsList[i]);
+            }
+          });
+        }
+        if (Array.isArray(res.data.companySealUrlsList)) {
+          regCompanySealImages.forEach((src, i) => {
+            if (src && src.startsWith('data:image') && res.data.companySealUrlsList[i]) {
+              regBase64ToDriveUrlMap.set(src, res.data.companySealUrlsList[i]);
+            }
+          });
+        }
+        if (regSelfieImage && regSelfieImage.startsWith('data:image') && res.data.photoUrl) {
+          regBase64ToDriveUrlMap.set(regSelfieImage, res.data.photoUrl);
+        }
         if (indicator) {
           indicator.innerHTML = '<span style="color:var(--success); font-weight:700;"><i class="ph ph-check-circle"></i> 已自動同步</span>';
           setTimeout(() => { if (indicator) indicator.innerHTML = ''; }, 3000);
@@ -7881,11 +8013,12 @@
       distId: distId,
       contractSigned: true,
       signatureImage: regSignatureImageBase64,
-      idCardFrontImage: regIdCardFrontImage,
-      idCardBackImage: regIdCardBackImage,
-      licenseImages: regLicenseImages,
-      bankImages: regBankImages,
-      photoImage: regSelfieImage
+     idCardFrontImage: regIdCardFrontImage ? (regBase64ToDriveUrlMap.get(regIdCardFrontImage) || regIdCardFrontImage) : '',
+      idCardBackImage: regIdCardBackImage ? (regBase64ToDriveUrlMap.get(regIdCardBackImage) || regIdCardBackImage) : '',
+      licenseImages: (regLicenseImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      bankImages: (regBankImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      companySealImages: (regCompanySealImages || []).map(src => regBase64ToDriveUrlMap.get(src) || src),
+      photoImage: regSelfieImage ? (regBase64ToDriveUrlMap.get(regSelfieImage) || regSelfieImage) : ''
     };
 
     if (btn) {
