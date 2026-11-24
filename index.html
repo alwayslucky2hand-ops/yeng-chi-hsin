@@ -12823,7 +12823,10 @@
     const availableStatusList = window.ALL_ORDER_STATUS_LIST || ALL_ORDER_STATUS_LIST || [];
 
     // 訂單卡片標題列直覺顯示購物會員編號（唯讀保護不可改）
-    container.innerHTML = filtered.map(order => {
+    container.innerHTML = filtered.map((order, idx) => {
+      if (!order.orderId) {
+        order.orderId = 'BUY-ROW-' + ((order._rowIds && order._rowIds[0]) ? order._rowIds[0] : (idx + 1));
+      }
       const curStatus = order.status || '選購';
       const itemsList = order.items || [];
       const totalAmount = order.totalAmount || 0;
